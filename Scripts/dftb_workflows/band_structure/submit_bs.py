@@ -10,12 +10,14 @@ import math
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import platform
 
 #My module paths 
+#Blue crystal varies according to specific log-in node
 blue3='Linux-2.6.32-642.6.2.el6.x86_64-x86_64-with-redhat-6.4-Carbon'
 AlexMac='Darwin-17.4.0-x86_64-i386-64bit'
 
-if platform.platform() == blue3:
+if platform.platform()[0:12] == blue3[0:12]:
     sys.path.insert(0, '/panfs/panasas01/chem/ab17369/python_modules')
 if  platform.platform() == AlexMac:
     sys.path.insert(0, '/Users/alexanderbuccheri/Python')
@@ -33,7 +35,7 @@ from Modules.scheduler_py import pbs
 
 exe='$HOME/dftb/master_build/prog/dftb+/dftb+'
 queue='head'
-material='GaAs'
+material='Si'
 
 job_location1=material+'_bs/1.converged_charges'
 job_location2=material+'_bs/2.bands'

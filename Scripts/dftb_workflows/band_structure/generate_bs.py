@@ -23,10 +23,11 @@ import platform
 
 
 #Paths to my modules (alternatively put directory in $PATH)
+#Blue crystal varies according to specific log-in node
 blue3='Linux-2.6.32-642.6.2.el6.x86_64-x86_64-with-redhat-6.4-Carbon'
 AlexMac='Darwin-17.4.0-x86_64-i386-64bit'
 
-if platform.platform() == blue3:
+if platform.platform()[0:12] == blue3[0:12]:
     sys.path.insert(0, '/panfs/panasas01/chem/ab17369/python_modules')
 if  platform.platform() == AlexMac:
     sys.path.insert(0, '/Users/alexanderbuccheri/Python')
@@ -46,13 +47,13 @@ from Modules.plotting_py     import gnuplot
 #----------------------------------
 structure='cubic'
 basis='prim'
-elements = np.array(['As','Ga']) #Order should be consistent with anion at (0,0,0) and cation at (0.25,0.25,0.25)
-material='GaAs'
-max_ang_momentum= {"As":'d',"Ga":'d'}
+elements = np.array(['Si']) #Order should be consistent with anion at (0,0,0) and cation at (0.25,0.25,0.25)
+material='Si'
+max_ang_momentum= {"Si":'p'}
 boundary_conditions='S'
-parameter_dir='/panfs/panasas01/chem/ab17369/codes/dftbplus/parameters//hyb-0-2/'
-kgrid=np.array([[ 12.,0., 0.],[ 0.,12., 0.],[ 0.,0., 12.]])
-generate_directories=False
+parameter_dir='/panfs/panasas01/chem/ab17369/codes/dftbplus/parameters/siband/siband-1-1/'
+kgrid=np.array([[ 24.,0., 0.],[ 0.,24., 0.],[ 0.,0., 24.]])
+generate_directories=True
 
 
 
