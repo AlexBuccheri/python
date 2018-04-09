@@ -1,0 +1,363 @@
+# Variable script containing data used by the code
+# For details on variables, see varlist_input.txt
+
+
+#####################################################################
+#######          Fundamental System Parameters                #######
+#####################################################################
+
+InputUnits               eV        # 'E_in_unt'
+SystemDimensions         3         # 'd'
+UnitCell                 cubic     # 'cell_type'
+SystemType               sph       # 'system'
+OrthogonalBasis          .true.    # 'ortho_basis
+SpinOrbitCoupling        .false.    # 'SpnCpl and Nspin'
+
+Nx                       4         # 'nx'
+Ny                       4         # 'ny' 
+Nz                       4         # 'nz'
+
+Px                       0         # 'px'
+Py                       0         # 'py'
+Pz                       0         # 'pz'
+ 
+%block kdivisions                  # 'kdiv'
+1
+1
+1
+%endblock kdivisions 
+
+
+
+#####################################################################
+############              Sphere variables             ##############
+#####################################################################
+#NC_type:
+#Core-only: 1,  Core/capping layer: 2,  Core/shell: 3
+NCtype           1                # 'NC_type' 
+
+
+# Compounds: 'ic_core/shell'         
+# 1  2  3  4  5   6   7    8   9   10   11   12   13  14   15   16   17  18   19
+# C,Si,Ge,Sn,SiC,AlP,AlAs,AlSb,GaP,GaAs,GaSb,InP,InAs,InSb,ZnSe,ZnTe,CdS,ZnS,CdSe
+
+CoreCompound     19               # 'ic_core'  GLOBAL PARAMETER!	
+ShellCompound    1                # 'ic_shell'
+
+Radius           5.              #in Ang
+CoreRadius       5.              # 'rcore'  in Ang
+ShellRadius      0.               # 'rshell' in Ang
+
+
+
+###  Surface Passivation Energies (in ev) ###
+DanglingShift   .true.        # 'shift_hyb'
+BondAEShift     25             # 'delEa' Default: 15
+BondBEShift     25             # 'delEb'          15
+BondCEShift     25             # 'delEc'          15
+BondDEShift     25             # 'delEd'          15
+
+
+
+#####################################################################
+############        Shape dimensions/variables         ############## 
+#####################################################################
+
+#NPL variables
+EvenNumMLs       .true.         #'MLoffset'
+
+#Rod variables
+RodRadius        10              # 'rod_radius' in Ang
+Length           50              # 'length' in Ang
+
+#Ellipsoid variables (radii in Ang)
+ElliRada     10                  #'rd_el_a'
+ElliRadb     10                  #'rd_el_b'
+ElliRadc     25                  #'rd_el_c'
+
+#Isocelles-faced pyramid (in Angstoms)
+IsoPyr_Height      40    #'h_iso'
+IsoPyr_BaseLen     10    #'l_iso'
+
+#Tetrahedron variables (base+sides are equilateral triangles)
+#Equilateral pyramid (base is a square, other faces are equilateral triangles)
+#All sides equal to nx*al, hence no need to input specifics
+
+
+
+#####################################################################
+############    Diagonalisation Variables              ##############
+#####################################################################
+
+####      Use Lapack or Arpack for diagonalisation   ###
+####       Don't use both at the same time for now   ###
+
+UseLapack            1                          # '1'=Use '0'=Don't use
+UseARPACK            0                          # '1'=Use '0'=Don't use
+UseFolded            0                          # '1'=Use '0'=Don't use
+UseFEAST             0
+
+
+#####################################################################
+############     FEAST Eigenvalue Solver Variables     ##############
+#####################################################################
+
+SubspaceSize           700 
+MinEigenvalue         -8.                     #emin (eV)
+MaxEigenvalue          8.                     #emax (eV)
+
+
+
+#####################################################################
+###########                 Grid Samplings           ###############
+#####################################################################
+
+#NN Grid sampling (==number of points in integral) 
+%block NNGrdInts
+10  10  10                   #c1,c2,c3
+%endblock NNGrdInts
+
+#System Grid sampling 
+%block SysGrdInts
+5  5  5                    #s1,s2,s3
+%endblock SySGrdInts
+
+
+
+
+
+
+
+
+
+
+#####################################################################
+############    Post-processing routine parameters    ###############
+#####################################################################
+#####################################################################
+############            Data outputs                  ###############
+#####################################################################
+
+GenerateGNU      .false.          # 'genr_GNU'
+GenerateVMD      .false.          # 'genr_VMD'
+GenerateBand     .false.          # 'genr_band'
+FitParameters    .false.          # 'fit_param'
+
+GenerateWav      .false.          # 'wav_out'                  
+OutputTiming     .false.          # 'output_timing'
+
+GenerateDos      .false.          # 'genr_dos'
+GenerateDDos     .false.          # 'genr_ddos'
+GenerateJdos     .false.          # 'genr_jdos'
+GenerateSpec     .false.           # 'genr_spec'
+OutputSpecInfo   .false.           # 'ouput_trn_dtl'
+GenDecmpSpec     .false.          # 'decmp_spec'
+TwoParticleSpec  .true.           # 'BSE_spec'
+
+#NPL Specific 
+DecomposeFunction    atm            #'dcmp'          Decompose atomic (atm) or envelope (env) functions
+GenerateEvsCoeff   .false.          #'gen_coeffvsE'  Output |<nml|i>|^2 w.r.t. E(n,m,l)
+OutputEnv          .false.          #'gen_envfunc'   Generate envelope functions in expansion basis, for visualisation
+GenerateEnvOverlap .false.          #'gen_envtrn'    Compute envelope overlap integrals in expansion basis
+NumSinFunctions     10              #Nenv_basis                                               
+
+
+#Unused
+GenerateBinding     .false.            # 'gen_coul'      
+OutputEigenvalues   .false.            # 'write_eval'
+OutputEigenvectors  .false.            # 'write_evec'
+
+PostOnly            .false.            # 'pst_prc'
+ImportEigenvalues   .false.            # 'read_eval'   
+ImportEigenvectors  .false.            # 'read_evec'
+
+#####################################################################
+############    Density and Joint Density of States   ###############
+#####################################################################
+OutputUnits       'eV'            #'E_out_unt'
+LorentzianRange   2.0             # 'range' in eV
+EnergySpacing     0.005           # 'delE' in eV 0.005, 0.005
+epsilon           0.02            # 'eps' 0.025,0.001
+
+SpectrumRange     0.0             # +/-'E_cutoff' in eV 2.93
+                                  #Set to 0. for no cut-off
+
+
+FermiLevel        .false.          # 'cmp_fermi'
+LocalSurDos       .false.          #'sur_dos'
+
+
+##################      Absorption spectrum    #####################
+Numtransterms               1      # "NTT' 1,2,3
+
+%block PolarVec                   #Polaristion vector 'epol'
+1.                                # x
+1.                                # y
+1.                                # z         
+%endblock PolarVec
+
+
+
+
+#####################################################################
+###########   Wavefunction Ouputting parameters       ###############
+#####################################################################
+
+#Select wave functions to output by giving an input range or
+#an energy value. If they're commented out, the default is band edge
+#states, determined by NumExcBasisStates below
+
+#WavefuncEnergy      1.99566       # 'enwav_input'   
+WavefuncChoice      10         # 'ievec'
+FinalWavOut         0          # 'fevec'
+
+
+
+
+
+#####################################################################
+###########             Exciton Parameters            ###############
+#####################################################################
+
+#2p-spectrum.          Note, broadening value set above
+2pLowestEnergy         1.5                    #emin_2p
+2pHighestEnergy        7.0                    #emax_2p
+2pEnergySpacing        0.01                   #delE_2p
+VariableBroadening    .false.                  #varb
+
+#Use resonant 2-particle H or full BSE H
+TammDancoff     .false.
+
+#Use Npairs. Routine selects Nh and Ne systematically
+Npairs           100                  #Np
+
+#Number of single-particle electron states used in exciton wave function
+#Code will use Npairs if these =1 or are absent 
+#Nelectrons      1                  #Ne
+#Nholes          1                  #Nh 
+
+#Static Dielectric Screening for kernel
+#StaticDielectricCnst      1.0      #static_eps. CdSe: ~6,9.1
+
+#Maximum number of iterations for conjugate gradient routine
+CGMaxItr        10000                #cgmaxitr
+
+
+
+
+
+#Unsed exciton parameters 
+#NumExcBasisStates             1   # 'Nexsp        '1'=> 1 electron and 1 hole
+
+
+
+
+
+
+
+###################################################################################
+##                     Atomic positions and unit cell vectors              ########
+##         When this file becomes larger, but them in a separate file      ########
+###################################################################################
+
+%block PrimUnitVec                 #Primitive unit cell vectors
+0.5 0.5 0
+0   0.5 0.5
+0.5 0   0.5
+%endblock PrimUnitVec
+
+
+%block PrimBasisPos                #2-atom basis. Position for basis atoms 
+0 0 0                              #in the primitive unit cell
+0.25 0.25 0.25   
+%endblock PrimBasisPos
+
+
+%block OrthUnitVec                 #Orthogonal unit cell vectors
+1. 0. 0.                            
+0. 1. 0.
+0. 0. 1.
+%endblock OrthUnitVec
+
+%block OrthoBasisPos              #8-atom basis for diamond/zincblende
+0 0 0                             #structures constructed with orthogonal
+0 0.5 0.5                         #unit cell
+0.5 0 0.5
+0.5 0.5 0
+0.25 0.25 0.25
+0.25 0.75 0.75
+0.75 0.25 0.75
+0.75 0.75 0.25
+%endblock OrthoBasisPos
+
+###################################################################################
+
+
+
+
+########################################################################################
+##################              ARPACK Variables.           ############################
+#  User mannual:     $HOME/ARPACK/arpack-manual-2.1.pdf     
+########################################################################################
+
+########################################################################################
+# Variable Information
+########################################################################################
+
+# 'info'    Provide starting vector for routine?
+#           1 = User-supplied.   0 = ARPACK generates random vector
+# 'bmat'    General or standard eigenvalue problem.  I or G
+# 'which'   Eigenvalues of interest
+#           LM = Largest eigenvalues w.r.t magnitude 
+#           SM = Smallest magnitude => Get band edges.
+#           LR = Largest real size  i.e.  12 eV downwards 
+#           SR = Smallest real size i.e. -13eV upwards
+#           LI = Largest imaginary size 
+            SI = Smallest imaginary size
+
+
+# 'tol'     Convergence criterion. Too large => eigenvalues missed
+#	    Typically set to machine accuracy. 
+# 'maxitr'  The max number of Arnoldi iterations used before the algorithm stops
+# 'ishfts'  Shifting Strategy. See user mannual 
+#           1 = Exact Shift
+# 'mode'    Algorithm Choice - See user mannual
+#           1 = No spectral Shift
+# 'nev'     Typically can't find all of the eigenvalues with this type of routine
+#           but one is only interested in those around the band edges.
+# 'ncv'     Number of Lanzcos basis vectors used. 
+#           Must be more than nev but <= N
+# 'rvec'    Return eigenvectors: True or false.
+# 'maxn'    Maxiumum dimension size: Hamiltonian
+# 'maxnev'  Maxiumum number of eigenvalues to be calculated
+# 'maxncv'  Maximum number of Lanzcos basis vectors used in algorithm
+# 'prtinfo' Prints out ARPACK details on calculation
+# 'prteig'  Prints out the eigenvalues and exact details directly from ARPACK
+########################################################################################
+
+
+StartingVector         0                # 'info'
+EigenvalueProblem      I                # 'bmat'  	                                
+WhichEigenvalues       SM               # 'which' 
+
+ConvergenceCriterion   0.0               # 'tol'
+ArnoldiIterations      600              # 'maxitr' Default=600
+ShiftType              1                # 'ishfts'
+SpectralMode           1                # 'mode'
+
+
+
+#Ideally make these parameters such that they can't be modified in the code
+# 'maxn' No longer read in. max = N in code.
+#maxnev and maxncv are read in as  percentages of maxn (N)
+#NOTE, in the code, these values are referred to with the prefix co_ i.e. co_maxncv
+
+
+MaxNumLanczosBas       1.0               # 'maxncv' Greatest value = maxn
+MaxNumEigenvalues      0.9               # 'maxnev' Greatest value = maxn-1
+NumLanczosBasVecs      1.0               # 'ncv'   Greatest value = maxn
+NumberofEigenvalues    0.9                # 'nev'   Greatest value = maxn-1
+
+
+ReturnEigenVectors     .false.           # 'rvec' 
+PrintAddInfo           .false.           # 'prtinfo'
