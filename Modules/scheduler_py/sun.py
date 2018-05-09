@@ -11,7 +11,7 @@ import os
 #For sun scheduler
 class SunJob:
         def __init__(self,shell_type='tcsh',exe='~/TB_BSE/test.exe',nodes=1,ppn=1,job_name='TBtest',\
-                          queue='parallel.q',walltime='None',input_name='input.fdf', output_name='terminal'):
+                          queue='parallel.q',walltime='None',input_name='input.fdf', output_name='terminal.out'):
                           
                 self.shell_type=shell_type
                 self.exe=exe
@@ -78,9 +78,9 @@ def generate_sun_script(sunjob):
 
         sun_string += ('#Set variables'                  +'\n'
                        'set MPIRUN  = mpirun'            +'\n'
-                       'set EXE ='+sunjob.exe            +'\n'+ \
-                       'set INPUT ='+sunjob.input        +'\n'+ \
-                       'set OUT ='+sunjob.output         +'\n\n')
+                       'set EXE = '+sunjob.exe            +'\n'+ \
+                       'set INPUT = '+sunjob.input        +'\n'+ \
+                       'set OUT = '+sunjob.output         +'\n\n')
 
 
         sun_string += ('#Copy files required at runtime to working dir'         +'\n'
