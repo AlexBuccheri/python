@@ -76,7 +76,7 @@ def modify_variables(fin,fout,string):
                 output_file_string += newline
             
         input_file.close()
-        fid= open(foutput, "w")
+        fid= open(foutput, "w+")
         fid.write(output_file_string)
         fid.close()
         finput=foutput  
