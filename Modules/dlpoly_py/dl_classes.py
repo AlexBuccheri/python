@@ -39,7 +39,7 @@ class Config:
        if atom_index == None:
            self.atom_index=np.zeros(shape=(1))
        else:
-           self.atom_index-atom_index
+           self.atom_index=atom_index
     
     atomic_record=np.array(['coorindates', 'coordinates & velocities', 'coordinates, velocities & forces'])
     boundary_key=np.array(['finite','cubic','orthorhombic','parallel-piped','Not valid integer','Not valid integer','xy but not z'])
