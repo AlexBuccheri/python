@@ -29,7 +29,7 @@ AlexMac='Darwin-17.4.0-x86_64-i386-64bit'
 
 if platform.platform()[0:12] == blue3[0:12]:
     sys.path.insert(0, '/panfs/panasas01/chem/ab17369/python_modules')
-if  platform.platform() == AlexMac:
+if  platform.platform()[0:5] == AlexMac[0:5]:
     sys.path.insert(0, '/Users/alexanderbuccheri/Python')
     
 #My Modules
@@ -62,8 +62,9 @@ generate_directories=True
 #----------------------------------------------------------------------------------------------
 atomic_structure=Lattice(structure=structure,basis=basis,material=material)
 
-GEO=Geometry(material,elements,atomic_structure.al,atomic_structure.basis_vector,atomic_structure.lattice_vector,\
-             boundary_conditions,atomic_structure.header)
+GEO=Geometry(material,elements,boundary_conditions,\
+             al=atomic_structure.al,basis_vectors=atomic_structure.basis_vector,\
+             lattice_vectors=atomic_structure.lattice_vector,header=atomic_structure.header)
 
 
 #-------------------------------------
