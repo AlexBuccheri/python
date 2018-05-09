@@ -63,7 +63,11 @@ class Lattice:
             self.lattice_vector=Cubic.prim_lattice_vectors
             self.basis_vector=Cubic.prim_basis_vectors
             self.reciprocal_lattice_vector= self.reciprocal_lattice()
-            self.al=Cubic.al[material]
+            if material not in Cubic.al:
+                print(material,' lattice constant is not tabulated in dftb classes.')
+                sys.exit('Script has stopped')
+            else:
+                self.al=Cubic.al[material]
             self.header=Cubic.header
             self.basis=basis
 
@@ -91,18 +95,88 @@ class Lattice:
             sys.exit('Code has stopped')
 
 
-
-#All information required by the Geometry section of the dftb_in.hsd
-#Superfluois class: Could just add boundary conditions to the Lattice class
+#------------------------------------------------------------------------------------
+# All information required by the Geometry section of the dftb_in.hsd
+#---------------------------------------------------------------------------------------         
+# Finite system.  
+# Inputs:
+#         elements[1:Natoms]        List of elements associated with each atomic position
+#         material                  Material name 
+#         boundary condition       'c'luster
+#         position[1:3,1:Natoms]    Atomic positions (Ang should be used)
+# Outputs: 
+#         Natoms                    Number of atoms in system         
+#         uni_elements              List of unique elements/atomic species in system
+#         uni_elements_index        Dictionary pairing unique element with unique index            
+#
+# Periodic system. 
+# Inputs:
+#         elements[1:basis]         List of elements consistent with basis atoms          
+#         material                  Material name 
+#         boundary condition       's'upercell or 'f'ractional
+#                                   => calculation is either for bulk or supercell
+#         position[1:3,1:Natoms]    Atomic positions in supercell (Ang should be used)
+#         basis_vectors[?,?]        Positions of basis atoms for unit cell
+#         Lattice vectors[3,3]      Defines unit cell or supercell 
+# Outputs: 
+#         Natoms                    Number of atoms in supercell
+#         uni_elements              List of unique elements in supercell
+#                                   when system==bulk, elements==uni_elements
+#         uni_elements_index        Dictionary pairing unique element with unique index 
+#---------------------------------------------------------------------------------------
 class Geometry(object):
-    def __init__(self,material, elements, al, basis_vectors, lattice_vectors, boundary_conditions,header):
+    def __init__(self,material,elements,boundary_conditions,\
+                      position=None, al=None, basis_vectors=None, lattice_vectors=None, header=None ):
+        
         self.elements = elements
-        self.material = material     #''.join(elements)          
-        self.al= al
-        self.basis_vectors = basis_vectors
-        self.lattice_vectors = lattice_vectors
-        self.boundary_conditions = boundary_conditions
+        self.Natoms = len(elements)
+        self.material = material  
+        self.boundary_conditions = boundary_conditions.lower()
         self.header=header
+
+        uni_elements=[]
+        uni_elements_index={}
+        cnt=0
+        for ele in elements:
+            if ele not in uni_elements:
+                uni_elements.append(ele)
+                cnt+=1
+                uni_elements_index.update({ele:cnt})
+                
+        self.uni_elements = uni_elements
+        self.uni_elements_index=uni_elements_index
+
+        #More efficient to just return the dictionary above
+        #for i in range(0,len(elements):
+        #    ele=elements[i]
+        #    elements_index[i]=uni_elements_index{ele}
+        #self.elements_index=elements_index
+        
+        if self.boundary_conditions=='c':
+            self.position=position
+            if len(elements) != len(position):
+                print("Elements list must correspond to position list")
+                sys.exit('Script has stopped')
+                
+        elif self.boundary_conditions=='s' or  self.boundary_conditions=='f':
+            self.al= al
+            if al==None: print('Expect lattice constant when using periodic boundary conditions')
+      
+            self.basis_vectors = basis_vectors
+            #Probably a supercell
+            if self.Natoms>10:
+                self.position=position
+                print("Atomic positions for supercell returned in position")
+                       
+            if lattice_vectors.all()==None:
+                print("Require lattice/supercell vectors for periodic calculation")
+                sys.exit('Script has stopped')
+            else:
+               self.lattice_vectors = lattice_vectors 
+        else:
+            print("Choice of boundary condition,",boundary_conditions,", for DFTB+ is not valid")
+            sys.exit('Script has stopped')
+            
 
 
 class Hamiltonian:
