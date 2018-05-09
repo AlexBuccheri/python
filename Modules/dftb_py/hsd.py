@@ -16,10 +16,7 @@ def hsd_file_string(header,atomic_structure,GEO,HAM,PARS,KDETAILS,ANALYSE,CG_REL
     geometry_string, cg_string, hamiltonian_string, analysis_string, parser_string= '','','','',''
     
     #Geometry 
-    if GEO.boundary_conditions.lower() == 'c':
-        geometry_string = hsd_geometry_string_cluster(GEO) 
-    if GEO.boundary_conditions.lower() == 's' or GEO.boundary_conditions.lower() == 'f':
-        geometry_string = hsd_geometry_string_periodic(GEO)
+    geometry_string = hsd_geometry_string(GEO) 
 
     #Geometry relaxation
     if CG_RELAX !='None':
@@ -39,8 +36,15 @@ def hsd_file_string(header,atomic_structure,GEO,HAM,PARS,KDETAILS,ANALYSE,CG_REL
     return file_string
 
 
+#Wrapper for various boundary conditions  
+def hsd_geometry_string(GEO):
+    if GEO.boundary_conditions.lower() == 'c':
+        geometry_string = hsd_geometry_string_cluster(GEO) 
+    if GEO.boundary_conditions.lower() == 's' or GEO.boundary_conditions.lower() == 'f':
+        geometry_string = hsd_geometry_string_periodic(GEO)
+    return geometry_string
 
-
+        
 #For periodic boundary conditions  
 def hsd_geometry_string_periodic(GEO):
 
