@@ -44,6 +44,17 @@ def hsd_geometry_string(GEO):
         geometry_string = hsd_geometry_string_periodic(GEO)
     return geometry_string
 
+
+def hsd_gen_string(GEO):
+    if GEO.boundary_conditions.lower() == 'c':
+        gen_string = hsd_gen_string_cluster(GEO)
+    if GEO.boundary_conditions.lower() == 's' or GEO.boundary_conditions.lower() == 'f':
+        print('hsd.py: hsd_gen_string_periodic needs writing')
+        sys.exit('Script has stopped')
+        #gen_string = hsd_gen_string_periodic(GEO)
+    return gen_string        
+        
+
         
 #For periodic boundary conditions  
 def hsd_geometry_string_periodic(GEO):
@@ -93,11 +104,33 @@ def hsd_geometry_string_periodic(GEO):
     return geometry_string
 
 
-
+#Generate block inside GenFormat using a subroutine call, which can subsequently
+#also be called if one wants to generate a .gen file 
 def hsd_geometry_string_cluster(GEO):
-    print('Write geometry string generation for finite boundary conditions')
+    gen_string = hsd_gen_string_cluster(GEO)
+    geometry_string = GEO.header+'\n'
+    geometry_string += 'Geometry = GenFormat { \n'+gen_string +'} \n'
+    
 
+    
+def hsd_gen_string_cluster(GEO):
+    if GEO.header[0] != '#':  GEO.header='#'+GEO.header
 
+    geometry_string = GEO.header+'\n'+ \
+    str(GEO.Natoms)+' '+GEO.boundary_conditions.upper()+'\n'+ \
+    '  '+' '.join(GEO.uni_elements)+'\n'
+
+    pos_str=[]
+    for i in range(0,GEO.Natoms):
+        pos=GEO.position[i,:]
+        #pos_str='  '.join(str(e) for e in pos)
+        pos_str=np.array2string(pos, separator=' ',formatter={'float_kind':lambda pos: "%.8E" % pos})
+        uni_ele_indx_str=str(GEO.uni_elements_index[GEO.elements[i]])
+        geometry_string += ' '+str(i+1)+' '+uni_ele_indx_str+' '+pos_str[1:-1]+'\n'
+        
+    return geometry_string
+    
+    
 
 def hsd_cg_string(CG_RELAX):
     cg_string =  \
