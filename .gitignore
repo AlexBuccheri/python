@@ -1,5 +1,4 @@
 .DS_Store
 Reference\ Scripts
 *~
-*.pyc
-*.py
+#*.pyc
