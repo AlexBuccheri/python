@@ -127,13 +127,18 @@ class Lattice:
 class Geometry(object):
     def __init__(self,material,elements,boundary_conditions,\
                       position=None, al=None, basis_vectors=None, lattice_vectors=None, header=None ):
-        
+
+        self.material = material 
         self.elements = elements
-        self.Natoms = len(elements)
-        self.material = material  
         self.boundary_conditions = boundary_conditions.lower()
+        self.Natoms = len(elements)
+        self.position=position
+        self.al= al
+        self.basis_vectors = basis_vectors
+        self.lattice_vectors = lattice_vectors
         self.header=header
 
+        #Should in principle add these to the argument list too
         uni_elements=[]
         uni_elements_index={}
         cnt=0
@@ -146,40 +151,29 @@ class Geometry(object):
         self.uni_elements = uni_elements
         self.uni_elements_index=uni_elements_index
 
-        #More efficient to just return the dictionary above
-        #for i in range(0,len(elements):
-        #    ele=elements[i]
-        #    elements_index[i]=uni_elements_index{ele}
-        #self.elements_index=elements_index
-
-        #Assume dimensions for position[1:Natoms,1:3]
-        if self.boundary_conditions=='c':
-            self.position=position
-            
+        #Flags 
+        if self.boundary_conditions=='c' or self.boundary_conditions=='s':
             if len(elements) != len(position):
                 print("Elements list must correspond to position list")
+                #Assume dimensions for position[1:Natoms,1:3]
                 if len(position[0])> len(position):
                     print('DFTB geometry class expects dimensions for position[1:Natoms,1:3]')
                 sys.exit('Script has stopped')
 
-        elif self.boundary_conditions=='s' or  self.boundary_conditions=='f':
-            self.al= al
-            if al==None: print('Expect lattice constant when using periodic boundary conditions')
-      
-            self.basis_vectors = basis_vectors
-            #Probably a supercell
-            if self.Natoms>10:
-                self.position=position
-                print("Atomic positions for supercell returned in position")
-                       
+        if self.boundary_conditions=='s' or  self.boundary_conditions=='f':
+            if al==None:
+                print('Expect lattice constant when using periodic boundary conditions')
+            #Probably a unit cell
+            if self.Natoms<=10 and basis_vectors == None:
+                print("Require basis positions for bulk calculations")
+                sys.exit('DFTB class has stopped')       
             if lattice_vectors.all()==None:
-                print("Require lattice/supercell vectors for periodic calculation")
-                sys.exit('Script has stopped')
-            else:
-               self.lattice_vectors = lattice_vectors 
-        else:
+                print("Require lattice vectors for periodic bulk and supercell calculations")
+                sys.exit('DFTB class has stopped')
+               
+        elif self.boundary_conditions not in ['c','s','f']:
             print("Choice of boundary condition,",boundary_conditions,", for DFTB+ is not valid")
-            sys.exit('Script has stopped')
+            sys.exit('DFTB class has stopped')
             
 
 
