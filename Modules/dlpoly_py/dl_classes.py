@@ -6,6 +6,13 @@ import numpy as np
 import sys
 
 
+
+class Constants:
+     boundary_key=np.array(['finite','cubic','orthorhombic','parallel-piped','Not valid integer',\
+                            'Not valid integer','xy but not z'])
+     atomic_record=np.array(['coorindates', 'coordinates & velocities', 'coordinates, velocities & forces'])
+
+                            
 #Data found in DLPOLY CONFIG file 
 class Config:
     def __init__(self,header=None,Nlines_per_record=1,boundary_index=1,Natoms=0, \
@@ -15,36 +22,21 @@ class Config:
        self.Nlines_per_record=Nlines_per_record
        self.boundary_index=boundary_index
        self.Natoms=Natoms
+       self.lattice_vector=lattice_vector  #Stored row-wise
+       self.atom_name=atom_name
+       self.coord=coord     #xxx, yyy and zzz
+       self.velo=velo       #vxx, vyy and vzz 
+       self.force=force     #fxx, fyy and fzz
+       self.atom_index=atom_index
 
-       if lattice_vector == None:
-           self.lattice_vector=np.zeros(shape=(3,3))   #Stored row-wise
-       else:
-           self.lattice_vector=lattice_vector
-       if atom_name == None:
-           self.atom_name=[]
-       else:
-           self.atom_name=atom_name
-       if coord == None:                               #xxx, yyy and zzz
-           self.coord=np.zeros(shape=(3,1))
-       else:
-           self.coord=coord
-       if velo == None:                                #vxx, vyy and vzz 
-           self.velo=None
-       else:
-           self.velo=velo
-       if force == None:                               #fxx, fyy and fzz   
-           self.force=None
-       else:
-           self.force=force
-       if atom_index == None:
-           self.atom_index=np.zeros(shape=(1))
-       else:
-           self.atom_index=atom_index
-    
-    atomic_record=np.array(['coorindates', 'coordinates & velocities', 'coordinates, velocities & forces'])
-    boundary_key=np.array(['finite','cubic','orthorhombic','parallel-piped','Not valid integer','Not valid integer','xy but not z'])
-    # print('Boundary conditions:',boundary_key[boundary_index])
-    # print('Each atomic record is comprised of ',atomic_record[Nlines_per_record-1])
+       #Does it make sense to initialise shapes?
+       if lattice_vector is None:  self.lattice_vector=np.zeros(shape=(3,3))   
+       if atom_name is None:       self.atom_name=[]         
+       if coord is None:           self.coord=np.zeros(shape=(3,1))
+       if atom_index is None:      self.atom_index=np.zeros(shape=(1))  
+ 
+       # print('Boundary conditions:',Constants.boundary_key[boundary_index])
+       # print('Each atomic record is comprised of ',Constants.atomic_record[Nlines_per_record-1])
 
 
     
