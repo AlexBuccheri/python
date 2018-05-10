@@ -151,13 +151,17 @@ class Geometry(object):
         #    ele=elements[i]
         #    elements_index[i]=uni_elements_index{ele}
         #self.elements_index=elements_index
-        
+
+        #Assume dimensions for position[1:Natoms,1:3]
         if self.boundary_conditions=='c':
             self.position=position
+            
             if len(elements) != len(position):
                 print("Elements list must correspond to position list")
+                if len(position[0])> len(position):
+                    print('DFTB geometry class expects dimensions for position[1:Natoms,1:3]')
                 sys.exit('Script has stopped')
-                
+
         elif self.boundary_conditions=='s' or  self.boundary_conditions=='f':
             self.al= al
             if al==None: print('Expect lattice constant when using periodic boundary conditions')
