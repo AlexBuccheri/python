@@ -104,3 +104,7 @@ def Config_string_to_data(string, data):
             data.force[:,ia] = string[k+2].split()
             k=k+data.Nlines_per_record
 
+
+#Write me 
+#def config_data_to_string(config):
+#    return config_str
