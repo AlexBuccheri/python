@@ -97,6 +97,38 @@ def Config_string_to_data(string, data):
             k=k+data.Nlines_per_record
 
 
-#Write me 
-#def config_data_to_string(config):
-#    return config_str
+# Convert DLPOLY CONFIG data into a string            
+def config_data_to_string(config):
+    config_string=''
+    padding='          '
+
+    if isinstance(config.header, str): config_string=config.header+'\n'
+
+    config_string += padding+str(config.Nlines_per_record)+'    '+\
+                     str(config.boundary_index)+'      '+\
+                     str(config.Natoms)+'\n'
+
+    for ia in range(0,3):
+        vec = config.lattice_vector[ia, :]
+        lat_str = np.array2string(vec, separator='    ', formatter={'float_kind': lambda vec: "%.8E" % vec})
+        config_string += padding + lat_str[1:-1]+'\n'
+
+
+    if config.Natoms==0: config.Natoms=len(config.coord)
+
+    if config.Nlines_per_record != 1:
+        print('Have not written CONFIG to string routine to output when'
+              'Nlines_per_record exceeds 1')
+        sys.exit('Script has stopped')
+
+    if config.Nlines_per_record==1:
+        for ia in range(0,config.Natoms):
+            config_string+=config.atom_name[ia]+padding[:-len(config.atom_name[ia])-1]+str(ia+1)+'\n'
+            pos = config.coord[ia,:]
+            # Using this rather than 'join' to specify the formatting TURN INTO FUNCTION
+            pos_str=np.array2string(pos, separator='    ', formatter={'float_kind': lambda pos: "%.8E" % pos})
+            config_string += padding+pos_str[1:-1]+'\n'
+
+
+
+    return config_string
