@@ -6,3 +6,4 @@ Reference\ Scripts
 *~
 #*.pyc
 Notebooks/.ipynb_checkpoints/*
+Tests/conversion/outputs

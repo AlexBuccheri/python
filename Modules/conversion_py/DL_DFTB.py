@@ -94,6 +94,19 @@ def configObject_to_geoObject(config,override_boundary=True):
         
     return geo
 
+# ---------------------------------------------------
+# Convert fractional coordinates to Cartesian
+# ---------------------------------------------------
+def convert_fractional_2_cartesian(latvec,pos_frac):
+    # Set up transformation matrix using period lattice vectors
+    T = np.array([latvec[0,:], latvec[1,:], latvec[2,:]])
+    T = np.transpose(T)
+    #Do transformation on positions
+    pos_cart = np.matmul(T, np.transpose(pos_frac))
+    pos_cart = np.transpose(pos_cart)
+    return pos_cart
+
+
 #--------------------------------------------------------------------------
 # Copies geometry data from DFTB+ config object to DLPOLY geometry object
 # Inputs:  Filled 'geo' object 
@@ -103,25 +116,26 @@ def geoObject_to_configObject(geo):
     
     #DFTB geo data doesn't contain info on initial values for velocities or forices, hence
     #Nlines_per_record = 1
-    #DLPOLY uses large supercell with either finite or periodic boundarie.
+    #DLPOLY uses large supercell with either finite or periodic boundaries.
     #Corresponding DFTB+ atomic positions for large systems will be stored in geo.position
 
     #Boundary matching
     if geo.boundary_conditions.lower()=='c':
         boundary_index=1    #finite
+        position=geo.position
     if geo.boundary_conditions.lower()=='s':
         boundary_index=2    #Cubic periodic
+        position = geo.position
     if geo.boundary_conditions.lower()=='f':
-        print('DFTB+ basis and lattice vectors are in reduced coorinates.')
-        print('Need converting for DLPOLY')
-        sys.exit('DL_DFTB_conversions.py stops line 112')
-       
+        print('DFTB+ basis/atomic position vectors are in fractional coorinates.')
+        print('Converting to same unit as the lattice vectors')
+        boundary_index = 2  # Cubic periodic
+        position = convert_fractional_2_cartesian(geo.lattice_vectors, geo.position)
+
     config=dl.Config(header=geo.header,Nlines_per_record=1,boundary_index=boundary_index,Natoms=geo.Natoms,\
-                     lattice_vector=geo.lattice_vectors,atom_name=geo.elements,coord=geo.position,\
+                     lattice_vector=geo.lattice_vectors,atom_name=geo.elements,coord=position,\
                      atom_index=generate_elements_index(geo))
 
-    check_consistency(geo,config)
-                     
     return config
 
 
