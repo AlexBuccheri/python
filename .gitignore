@@ -1,4 +1,8 @@
 .DS_Store
+__init__.py
+__init__.pyc
+__pycache__
 Reference\ Scripts
 *~
 #*.pyc
+Notebooks/.ipynb_checkpoints/*
