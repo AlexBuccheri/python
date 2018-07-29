@@ -23,7 +23,8 @@ from Modules.dftb_py import hsd                            # .hsd file generator
 from Modules.dftb_py import conversion as dftb_conversion  # Data <-> string routines   
 from Modules.dlpoly_py import dl_classes as dl             # DLPOLY Classes
 from Modules.conversion_py import DL_DFTB                  # Geometry class-mapping functions 
- 
+
+
 
 #Conversion choice 
 convert_DL_to_DFTB=False

@@ -3,7 +3,9 @@ __init__.py
 __init__.pyc
 __pycache__
 Reference\ Scripts
+outputs/
 *~
-#*.pyc
+*.pyc
 Notebooks/.ipynb_checkpoints/*
+Scripts/String_Matching_Replacing/Prior_Versions/*
 Tests/conversion/outputs
