@@ -10,7 +10,7 @@ import os
 
 #My libraries 
 sys.path.insert(0, '/Users/alexanderbuccheri/Python')
-from Modules.dlpoly_py import dlpoly_classes as dl
+from Modules.dlpoly_py import dl_classes as dl
 
 #----------------------------------
 #DL POLY class example.
