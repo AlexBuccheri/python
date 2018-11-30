@@ -38,8 +38,96 @@ class Config:
        # print('Boundary conditions:',Constants.boundary_key[boundary_index])
        # print('Each atomic record is comprised of ',Constants.atomic_record[Nlines_per_record-1])
 
+class Ensemble:
+    def __init__(self,name='nve',etype=None,thermostat_relaxation=None,barostat_relaxation=None):
+        self.name = name
+        self.etype = etype
+        #Depending on context, times (ps) or speeds (ps^-1)
+        self.f1 = thermostat_relaxation
+        self.f2 = barostat_relaxation
 
-    
+class Trajectory:
+    def __init__(self,tstart=0,tinterval=1,data_level=0):
+        self.tstart = tstart
+        self.tinterval = tinterval
+        self.data_level = data_level
+
+#Data found in DLPOLY CONTROL file - Extend as required 
+class Control:
+    def __init__(self,header=' ', name='CONTROL', temperature=None, pressure=None, ensemble=None, \
+                     steps=None, equilibration=None, scale=None, regauss=None, printout=None,\
+                     stack=None, stats=None, vdw_direct=None, rdf=None, print_rdf=None, trajectory=None,\
+                     optimise_force=None, ewald_precision=None, timestep=None, rpad=None, cutoff=None,\
+                     cap=None, job_time=None, close_time=None, dump=None):
+        self.header = header
+        self.name = name 
+        self.temperature = temperature
+        self.pressure = pressure
+        self.ensemble = ensemble
+        self.steps = steps 
+        self.equilibration = equilibration
+        self.scale = scale
+        self.regauss = regauss
+        self.printout = printout
+        self.stack = stack
+        self.stats = stats
+        self.vdw_direct = vdw_direct
+        self.rdf = rdf
+        self.print_rdf = print_rdf
+        self.trajectory = trajectory
+        self.optimise_force = optimise_force
+        self.ewald_precision = ewald_precision
+        self.dump = dump
+        self.timestep = timestep
+        self.rpad = rpad
+        self.cutoff = cutoff
+        self.cap = cap
+        self.job_time = job_time
+        self.close_time = close_time
+
+
+#One assumes that there is a more sensible way of doing this, like
+#being able to iterate through all atributes of the data object
+#Something to discuss with Peter 
+def Control_data_to_string(data):
+        config_string=''
+        padding='                       '
+        if(data.header      != None): config_string+=data.header+'\n'
+        if(data.temperature != None): config_string+='temperature'+padding+str(data.temperature)+'\n'
+        if(data.pressure    != None): config_string+='pressure'+padding+str(data.pressure)+'\n'
+        if(data.ensemble    != None):
+            config_string+='ensemble '+str(data.ensemble.name)
+            if(data.ensemble.etype !=None): config_string+=str(data.ensemble.etype)+'  '    
+            if(data.ensemble.f1 !=None): config_string+=str(data.ensemble.f1)+' '    #This will break formatting
+            if(data.ensemble.f2 !=None): config_string+=str(data.ensemble.f2)+'\n'   #if not f1 and f2
+            
+        if(data.steps  != None): config_string+='steps'+padding+str(data.steps)+'\n'
+        if(data.equilibration != None): config_string+='equilibration'+padding+str(data.equilibration)+'\n'
+        if(data.scale   != None): config_string+='scale'+padding+str(data.scale)+'\n'
+        if(data.regauss != None): config_string+='regauss'+padding+str(data.regauss)+'\n'
+        if(data.printout != None): config_string+='print'+padding+str(data.printout)+'\n'
+        if(data.stack != None): config_string+='stack'+padding+str(data.stack)+'\n'
+        if(data.stats != None): config_string+='stats'+padding+str(data.stats)+'\n'
+        if(data.vdw_direct == True): config_string+='vdw direct    \n'
+        if(data.rdf != None): config_string+='rdf'+padding+str(data.rdf)+'\n'
+        if(data.print_rdf == True): config_string+='print rdf    \n' 
+        if(data.trajectory    != None):
+            config_string+='trajectory '+padding+str(data.trajectory.tstart)+' '+str(data.trajectory.tinterval)+' '+str(data.trajectory.data_level)+'\n'
+            
+        if(data.optimise_force != None): config_string+='optimise_force'+padding+str(data.optimise_force)+'\n'
+        if(data.dump !=None):  config_string+='dump'+padding+str(data.dump)+'\n'
+        if(data.ewald_precision != None): config_string+='ewald_precision'+padding+str(data.ewald_precision)+'\n'
+        if(data.timestep != None): config_string+='timestep'+padding+str(data.timestep)+'\n'
+        if(data.rpad != None): config_string+='rpad'+padding+str(data.rpad)+'\n'
+        if(data.cutoff != None): config_string+='cutoff'+padding+str(data.cutoff)+'\n'
+        if(data.cap != None): config_string+='cap'+padding+str(data.cap)+'\n'
+        if(data.job_time  != None): config_string+='job_time'+padding+str(data.job_time)+'\n'
+        if(data.close_time  != None): config_string+='close_time'+padding+str(data.close_time)+'\n'
+        config_string+='finish'
+        return config_string
+
+        
+
 #Take a CONFIG file parsed as a single string and assign data to DL POLY class 
 def Config_string_to_data(string, data):
 
