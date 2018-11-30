@@ -96,7 +96,7 @@ def Control_data_to_string(data):
         if(data.temperature != None): config_string+='temperature'+padding+str(data.temperature)+'\n'
         if(data.pressure    != None): config_string+='pressure'+padding+str(data.pressure)+'\n'
         if(data.ensemble    != None):
-            config_string+='ensemble '+str(data.ensemble.name)
+            config_string+='ensemble '+str(data.ensemble.name)+'  '
             if(data.ensemble.etype !=None): config_string+=str(data.ensemble.etype)+'  '    
             if(data.ensemble.f1 !=None): config_string+=str(data.ensemble.f1)+' '    #This will break formatting
             if(data.ensemble.f2 !=None): config_string+=str(data.ensemble.f2)+'\n'   #if not f1 and f2
@@ -114,15 +114,15 @@ def Control_data_to_string(data):
         if(data.trajectory    != None):
             config_string+='trajectory '+padding+str(data.trajectory.tstart)+' '+str(data.trajectory.tinterval)+' '+str(data.trajectory.data_level)+'\n'
             
-        if(data.optimise_force != None): config_string+='optimise_force'+padding+str(data.optimise_force)+'\n'
+        if(data.optimise_force != None): config_string+='optimise force'+padding+str(data.optimise_force)+'\n'
         if(data.dump !=None):  config_string+='dump'+padding+str(data.dump)+'\n'
-        if(data.ewald_precision != None): config_string+='ewald_precision'+padding+str(data.ewald_precision)+'\n'
+        if(data.ewald_precision != None): config_string+='ewald precision'+padding+str(data.ewald_precision)+'\n'
         if(data.timestep != None): config_string+='timestep'+padding+str(data.timestep)+'\n'
         if(data.rpad != None): config_string+='rpad'+padding+str(data.rpad)+'\n'
         if(data.cutoff != None): config_string+='cutoff'+padding+str(data.cutoff)+'\n'
         if(data.cap != None): config_string+='cap'+padding+str(data.cap)+'\n'
-        if(data.job_time  != None): config_string+='job_time'+padding+str(data.job_time)+'\n'
-        if(data.close_time  != None): config_string+='close_time'+padding+str(data.close_time)+'\n'
+        if(data.job_time  != None): config_string+='job time'+padding+str(data.job_time)+'\n'
+        if(data.close_time  != None): config_string+='close time'+padding+str(data.close_time)+'\n'
         config_string+='finish'
         return config_string
 
