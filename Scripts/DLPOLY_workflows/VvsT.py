@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 
-# ---------------------------------------------------------------------------
-# DLPOLY V vs T 
-# Automate DLPOLY equilibration and production calculations that seed from
-# prior run. Set up for varying T with NPT but could easily be adapted to
-# any quantity 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------
+# DLPOLY V vs T Automation 
+# --------------------------------------------------------
 #Libraries
 import sys
 import numpy as np
@@ -190,15 +187,48 @@ def setup_production_calculation(source_dir,run_dir,control,config,field):
     return
 
 
+# ------------------
+# Run a calculation
+# ------------------
+def equilibration_calculation(T,update_dirs, source_dir,run_dir_extension,run_dir,\
+                              equi_control,equi_config,field,exe,np):
+    if update_dirs:
+        source_dir = run_dir
+        equi_config = ConfigFname(old='REVCON', new='CONFIG')
+    run_dir = str(T)+'k/'+run_dir_extension 
+    equi_control.temperature = T
+    setup_equilibration_calculation(source_dir,run_dir,equi_control,equi_config,field)
+    run_dlpoly(run_dir,exe,np)
+    return run_dir
+
+
+def production_calculation(T,update_dirs,source_dir,run_dir,\  
+                           prod_control,prod_config,field,exe,np):
+    if update_dirs:
+        source_dir = run_dir
+        run_dir = str(T)+'k/prod'
+    prod_config = ConfigFname(old='REVCON', new='CONFIG')
+    prod_control.temperature = T
+    setup_production_calculation(source_dir,run_dir,prod_control,prod_config,field)
+    run_dlpoly(run_dir,exe,np)
+    return run_dir 
+
+def compute_equi2(T,dT,NT):
+    if( int(T/dT)%NT == 0): 
+        compute_equi2 = True
+    else:
+        compute_equi2 = False
+    return 
+
 
 # --------------------------    
 # Main Routine
 # --------------------------
 exe = '/panfs/panasas01/chem/ab17369/codes/clean/dl-poly-master/build-intel16u2-mpi/bin/DLPOLY.Z'
-np = 16
+np = 8
 
 source_dir='300k/prod'
-Tmin = 400
+Tmin = 800
 Tmax = 1000
 dT = 100
 
@@ -234,43 +264,32 @@ prod_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ense
                      job_time=9.0e5, close_time=2.0e1)
 
 
+#print('Checking equilibrium stability for every T')
+#compute_equi2 = True               
 
-print('Checking equilibrium for every T')
-run_equi2 = True               
 
 #DLPOLY calculations for different T
+update_dirs=False 
 for T in range(Tmin,Tmax+dT,dT):
     print('Temperature:',T)
     
     #Equilibrium calculation 
-    run_dir = str(T)+'k/equil'
-    equi_control.temperature = T
-    setup_equilibration_calculation(source_dir,run_dir,equi_control,equi_config,field)
-    run_dlpoly(run_dir,exe,np)
+    run_dir = equilibration_calculation(T,update_dirs, source_dir,'equil',run_dir,\
+                                        equi_control,equi_config,field,exe,np)
+    #Required after first calculation, regardless of what it is 
+    update_dirs=True 
 
-    #Check equilibrium holds every 3rd temperature calculation  
-    if( int(T/100)%3 == 0): run_equi2 = True
-
-    #Equilibrium calculation without rescaling velocities 
-    if( run_equi2 == True):
+    #Check equilibrium holds without rescaling velocities, 
+    #every Nt temperature steps   
+    if( compute_equi2(T,dT,NT) == True):
         print('Check equilibrium holds without scaling at T:',T)
-        source_dir = run_dir 
-        run_dir = str(T)+'k/equil2'
-        equi2_config = ConfigFname(old='REVCON', new='CONFIG')
-        equi2_control.temperature = T
-        setup_equilibration_calculation(source_dir,run_dir,equi2_control,equi2_config,field)
-        run_dlpoly(run_dir,exe,np)
+        run_dir = equilibration_calculation(T,update_dirs, source_dir,'equil2',run_dir,\
+                                            equi2_control,equi2_config,field,exe,np)
        
     #Production calculation 
-    source_dir = run_dir
-    run_dir = str(T)+'k/prod'
-    prod_config = ConfigFname(old='REVCON', new='CONFIG')
-    prod_control.temperature = T
-    setup_production_calculation(source_dir,run_dir,prod_control,prod_config,field)
-    run_dlpoly(run_dir,exe,np)
+    run_dir = production_calculation(T,update_dirs,source_dir,run_dir,\  
+                                     prod_control,prod_config,field,exe,np):
     V_avg = extract_average_volume(run_dir+'/OUTPUT')
     output_VvsT_to_file('VvsT.dat',V_avg,T)
     
-    #Initialise for equilibrium calculation at next T
-    source_dir = run_dir
-    equi_config = ConfigFname(old='REVCON', new='CONFIG')
+
