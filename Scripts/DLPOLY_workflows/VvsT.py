@@ -188,11 +188,6 @@ def setup_production_calculation(source_dir,run_dir,control,config,field):
 
 
 
-
-        equi_config = ConfigFname(old='REVCON', new='CONFIG')   Think about this - Only want to use CONFIG if using
-        totally new calculation. Then code needs to update 
-
-
 # ------------------
 # Run a calculation
 # ------------------
@@ -219,15 +214,30 @@ def compute_equi2(T,dT,NT):
 
 
 
+# ------------------------------------------
+# Main Routine
+# Must come here as Tmin used to set control
+# ------------------------------------------
+#exe = '/panfs/panasas01/chem/ab17369/codes/clean/dl-poly-master/build-intel16u2-mpi/bin/DLPOLY.Z'
+exe = '/Users/alexanderbuccheri/Codes/development/dl-poly-4.10/build-gcc7-mpi/bin/DLPOLY.Z'
+np = 1
+
+source_dir='700k/equil'
+Tmin = 700
+Tmax = 1000
+dT = 100
+NT = 1
+
 
 # --------------------------    
 # DLPOLY input settings 
 # --------------------------
 
-#Initial DLPOLY config and field files 
+#Initial DLPOLY config and field files
+#equi_config  = ConfigFname(old='CONFIG', new='CONFIG') - If starting from input files that have not been ran
 equi_config  = ConfigFname(old='REVCON', new='CONFIG')
-equi2_config = equi_config
-prod_config  = equi_config
+equi2_config = ConfigFname(old='REVCON', new='CONFIG')
+prod_config  = ConfigFname(old='REVCON', new='CONFIG')
 
 field='FIELD'
 
@@ -235,15 +245,15 @@ field='FIELD'
 equi_ensemble = dl.Ensemble(name='npt', etype='hoover', thermostat_relaxation=1.0, barostat_relaxation=0.5)
 equi_trajectory = dl.Trajectory(tstart=10000,tinterval=1000,data_level=0)
 equi_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=equi_ensemble,    \
-                     steps=50, equilibration=500000, scale=7, regauss=13, printout=1000, stack=1000, \
+                     steps=500000, equilibration=500000, scale=7, regauss=13, printout=1000, stack=1000, \
                      stats=1000, vdw_direct=True, rdf=1000, print_rdf=True, trajectory=equi_trajectory, \
                      ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
                      job_time=9.0e5, close_time=2.0e1)
 
 #Initialise control data for 2nd equilibrium calculation, where velocities aren't rescaled 
 equi2_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=equi_ensemble,    \
-                     steps=50, equilibration=500000, printout=1000, stack=1000, \
-                           stats=1000, vdw_direct=True, dump=1000000, \
+                     steps=500000, equilibration=500000, printout=1000, stack=1000, \
+                     stats=1000, vdw_direct=True, dump=1000000, \
                      ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
                      job_time=9.0e5, close_time=2.0e1)
 
@@ -252,7 +262,7 @@ equi2_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ens
 prod_ensemble = dl.Ensemble(name='npt', etype='hoover', thermostat_relaxation=1.0, barostat_relaxation=0.5)
 prod_trajectory = dl.Trajectory(tstart=0,tinterval=1000,data_level=0)
 prod_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=prod_ensemble,    \
-                     steps=100, equilibration=0,  printout=1000, stack=1000, \
+                     steps=1000000, equilibration=0,  printout=1000, stack=1000, \
                      stats=1000, vdw_direct=True, rdf=1000, print_rdf=True, trajectory=prod_trajectory, \
                      dump=1000000, ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
                      job_time=9.0e5, close_time=2.0e1)
@@ -260,26 +270,12 @@ prod_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ense
 
 
 
-
-# --------------------------    
-# Main Routine
-# --------------------------
-#exe = '/panfs/panasas01/chem/ab17369/codes/clean/dl-poly-master/build-intel16u2-mpi/bin/DLPOLY.Z'
-exe = '/Users/alexanderbuccheri/Codes/development/dl-poly-4.10/build-gcc7-mpi/bin/DLPOLY.Z'
-np = 1
-
-source_dir='700k/equil'
-Tmin = 800
-Tmax = 1000
-dT = 100
-NT = 1
-
-
 #If calculation needs to start at equil2 or production, do so here 
 run_dir='700k/equil2'  
-source_dir = equilibration_calculation(T,source_dir,run_dir,equi2_control,equi2_config,field,exe,np)
+source_dir = equilibration_calculation(Tmin,source_dir,run_dir,equi2_control,equi2_config,field,exe,np)
 run_dir='700k/prod'  
-source_dir = production_calculation(T,source_dir,run_dir,prod_control,prod_config,field,exe,np)
+source_dir = production_calculation(Tmin,source_dir,run_dir,prod_control,prod_config,field,exe,np)
+Tmin = Tmin + dT
 
 
 #DLPOLY calculations for different T
@@ -299,10 +295,8 @@ for T in range(Tmin,Tmax+dT,dT):
     #Production calculation
     run_dir = str(T)+'k/prod'
     source_dir = production_calculation(T,source_dir,run_dir,prod_control,prod_config,field,exe,np)
-
-   # Comment these back in when the code works   
-   # V_avg = extract_average_volume(run_dir+'/OUTPUT')
-   # output_VvsT_to_file('VvsT.dat',V_avg,T)
+    V_avg = extract_average_volume(run_dir+'/OUTPUT')
+    output_VvsT_to_file('VvsT.dat',V_avg,T)
 
  
     
