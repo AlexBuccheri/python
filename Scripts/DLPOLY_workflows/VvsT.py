@@ -195,18 +195,21 @@ def equilibration_calculation(T,update_dirs, source_dir,run_dir_extension,run_di
     if update_dirs:
         source_dir = run_dir
         equi_config = ConfigFname(old='REVCON', new='CONFIG')
-    run_dir = str(T)+'k/'+run_dir_extension 
+    run_dir = str(T)+'k/'+run_dir_extension
+    print('source dir:',source_dir)
+    print('run_dir:',run_dir)
     equi_control.temperature = T
     setup_equilibration_calculation(source_dir,run_dir,equi_control,equi_config,field)
     run_dlpoly(run_dir,exe,np)
     return run_dir
 
 
-def production_calculation(T,update_dirs,source_dir,run_dir,\  
+def production_calculation(T,update_dirs,source_dir,run_dir,\
                            prod_control,prod_config,field,exe,np):
     if update_dirs:
         source_dir = run_dir
         run_dir = str(T)+'k/prod'
+        print('Called:',source_dir,run_dir)
     prod_config = ConfigFname(old='REVCON', new='CONFIG')
     prod_control.temperature = T
     setup_production_calculation(source_dir,run_dir,prod_control,prod_config,field)
@@ -218,22 +221,27 @@ def compute_equi2(T,dT,NT):
         compute_equi2 = True
     else:
         compute_equi2 = False
-    return 
+    return compute_equi2
 
 
 # --------------------------    
 # Main Routine
 # --------------------------
-exe = '/panfs/panasas01/chem/ab17369/codes/clean/dl-poly-master/build-intel16u2-mpi/bin/DLPOLY.Z'
-np = 8
+#exe = '/panfs/panasas01/chem/ab17369/codes/clean/dl-poly-master/build-intel16u2-mpi/bin/DLPOLY.Z'
+exe = '/Users/alexanderbuccheri/Codes/development/dl-poly-4.10/build-gcc7-mpi/bin/DLPOLY.Z'
+np = 1
 
-source_dir='300k/prod'
-Tmin = 800
-Tmax = 1000
+source_dir='700k/equil'
+run_dir='700k/equil2'  #or Doesn't matter - gets reset
+Tmin = 700
+Tmax = 900
 dT = 100
+NT = 1
 
 #Initial DLPOLY config and field files 
 equi_config = ConfigFname(old='REVCON', new='CONFIG')
+equi2_config = equi_config
+prod_config =  equi_config
 
 field='FIELD'
 
@@ -241,14 +249,14 @@ field='FIELD'
 equi_ensemble = dl.Ensemble(name='npt', etype='hoover', thermostat_relaxation=1.0, barostat_relaxation=0.5)
 equi_trajectory = dl.Trajectory(tstart=10000,tinterval=1000,data_level=0)
 equi_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=equi_ensemble,    \
-                     steps=500000, equilibration=500000, scale=7, regauss=13, printout=1000, stack=1000, \
+                     steps=5, equilibration=500000, scale=7, regauss=13, printout=1000, stack=1000, \
                      stats=1000, vdw_direct=True, rdf=1000, print_rdf=True, trajectory=equi_trajectory, \
                      ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
                      job_time=9.0e5, close_time=2.0e1)
 
 #Initialise control data for 2nd equilibrium calculation, where velocities aren't rescaled 
 equi2_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=equi_ensemble,    \
-                     steps=500000, equilibration=500000, printout=1000, stack=1000, \
+                     steps=5, equilibration=500000, printout=1000, stack=1000, \
                            stats=1000, vdw_direct=True, dump=1000000, \
                      ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
                      job_time=9.0e5, close_time=2.0e1)
@@ -258,7 +266,7 @@ equi2_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ens
 prod_ensemble = dl.Ensemble(name='npt', etype='hoover', thermostat_relaxation=1.0, barostat_relaxation=0.5)
 prod_trajectory = dl.Trajectory(tstart=0,tinterval=1000,data_level=0)
 prod_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=prod_ensemble,    \
-                     steps=1000000, equilibration=0,  printout=1000, stack=1000, \
+                     steps=10, equilibration=0,  printout=1000, stack=1000, \
                      stats=1000, vdw_direct=True, rdf=1000, print_rdf=True, trajectory=prod_trajectory, \
                      dump=1000000, ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
                      job_time=9.0e5, close_time=2.0e1)
@@ -267,29 +275,30 @@ prod_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ense
 #print('Checking equilibrium stability for every T')
 #compute_equi2 = True               
 
-
 #DLPOLY calculations for different T
 update_dirs=False 
 for T in range(Tmin,Tmax+dT,dT):
     print('Temperature:',T)
-    
-    #Equilibrium calculation 
-    run_dir = equilibration_calculation(T,update_dirs, source_dir,'equil',run_dir,\
-                                        equi_control,equi_config,field,exe,np)
-    #Required after first calculation, regardless of what it is 
-    update_dirs=True 
 
     #Check equilibrium holds without rescaling velocities, 
-    #every Nt temperature steps   
+    #every NT temperature steps
     if( compute_equi2(T,dT,NT) == True):
         print('Check equilibrium holds without scaling at T:',T)
         run_dir = equilibration_calculation(T,update_dirs, source_dir,'equil2',run_dir,\
                                             equi2_control,equi2_config,field,exe,np)
        
-    #Production calculation 
-    run_dir = production_calculation(T,update_dirs,source_dir,run_dir,\  
-                                     prod_control,prod_config,field,exe,np):
-    V_avg = extract_average_volume(run_dir+'/OUTPUT')
-    output_VvsT_to_file('VvsT.dat',V_avg,T)
+    #Required after first calculation, regardless of what it is 
+    update_dirs=True 
+
+    #Production calculation
+    print('run_dir following equil2',run_dir)
+    run_dir = production_calculation(T,update_dirs,source_dir,run_dir,\
+                                     prod_control,prod_config,field,exe,np)
+   # V_avg = extract_average_volume(run_dir+'/OUTPUT')
+   # output_VvsT_to_file('VvsT.dat',V_avg,T)
+
+    #Equilibrium calculation 
+    run_dir = equilibration_calculation(T,update_dirs, source_dir,'equil',run_dir,\
+                                        equi_control,equi_config,field,exe,np)
     
 
