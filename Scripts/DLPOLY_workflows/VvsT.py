@@ -187,34 +187,28 @@ def setup_production_calculation(source_dir,run_dir,control,config,field):
     return
 
 
+
+
+        equi_config = ConfigFname(old='REVCON', new='CONFIG')   Think about this - Only want to use CONFIG if using
+        totally new calculation. Then code needs to update 
+
+
 # ------------------
 # Run a calculation
 # ------------------
-def equilibration_calculation(T,update_dirs, source_dir,run_dir_extension,run_dir,\
-                              equi_control,equi_config,field,exe,np):
-    if update_dirs:
-        source_dir = run_dir
-        equi_config = ConfigFname(old='REVCON', new='CONFIG')
-    run_dir = str(T)+'k/'+run_dir_extension
-    print('source dir:',source_dir)
-    print('run_dir:',run_dir)
+def equilibration_calculation(T, source_dir,run_dir,equi_control,equi_config,field,exe,np):
     equi_control.temperature = T
     setup_equilibration_calculation(source_dir,run_dir,equi_control,equi_config,field)
     run_dlpoly(run_dir,exe,np)
-    return run_dir
+    source_dir = run_dir 
+    return source_dir
 
-
-def production_calculation(T,update_dirs,source_dir,run_dir,\
-                           prod_control,prod_config,field,exe,np):
-    if update_dirs:
-        source_dir = run_dir
-        run_dir = str(T)+'k/prod'
-        print('Called:',source_dir,run_dir)
-    prod_config = ConfigFname(old='REVCON', new='CONFIG')
+def production_calculation(T,source_dir,run_dir,prod_control,prod_config,field,exe,np):
     prod_control.temperature = T
     setup_production_calculation(source_dir,run_dir,prod_control,prod_config,field)
     run_dlpoly(run_dir,exe,np)
-    return run_dir 
+    source_dir = run_dir 
+    return source_dir
 
 def compute_equi2(T,dT,NT):
     if( int(T/dT)%NT == 0): 
@@ -222,6 +216,49 @@ def compute_equi2(T,dT,NT):
     else:
         compute_equi2 = False
     return compute_equi2
+
+
+
+
+# --------------------------    
+# DLPOLY input settings 
+# --------------------------
+
+#Initial DLPOLY config and field files 
+equi_config  = ConfigFname(old='REVCON', new='CONFIG')
+equi2_config = equi_config
+prod_config  = equi_config
+
+field='FIELD'
+
+#Initialise control data for equilibrium calculation 
+equi_ensemble = dl.Ensemble(name='npt', etype='hoover', thermostat_relaxation=1.0, barostat_relaxation=0.5)
+equi_trajectory = dl.Trajectory(tstart=10000,tinterval=1000,data_level=0)
+equi_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=equi_ensemble,    \
+                     steps=50, equilibration=500000, scale=7, regauss=13, printout=1000, stack=1000, \
+                     stats=1000, vdw_direct=True, rdf=1000, print_rdf=True, trajectory=equi_trajectory, \
+                     ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
+                     job_time=9.0e5, close_time=2.0e1)
+
+#Initialise control data for 2nd equilibrium calculation, where velocities aren't rescaled 
+equi2_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=equi_ensemble,    \
+                     steps=50, equilibration=500000, printout=1000, stack=1000, \
+                           stats=1000, vdw_direct=True, dump=1000000, \
+                     ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
+                     job_time=9.0e5, close_time=2.0e1)
+
+
+#Initialise control data for production calculation 
+prod_ensemble = dl.Ensemble(name='npt', etype='hoover', thermostat_relaxation=1.0, barostat_relaxation=0.5)
+prod_trajectory = dl.Trajectory(tstart=0,tinterval=1000,data_level=0)
+prod_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=prod_ensemble,    \
+                     steps=100, equilibration=0,  printout=1000, stack=1000, \
+                     stats=1000, vdw_direct=True, rdf=1000, print_rdf=True, trajectory=prod_trajectory, \
+                     dump=1000000, ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
+                     job_time=9.0e5, close_time=2.0e1)
+
+
+
 
 
 # --------------------------    
@@ -232,73 +269,41 @@ exe = '/Users/alexanderbuccheri/Codes/development/dl-poly-4.10/build-gcc7-mpi/bi
 np = 1
 
 source_dir='700k/equil'
-run_dir='700k/equil2'  #or Doesn't matter - gets reset
-Tmin = 700
-Tmax = 900
+Tmin = 800
+Tmax = 1000
 dT = 100
 NT = 1
 
-#Initial DLPOLY config and field files 
-equi_config = ConfigFname(old='REVCON', new='CONFIG')
-equi2_config = equi_config
-prod_config =  equi_config
 
-field='FIELD'
+#If calculation needs to start at equil2 or production, do so here 
+run_dir='700k/equil2'  
+source_dir = equilibration_calculation(T,source_dir,run_dir,equi2_control,equi2_config,field,exe,np)
+run_dir='700k/prod'  
+source_dir = production_calculation(T,source_dir,run_dir,prod_control,prod_config,field,exe,np)
 
-#Initialise control data for equilibrium calculation 
-equi_ensemble = dl.Ensemble(name='npt', etype='hoover', thermostat_relaxation=1.0, barostat_relaxation=0.5)
-equi_trajectory = dl.Trajectory(tstart=10000,tinterval=1000,data_level=0)
-equi_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=equi_ensemble,    \
-                     steps=5, equilibration=500000, scale=7, regauss=13, printout=1000, stack=1000, \
-                     stats=1000, vdw_direct=True, rdf=1000, print_rdf=True, trajectory=equi_trajectory, \
-                     ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
-                     job_time=9.0e5, close_time=2.0e1)
-
-#Initialise control data for 2nd equilibrium calculation, where velocities aren't rescaled 
-equi2_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=equi_ensemble,    \
-                     steps=5, equilibration=500000, printout=1000, stack=1000, \
-                           stats=1000, vdw_direct=True, dump=1000000, \
-                     ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
-                     job_time=9.0e5, close_time=2.0e1)
-
-
-#Initialise control data for production calculation 
-prod_ensemble = dl.Ensemble(name='npt', etype='hoover', thermostat_relaxation=1.0, barostat_relaxation=0.5)
-prod_trajectory = dl.Trajectory(tstart=0,tinterval=1000,data_level=0)
-prod_control = dl.Control(header='Quartz',temperature=Tmin, pressure=0.001, ensemble=prod_ensemble,    \
-                     steps=10, equilibration=0,  printout=1000, stack=1000, \
-                     stats=1000, vdw_direct=True, rdf=1000, print_rdf=True, trajectory=prod_trajectory, \
-                     dump=1000000, ewald_precision=1.0e-6, timestep=0.001, rpad=0.4, cutoff=6.0, cap=1.0e3,           \
-                     job_time=9.0e5, close_time=2.0e1)
-
-
-#print('Checking equilibrium stability for every T')
-#compute_equi2 = True               
 
 #DLPOLY calculations for different T
-update_dirs=False 
 for T in range(Tmin,Tmax+dT,dT):
     print('Temperature:',T)
 
-    #Check equilibrium holds without rescaling velocities, 
-    #every NT temperature steps
+    #Equilibrium calculation
+    run_dir = str(T)+'k/equil'
+    source_dir = equilibration_calculation(T, source_dir,run_dir,equi_control,equi_config,field,exe,np)
+
+    #Check equilibrium holds without rescaling velocities, every NT temperature steps
     if( compute_equi2(T,dT,NT) == True):
         print('Check equilibrium holds without scaling at T:',T)
-        run_dir = equilibration_calculation(T,update_dirs, source_dir,'equil2',run_dir,\
-                                            equi2_control,equi2_config,field,exe,np)
-       
-    #Required after first calculation, regardless of what it is 
-    update_dirs=True 
-
+        run_dir = str(T)+'k/equil2'
+        source_dir = equilibration_calculation(T, source_dir,run_dir,equi2_control,equi2_config,field,exe,np)
+    
     #Production calculation
-    print('run_dir following equil2',run_dir)
-    run_dir = production_calculation(T,update_dirs,source_dir,run_dir,\
-                                     prod_control,prod_config,field,exe,np)
+    run_dir = str(T)+'k/prod'
+    source_dir = production_calculation(T,source_dir,run_dir,prod_control,prod_config,field,exe,np)
+
+   # Comment these back in when the code works   
    # V_avg = extract_average_volume(run_dir+'/OUTPUT')
    # output_VvsT_to_file('VvsT.dat',V_avg,T)
 
-    #Equilibrium calculation 
-    run_dir = equilibration_calculation(T,update_dirs, source_dir,'equil',run_dir,\
-                                        equi_control,equi_config,field,exe,np)
+ 
     
 
