@@ -76,7 +76,7 @@ def generate_slurm_script(slurmjob):
     
     slurm_string='#!/bin/bash                               \n'+ \
                 '#SBATCH --job-name='+slurmjob.job_name+   '\n'+ \
-                '#SBATCH --partition= '+slurmjob.queue+    '\n'+ \
+                '#SBATCH --partition='+slurmjob.queue+    '\n'+ \
                 '#SBATCH --nodes='+str(slurmjob.nodes)+    '\n'+ \
                 '#SBATCH --ntasks-per-node='+str(slurmjob.ppn)+             '\n'+ \
                 '#SBATCH --cpus-per-task='+str(slurmjob.cpus_per_task) +    '\n'+ \
