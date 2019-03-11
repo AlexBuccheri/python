@@ -162,7 +162,7 @@ class Geometry(object):
 
         if self.boundary_conditions=='s' or  self.boundary_conditions=='f':
             if al==None:
-                print('Expect lattice constant when using periodic boundary conditions')
+                print('Note, using using periodic boundary conditions but not defined lattice constant in DFTB+ object')
             #Probably a unit cell
             if self.Natoms<=10 and basis_vectors == None:
                 print("Require basis positions for bulk calculations")
