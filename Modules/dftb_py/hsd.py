@@ -49,9 +49,7 @@ def hsd_gen_string(GEO):
     if GEO.boundary_conditions.lower() == 'c':
         gen_string = hsd_gen_string_cluster(GEO)
     if GEO.boundary_conditions.lower() == 's' or GEO.boundary_conditions.lower() == 'f':
-        print('hsd.py: hsd_gen_string_periodic needs writing')
-        sys.exit('Script has stopped')
-        #gen_string = hsd_gen_string_periodic(GEO)
+        gen_string = hsd_gen_string_periodic(GEO)
     return gen_string        
         
 
@@ -130,7 +128,25 @@ def hsd_gen_string_cluster(GEO):
         
     return geometry_string
     
+
+def hsd_gen_string_periodic(GEO):
+    gen_string = hsd_gen_string_cluster(GEO)
     
+    #Explicitly given origin as (0,0,0)
+    gen_string=gen_string+ '         0.00000000E+00 0.00000000E+00 0.00000000E+00'
+
+    #Lattice vectors (convert to string first)
+    l_str=[]
+    for i in range(0,3):
+        lvec=(GEO.lattice_vectors[i,:])
+        l_str.append( np.array2string(lvec, separator=' ',formatter={'float_kind':lambda lvec: "%.8E" % lvec}) )
+        
+    for i in range(0,3):
+        gen_string=gen_string + '\n         ' + l_str[i][1:-1]
+
+    gen_string=gen_string + '\n   }'
+    return gen_string
+
 
 def hsd_cg_string(CG_RELAX):
     cg_string =  \
