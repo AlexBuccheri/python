@@ -56,7 +56,7 @@ def generate_elements_index(geo):
 # atom_index. Seems superfluous. geometry class can easily construct this from 'uni_elements_index'
 #----------------------------------------------------------------------------------------------------
 
-def configObject_to_geoObject(config,override_boundary=True):
+def configObject_to_geoObject(config,override_boundary=False):
 
     #DFTB+ class expects dimensions of position[1:Natom,1:3], so enforce
     config.coord=reshape2Darray(config.coord,leading_dim='largest')
@@ -76,10 +76,9 @@ def configObject_to_geoObject(config,override_boundary=True):
             boundary_conditions='s'
         #Other boundary conditions 
         elif config.boundary_index>2:
-            print('Conversion script not set up to deal with DL POLY boundary conditions that are neither \
-                   finite nor periodic-cubic')
-            print('User may want to set 2nd argument of function call to True, selecting finite boundaries in DFTB+')
-            sys.exit('DL_DFTB conversion has stopped')
+            boundary_conditions='s'
+            print('Note, no direct mapping between DLPOLY boundary condition and DFTB+ boundary condition')
+            print('DLPOLY boundary ', config.boundary_index, 'set to ',boundary_conditions,' in DFTB+ geo object')
             
     #Should not need to be unit conversion here. Both inputs in Ang (although internal DFTB+ in Bohr)
     geo=dftb.Geometry(material=None,elements=config.atom_name,boundary_conditions=boundary_conditions,\
