@@ -7,10 +7,7 @@ import numpy as np
 import os
 
 #My Modules
-#from Modules.dftb_py.hsd    import hsd_file_string
 from Modules.scheduler_py   import slurm
-#from Modules.dftb_py.classes import Geometry,Hamiltonian,SlaterKosterFiles,SuperCellFolding,KLines,Ksampling,\
-#                                    ParserOptions,Analysis,Lattice,ConjugateGradient,Cubic,HS_labels_2_points
 
 #Number of atoms in supercell from basis
 def atoms_in_supercell(nx,ny,nz,basis):
@@ -84,17 +81,6 @@ ParserOptions {
   ParserVersion = 6
 } '''
 
-#DFTB+ hsd settings - easier to just write string and modify structure input 
-#max_ang_momentum= {"Si":'p',"O":'p'}
-#kgrid=np.array([[1,0, 0],[ 0,1,0],[ 0,0, 1]])
-#parameter_dir='/panfs/panasas01/chem/ab17369/codes/dftbplus/parameters/siband/siband-1-1/'
-#sk=SlaterKosterFiles(prefix=parameter_dir)
-#ham=Hamiltonian(scc='No',slaterkosterfiles=sk,max_ang_momentum=max_ang_momentum)
-#ksettings=SuperCellFolding(structure='zb',kgrid=kgrid) 
-#kgrid =Ksampling(supercellfolding=ksettings)
-#analysis=Analysis()
-#parser=ParserOptions(version=6)
-#cg=ConjugateGradient()
 
 nodes=1
 exe='/mnt/storage/home/ab17369/codes/dftbplus-18.2/_build/prog/dftb+/dftb+'
