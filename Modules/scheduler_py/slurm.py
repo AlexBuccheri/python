@@ -12,8 +12,8 @@ import numpy as np
 
 class SlurmJob:
     #walltime=[hours,minutes,seconds] - turn this into a dictionary 
-    def __init__(self,exe,nodes=1,job_name='test_run',queue='test',walltime='None',parallel='None',output='terminal',\
-                     cores_used=None):
+    def __init__(self,exe,nodes=1,job_name='test_run',queue='cpu_test',walltime='None',parallel='None',output='terminal',\
+                 cores_used=None):
         self.nodes=nodes
         self.ppn=28
         self.cpus_per_task = 1 
@@ -21,7 +21,7 @@ class SlurmJob:
         if cores_used == None:
             self.np = self.nodes*self.ppn* self.cpus_per_task
         else:
-            self.np = self.cores_used 
+            self.np = cores_used 
 
         SlurmJob.check_queuename(queue)
         self.queue=queue
