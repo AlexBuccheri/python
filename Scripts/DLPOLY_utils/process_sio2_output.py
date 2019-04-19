@@ -146,7 +146,7 @@ Nt = int((Tf-Ti)/dT)+1
 sabc = np.zeros( shape=(3,Nt) )
 sabc_rms = np.zeros( shape=(3,Nt) )
 svol = np.zeros( shape=(Nt) )
-ROOT = '../silicate/'
+ROOT = '../../../silicate/'
 
 
 #One needs to extract cell parameters from OUTPUT, not REVCON
@@ -162,8 +162,11 @@ for i in range(0,Nt):
 
     
 #Production (unit) cell constants vs temperature
-plot_me = False
+plot_me = True
 if plot_me:
+    print('Increase in lattice constant (%): a,c ')
+    for i in range(0, Nt):
+        print( (sabc[0,i]/sabc[0,0]-1)*100., (sabc[2,i]/sabc[2,0]-1)*100. )
     T = np.arange(Ti, Tf+dT, dT)
     plt.xlabel("Temperature (k)")
     plt.ylabel("Cell constants (angstrom)")
@@ -174,7 +177,7 @@ if plot_me:
     plt.show()
 
 #Production volume (unit cell)
-plot_me = False
+plot_me = True
 percentage = True
 if plot_me:
     T = np.arange(Ti, Tf+dT, dT)
