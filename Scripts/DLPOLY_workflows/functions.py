@@ -98,6 +98,10 @@ class ConfigFname:
 #output summary is found, then takes corresponding volume
 #output[7] in DLPOLY V4.09.  output[6] in DLPOLY v4.10
 def extract_average_volume(file_name):
+    if not os.path.isfile(file_name):
+        print('Output file was not found to read volume from')
+        print('Exit function and allow script to continue')
+        return 0.
     output=[]
     for line in reversed(open(file_name).readlines()):
         output.append(line)   
@@ -112,6 +116,10 @@ def extract_volume_rms(fname):
     if fname[-6:].lower() != 'output':
         print('Filename must end in OUTPUT')
         sys.exit('Script has stopped')
+    if not os.path.isfile(file_name):
+        print('Output file was not found to read volume RMS from')
+        print('Exit function and allow script to continue')
+        return 0.  
     grep_str = "grep -a -A 2 'r.m.s.' "+fname 
     output = subprocess.check_output(grep_str,shell=True).decode("utf-8")
     output = output.splitlines()

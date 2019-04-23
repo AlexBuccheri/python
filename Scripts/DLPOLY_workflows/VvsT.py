@@ -11,11 +11,11 @@ import os
 #My libraries
 sys.path.insert(0, '/panfs/panasas01/chem/ab17369/python_modules')
 from Modules.dlpoly_py import dl_classes as dl
+from Scripts.DLPOLY_workflows.functions import get_slurm_nproc,ConfigFname,equilibration_calculation,\
+     production_calculation,extract_average_volume, output_VvsT_to_file,compute_equi2,\
+     get_sign,extract_volume_rms 
 
 #Script-specific functions and objects
-sys.path.append('../')
-from functions import get_slurm_nproc,ConfigFname,equilibration_calculation,production_calculation,\
-     extract_average_volume, output_VvsT_to_file,compute_equi2,get_sign,extract_volume_rms 
 from settings import equi_control,equi2_control,prod_control
 
 
@@ -25,13 +25,13 @@ from settings import equi_control,equi2_control,prod_control
 # ------------------------------------------
 exe = '/panfs/panasas01/chem/ab17369/codes/clean/dl-poly-4.10/build-intel16/bin/DLPOLY.Z' 
 np = get_slurm_nproc('run.csh')
-source_dir='4000k/prod'
-Tmin = 3900
+source_dir='3400k/equil2'
+Tmin = 3400
 Tmax = 2000
 sign = get_sign(Tmin,Tmax) 
 dT = sign*100    
 NT = 1
-alt_start=False
+alt_start=True
 
 # -------------------------- ----------------------   
 # DLPOLY input settings: CONFIG, FIELD and CONTROL 
