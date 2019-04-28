@@ -116,7 +116,7 @@ def extract_volume_rms(fname):
     if fname[-6:].lower() != 'output':
         print('Filename must end in OUTPUT')
         sys.exit('Script has stopped')
-    if not os.path.isfile(file_name):
+    if not os.path.isfile(fname):
         print('Output file was not found to read volume RMS from')
         print('Exit function and allow script to continue')
         return 0.  
