@@ -58,7 +58,7 @@ if alt_start:
         source_dir = production_calculation(Tmin,source_dir,run_dir,prod_control,prod_config,field,exe,np)
         V_avg = extract_average_volume(run_dir+'/OUTPUT')
         V_rms =  extract_volume_rms(run_dir+'/OUTPUT')
-        output_VvsT_to_file('VvsT.dat',V_avg,T, V_rms)
+        output_VvsT_to_file('VvsT.dat',V_avg,Tmin, V_rms)
     Tmin = Tmin + dT
 
 #DLPOLY calculations for different T
