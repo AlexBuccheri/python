@@ -86,6 +86,112 @@ class Control:
         self.close_time = close_time
 
 
+class Pairwise_potential:
+    """@brief Generic pairwise potential class for DL_POLY
+
+       Should never be more than 5 parameters in the potential (I think)
+       p1 - p5 follow the order of parameters given in table 7.12
+       See DL_POLY manual, page 194 for example.
+    """
+    def __init__(self, species1, species2, key, p1, p2, p3=None, p4=None, p5=None):
+        self.species1 = species1
+        self.species2 = species2
+        self.key = key
+        self.p1 = p1
+        self.p2 = p2
+        if p3 != None: self.p3 = p3
+        if p4 != None: self.p4 = p4
+        if p5 != None: self.p5 = p5
+
+
+def check_energy_unit(unit):
+    if unit != 'eV' and unit != 'kcal' and \
+       unit != 'kJ' and unit != 'K' and unit != 'internal':
+        quit("Erroneous choice of unit for FIELD file: ", unit)
+    return
+
+
+class Atom_entry:
+    """@brief Atom entry class for DL_POLY FIELD file
+
+       See manual page 186
+       The integer repeat need not be specified if the atom/site is not frozen.
+       In which case a value of 1 is assumed.
+     """
+    def __init__(self, site_name, mass, charge, repeat=None, frozen=None):
+        self.site_name = site_name
+        self.mass = mass
+        self.charge = charge
+        if repeat:
+            self.repeat = repeat
+        else:
+            self.repeat = 0
+        if frozen:
+            self.frozen = frozen
+        else:
+            self.frozen = 0
+
+
+class Field:
+    """@brief API for building DL_POLY FIELD files
+
+    As decribed on page 183 of the manual
+    For example:
+
+    DL_POLY: Silicon Dioxide Alpha Quartz
+    UNITS kJ
+    MOLECULAR TYPES 1
+    SiO
+    NUMMOLS 1000
+    ATOMS 9
+    Si       28.0850      1.890    3     0
+    O        16.0008      -0.945    6      0
+    FINISH
+    VDW 3
+    Si  Si  bhm       0.19246400      21.73913043       1.44080000    2430.49000000       0.00000000
+    Si  O   bhm       0.67362400       6.21118012       2.54190000    4467.07300000       0.00000000
+    O   O   bhm       1.15478400       3.62318841       3.64300000    8210.17210000       0.00000000
+    close
+
+    """
+    def __init__(self, header='DL_POLY Field File', units=None, molecules=None, vdw=None, potential=None):
+        self.header = header
+        check_energy_unit(units)
+        self.units = units
+        self.molecules = molecules
+        self.vdw = vdw
+        self.potential = potential
+
+
+def field_data_to_string(field_data):
+
+    field_string = field_data.header+'\n'
+    field_string += 'UNITS ' + field_data.units+'\n'
+    field_string += 'MOLECULAR TYPES ' + str(len(field_data.molecules))+'\n'
+
+    for label, molecule in field_data.molecules.items():
+        field_string += label+'\n'
+        field_string += 'NUMMOLS ' + str(molecule['number_molecules'])+'\n'
+        field_string += 'ATOMS ' + str(molecule['atoms'])+'\n'
+        atoms = molecule['atom_species']
+
+        for atom in atoms:
+            field_string += atom.site_name + '       ' + str(atom.mass) + '      ' + str(atom.charge) + '   ' + str(atom.repeat) + '   ' + str(atom.frozen)+'\n'
+        field_string += 'FINISH'+'\n'
+
+    if field_data.vdw: field_string += 'VDW ' + str(field_data.vdw)+'\n'
+    for term in field_data.potential:
+        field_string += term.species1 + '   ' +  term.species2 + '   ' +  term.key + '   '
+        parameters = [term.p1, term.p2, term.p3, term.p4, term.p5]
+        for parameter in parameters:
+            if parameter: field_string += str(parameter) + '     '
+        field_string += '\n'
+
+    field_string += 'close'
+
+    return field_string
+
+
 #One assumes that there is a more sensible way of doing this, like
 #being able to iterate through all atributes of the data object
 #Something to discuss with Peter 
