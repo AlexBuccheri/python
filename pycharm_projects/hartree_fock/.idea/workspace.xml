@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="3c9069df-b899-4e1a-9942-f579b7babfe2" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/alexanderbuccheri.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/hartree_fock.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/molecules/pyridine.xyz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/conversion_py/DL_DFTB.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dftb_py/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dftb_py/classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dftb_py/conversion.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dftb_py/hsd.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dlpoly_py/dl_classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/fileio_py/fileio.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/plotting_py/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/plotting_py/gnuplot.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/scheduler_py/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/scheduler_py/pbs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/scheduler_py/slurm.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/scheduler_py/sun.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/average_outputs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/collate_statis.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/format_f90.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/process_sio2_output.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/produce_config/ase_config.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/produce_config/cif_inputs/sio2.cif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/select_configs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/split_RDFs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/statis.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_workflows/VvsT.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_workflows/functions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_workflows/settings.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/String_Matching_Replacing/Details .rtf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/String_Matching_Replacing/Prior_Versions/input.fdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/String_Matching_Replacing/match_substring.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/String_Matching_Replacing/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/conversion_scripts/dl2dftb.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/conversion_scripts/gin2xyz.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_parameterisation/SSK" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/inputs/dftb_in.hsd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/inputs/forces_0.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/inputs/forces_1.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/inputs/structure_0.gen" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/save_data.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/setup_dftb_inputs/dftb_inputs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/setup_dftb_inputs/sio2.cif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_workflows/band_structure/generate_bs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_workflows/band_structure/submit_bs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Standalone/composite_indices.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/conversion/convert_geometry.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/conversion/inputs/CONFIG" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/conversion/inputs/struct.gen" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/dftb/test_geometry_class.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/dlpoly/test_dlpoly_classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/fileio/Test1/input.fdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/fileio/Test1/t_fileio.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cell_builder/molecule_in_box.py" beforeDir="false" afterPath="$PROJECT_DIR$/../cell_builder/molecule_in_box.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cell_builder/silicon_supercell.py" beforeDir="false" afterPath="$PROJECT_DIR$/../cell_builder/silicon_supercell.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cell_builder/test1_find_basis.py" beforeDir="false" afterPath="$PROJECT_DIR$/../cell_builder/test1_find_basis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cell_builder/test2_find_basis.py" beforeDir="false" afterPath="$PROJECT_DIR$/../cell_builder/test2_find_basis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gfn0_comparisons/grimme.py" beforeDir="false" afterPath="$PROJECT_DIR$/../gfn0_comparisons/grimme.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../grimme/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../grimme/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../grimme/gfn1_inputs/silicon_cells.py" beforeDir="false" afterPath="$PROJECT_DIR$/../grimme/gfn1_inputs/silicon_cells.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/hartree_fock$main.coverage" NAME="main Coverage Results" MODIFIED="1582061755106" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+  <component name="FileEditorManager">
+    <splitter split-orientation="horizontal" split-proportion="0.5">
+      <split-first>
+        <leaf>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/main.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="150">
+                  <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/../../modules/electronic_structure/structure/atoms.py">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/../../modules/fileio/read.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="735">
+                  <caret line="49" column="1" lean-forward="true" selection-start-line="49" selection-start-column="1" selection-end-line="49" selection-end-column="1" />
+                  <folding>
+                    <element signature="e#0#13#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/molecules/pyridine.xyz">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="15">
+                  <caret line="1" selection-start-line="1" selection-end-line="1" selection-end-column="3" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/molecules/pyridine.xyz" />
+        <option value="$PROJECT_DIR$/../../modules/fileio/read.py" />
+        <option value="$PROJECT_DIR$/main.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="39" />
+    <option name="y" value="56" />
+    <option name="width" value="1920" />
+    <option name="height" value="965" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="hartree_fock" type="b2602c69:ProjectViewProjectNode" />
+              <item name="hartree_fock" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="hartree_fock" type="b2602c69:ProjectViewProjectNode" />
+              <item name="hartree_fock" type="462c0819:PsiDirectoryNode" />
+              <item name="molecules" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="hartree_fock" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+            </path>
+            <path>
+              <item name="hartree_fock" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 &gt;" type="70bed36:NamedLibraryElementNode" />
+            </path>
+            <path>
+              <item name="hartree_fock" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="Python" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="hartree_fock" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="Python" type="462c0819:PsiDirectoryNode" />
+              <item name="pycharm_projects" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="hartree_fock" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="Python" type="462c0819:PsiDirectoryNode" />
+              <item name="pycharm_projects" type="462c0819:PsiDirectoryNode" />
+              <item name="hartree_fock" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="hartree_fock" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="Python" type="462c0819:PsiDirectoryNode" />
+              <item name="pycharm_projects" type="462c0819:PsiDirectoryNode" />
+              <item name="hartree_fock" type="462c0819:PsiDirectoryNode" />
+              <item name="molecules" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;sys.path.append('/Users/alexanderbuccheri/periodic')" sdk-home="/usr/local/bin/python3.6">
+        <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;sys.path.append('/Users/alexanderbuccheri/periodic')" />
+        <option name="mySdkHome" value="/usr/local/bin/python3.6" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="hartree_fock" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3c9069df-b899-4e1a-9942-f579b7babfe2" name="Default Changelist" comment="" />
+      <created>1582058362771</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1582058362771</updated>
+      <workItem from="1582058364193" duration="3128000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="3128000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="50" y="109" width="1920" height="965" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Favorites" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24973376" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" />
+      <window_info anchor="bottom" id="Version Control" />
+      <window_info anchor="bottom" id="Python Console" />
+      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3298969" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="right" id="SciView" />
+      <window_info anchor="right" id="Database" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/../../modules/fileio/write.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/molecules/pyridine.xyz">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" selection-start-line="1" selection-end-line="1" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../modules/fileio/read.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="49" column="1" lean-forward="true" selection-start-line="49" selection-start-column="1" selection-end-line="49" selection-end-column="1" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../modules/electronic_structure/structure/atoms.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
