@@ -146,3 +146,14 @@ def neighbour_list_from_ase(ase_data, neighbour_radius):
 
     return neighbours
 
+
+def find_corner_sharing_oxy(molecule, neighbours):
+    corner_sharing_oxy = []
+    for ia, atom in enumerate(molecule):
+        if atom.species.lower() == 'o':
+            silicons = neighbours[ia]
+            # Oxygen corner-shares with two tetrahedra
+            if len(silicons) == 2:
+                corner_sharing_oxy.append(ia)
+    return corner_sharing_oxy
+
