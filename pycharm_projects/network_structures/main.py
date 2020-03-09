@@ -1,122 +1,83 @@
+
 import numpy as np
+
 import ase.io
 from ase.atoms import Atoms
-import numpy as np
 import spglib
 
 from modules.electronic_structure.structure import atoms, bravais
 from modules.fileio import write
 
 import utils
-
-# Central silicon with 4 surrounding oxygen
-al = 7.12637
-molecule = [atoms.Atom('si', al * np.array([ 0,     0,     0   ])),
-            atoms.Atom('o', al * np.array([ 0.25,  0.25,  0.25])),
-            atoms.Atom('o', al * np.array([ 0.25, -0.25, -0.25])),
-            atoms.Atom('o', al * np.array([-0.25,  0.25, -0.25])),
-            atoms.Atom('o', al * np.array([-0.25, -0.25,  0.25]))]
+import operations
 
 
+# Beta Cristobolite structure from CIF to ASE
+ase_data= ase.io.read("beta_crist_EntryWithCollCode77458.cif", store_tags=False)
+# ase.io.write("cell.xyz", ase_data)
 
-# For a given tetrahedron, remove one atom (at random once working)
-# and move the silicon into the plane of the remaining 3 atoms
-#
-def bob(tetrahedron):
+# Initial silicate system
+beta_crist = utils.ase_atom_my_atom(ase_data)
 
-    # Separate silicons and oxygens
-    triangle = []
-    silicon = []
-    for atom in tetrahedron:
-        if atom.species == 'si':
-            silicon.append(atom)
-        elif atom.species == 'o':
-            triangle.append(atom)
+# NN bond length in fractional
+nn_radius = np.sqrt(3.) / 4.
+# For some reason with this system, NN distance is actually 0.np.sqrt(3.) / 8. in fractional
+nn_radius = np.sqrt(3.) / 8.
 
-    assert(len(triangle) == 3)
-    assert(len(silicon) == 1)
+# Alt approach to this would be to construct a distance matrix, then apply the cutoff
+neighbours = utils.neighbour_list(beta_crist, nn_radius)
 
-    # Remove one oxygen, although already done in test case
-    # Add me
-
-    # Define 2 of 3 vertices that form the oxygen triangle
-    v01 = triangle[1].position - triangle[0].position
-    v12 = triangle[2].position - triangle[1].position
-
-    # Normal to triangle surface
-    normal = np.cross(v01, v12)
-    unit_normal = normal / np.linalg.norm(normal)
-    #print(normal, unit_normal)
-
-    # Silicon - oxygen distances
-    si_o_0 = np.linalg.norm(silicon[0].position - triangle[0].position)
-    si_o_1 = np.linalg.norm(silicon[0].position - triangle[1].position)
-    si_o_2 = np.linalg.norm(silicon[0].position - triangle[2].position)
+print("N atoms: ",len(beta_crist))
 
 
-    # Silicon atom is above the plane and one needs to reverse the norm
-    if np.dot(silicon[0].position - triangle[0].position, unit_normal) > 1:
-        unit_normal = -unit_normal
+for ia,atom in enumerate(beta_crist):
 
-    # Progagate si incrementally along unit normal, until distances from all oxy are minimised
-    bond_length = si_o_0
-    si_0 = np.asarray(silicon[0].position)
+    if atom.species.lower() == 'o':
+        silicons = neighbours[ia]
 
-    # Alt way of stepping
-    # sep = 1000
-    # pos = np.zeros(shape=(3))
-    # for dr in np.linspace(0, bond_length, sep):
-
-    # ang
-    step = 0.001
-    pos = np.zeros(shape=(3))
-    for dr in np.arange(0 + step, bond_length + step, step):
-        pos += si_0 + (dr * unit_normal)
-        print(np.linalg.norm(pos - triangle[0].position),
-              np.linalg.norm(pos - triangle[1].position),
-              np.linalg.norm(pos - triangle[2].position))
-
-        if (np.linalg.norm(pos - triangle[0].position) <= si_o_0) and \
-           (np.linalg.norm(pos - triangle[1].position) <= si_o_1) and \
-           (np.linalg.norm(pos - triangle[2].position) <= si_o_2):
-            si_o_0 = np.linalg.norm(pos- triangle[1].position)
-            si_o_1 = np.linalg.norm(pos- triangle[1].position)
-            si_o_2 = np.linalg.norm(pos - triangle[2].position)
-            final_pos = pos
-        else:
-         break
-
-
-    triangle.append(atoms.Atom('B',final_pos))
-    return triangle
+        # Oxygen corner-shares with two tetrahedra
+        if len(silicons) == 2:
+            tetrahedra = []
+            for silicon in silicons:
+                tetrahedron = []
+                for oxy in neighbours[silicon]:
+                    tetrahedron.append(beta_crist[oxy])
+                tetrahedra.append(tetrahedron)
+            assert(len(tetrahedra) == 2)
 
 
 
-# Tetrahedron with last oxygen removed
-test_molecule = [atoms.Atom('si',al * np.array([ 0,     0,     0   ])),
-                 atoms.Atom('o', al * np.array([ 0.25,  0.25,  0.25])),
-                 atoms.Atom('o', al * np.array([ 0.25, -0.25, -0.25])),
-                 atoms.Atom('o', al * np.array([-0.25,  0.25, -0.25]))]
 
-triangle = bob(test_molecule)
-write.xyz("triangle", triangle)
+# Go through list. If a given atom has two Si NN => bridging oxygen
+# Save the two corresponding triangles and disregard the connecting oxy
+# Apply triangle routine above (needs a few mods)
+# Add atoms back into structure (most likely only the moved silicons)
 
+# Once shown to work, do at random
 
 
-# triangle2 = []
-# for atom in triangle:
-#     xyz = al * atom.position
-#     triangle2.append(atoms.Atom(atom.species, xyz))
-# write.xyz("triangle", triangle2)
-
-#atom0_si should move along 0.25*unit_n1
-#for each step, store norm(atom0_si - atom1), norm(atom0_si - atom2) and norm(atom0_si - atom3)
-#these should get smaller. Once they start getting larger, stop. atom_si is now in the plane.
-# Maybe a more mathematical way of doing it but should be quite fast
 
 
-#For insertion, just bang in B-O-B with O centred on Si and visualise - might then be able to see what the sensible
-#operation on the remaining oxygens are - will be harder as attached to the rest of the network
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -135,9 +96,6 @@ quit("Before reading in ASE data")
 #     triangle.append(atoms.Atom(atom.species, xyz))
 
 
-# Beta Cristobolite structure from CIF to ASE
-ase_data= ase.io.read("beta_crist_EntryWithCollCode77458.cif", store_tags=False)
-ase.io.write("cell.xyz", ase_data)
 
 # Extend into super cell:  super_cell = ase_data.repeat(2)
 
