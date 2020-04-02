@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 
+# --------------------------------------------------------------------------------
+# Convert conventional cell or primitive cell to asymmetric cell
+# Alex Buccheri 2020
+#
+# --------------------------------------------------------------------------------
+
 from ase.io import read, write
 from ase.atoms import Atoms, Atom
 import numpy as np
 import spglib
 
-from modules.electronic_structure.structure import bravais
 
-# Aim: Read in CIF with ASE, use spglib to convert to an asymmetric unit cell
-# Write asymmetric unit cell to CIF... or indeed, xyz
+# -------------------------------------------
+# Functions
+# -------------------------------------------
 
 an_to_symbol = {1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F',
                 10: 'Ne', 11: 'Na', 12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl', 18: 'Ar', 19: 'K',
@@ -23,11 +29,6 @@ an_to_symbol = {1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O
                 100: 'Fm', 101: 'Md', 102: 'No', 103: 'Lr', 104: 'Rf', 105: 'Db', 106: 'Sg', 107: 'Bh', 108: 'Hs',
                 109: 'Mt',
                 110: 'Ds', 111: 'Rg', 112: 'Cn', 113: 'Nh', 114: 'Fl', 115: 'Mc', 116: 'Lv', 117: 'Ts', 118: 'Og'}
-# --------------------------------------------
-# Convert conventional cell to primitive cell
-# --------------------------------------------
-print("")
-
 
 # https://github.com/atztogo/spglib/blob/master/python/examples/example.py
 def show_symmetry(symmetry, n_symmetries=None):
@@ -65,78 +66,9 @@ def show_cell(lattice, positions, numbers):
     for p, s in zip(positions, numbers):
         print("%2d %10.5f %10.5f %10.5f" % ((s,) + tuple(p)))
 
-
-# -----------------------------------
-# Data Input and Output
-# -----------------------------------
-
-# All formats ASE can read/write to: https://wiki.fysik.dtu.dk/ase/ase/io/io.html
-# CIF: https://wiki.fysik.dtu.dk/ase/ase/io/formatoptions.html#cif
-
-# store_tags grabs alot of useful info. Should use this in production code
-data_conventional = read("aei.cif", store_tags=False)
-print(vars(data_conventional))
-print("")
-
-# If sublattice translations are included in the cif data, this perhaps won't work.
-data_primitive = read("aei.cif", subtrans_included=False, primitive_cell=True)
-
-# Primitive comes out looking erroneous, perhaps due to sublattice options being included in
-# initial cif data
-write("ase-prim-aei.cif", data_primitive)
-write("ase-conv-aei.cif.cif", data_conventional)
-
-# This hasn't made a super difference so continue with conventional
-
-# Get ASE into spglib format. All tuples apart from atomic_numbers
-lattice = []
-for vector in data_conventional.cell:
-    lattice.append(tuple(vector))
-
-# ASE converts basis to cartesian, so convert back
-inv_lattice = np.linalg.inv(np.transpose(np.asarray(data_conventional.cell)))
-
-print(type(data_conventional))
-
-basis = []
-for pos in data_conventional.positions:
-    frac_pos = np.matmul(inv_lattice, pos)
-    basis.append(tuple(frac_pos))
-
-atomic_numbers = []
-for an in data_conventional.numbers:
-    atomic_numbers.append(an)
-
-print("Number of atoms", len(basis))
-
-print("SGLIB data storage for a crystal:")
-molecule = (lattice, basis, atomic_numbers)
-# print(molecule)
-print("  Spacegroup is %s." % spglib.get_spacegroup(molecule))
-
-symmetry = spglib.get_symmetry(molecule)
-# show_symmetry(symmetry)
-print("  Number of symmetry operations is %d." % len(symmetry['rotations']))
-
-# Only needs one rotation operation to determine the point group
-# Not in my prefered notation. https://en.wikipedia.org/wiki/Crystallographic_point_group#Hermann–Mauguin_notation
-print("  Pointgroup of aei is %s." %
-      spglib.get_pointgroup(symmetry['rotations'])[0])
-
-# From the international tables. Not sure how this function differs to get_symmetry
-# BUT appear to need this apporach to get Wyckoff symbols/operations
-dataset = spglib.get_symmetry_dataset(molecule)
-print("  Spacegroup is %s (%d)." % (dataset['international'],
-                                    dataset['number']))
-print("  Pointgroup is %s." % (dataset['pointgroup']))
-print("  Hall symbol is %s (%d)." % (dataset['hall'],
-                                     dataset['hall_number']))
-print("  Wyckoff letters are: ", dataset['wyckoffs'])
-
-# print("  Mapping to equivalent atoms are: ")
-# for i, x in enumerate(dataset['equivalent_atoms']):
-#     print("  %d -> %d" % (i + 1, x + 1))
-
+# -----------------------------
+# My functions
+# -----------------------------
 def asymmetric_cell_atom_indices(dataset):
     # atomic indices in supercell
     atom_indices = []
@@ -149,73 +81,169 @@ def asymmetric_cell_atom_indices(dataset):
     return atom_indices
 
 
+
+def group_reducible_atomic_indices(dataset):
+    sets_of_reducibles = []
+    one_set = []
+    ref_atom = dataset['equivalent_atoms'][0]
+
+    for reducible_atom, i in enumerate(dataset['equivalent_atoms']):
+
+        if (i != ref_atom):
+            sets_of_reducibles.append(one_set)
+            one_set = []
+            ref_atom = reducible_atom
+
+        one_set.append(reducible_atom)
+
+    return sets_of_reducibles
+
+
+def nearest_neighbour_asymmetric_cell_atom_indices(dataset, molecule):
+    sets_of_reducibles = group_reducible_atomic_indices(dataset)
+    irreducible_atoms = [sets_of_reducibles[0][0]]
+    #Remove first list having initialised with it
+    sets_of_reducibles = sets_of_reducibles[1:]
+    position = molecule[1]
+
+    for set in sets_of_reducibles:
+        separation = np.zeros(shape=(len(set)))
+
+        for i, iatom in enumerate(set):
+            pos_i = np.asarray(position[iatom])
+
+            for jatom in irreducible_atoms:
+                pos_j = np.asarray(position[jatom])
+                separation[i] += np.linalg.norm(pos_j - pos_i)
+        imin = np.argmin(separation)
+
+        # Reducible atom from current set with the lowest average seperation from all
+        # atoms currently in irreducible_atoms, is added as the next irreducible atom
+        irreducible_atoms.append(set[imin])
+
+    return irreducible_atoms
+
+
+def ase_to_spglib(ase_data):
+    # Get ASE into spglib format. All tuples apart from atomic_numbers
+    lattice = []
+    for vector in ase_data.cell:
+        lattice.append(tuple(vector))
+
+    # ASE converts basis to cartesian, so convert back to fractional
+    inv_lattice = np.linalg.inv(np.transpose(np.asarray(ase_data.cell)))
+
+    basis = []
+    for pos in ase_data.positions:
+        frac_pos = np.matmul(inv_lattice, pos)
+        basis.append(tuple(frac_pos))
+
+    atomic_numbers = []
+    for an in ase_data.numbers:
+        atomic_numbers.append(an)
+
+    # SGLIB data storage for a crystal
+    molecule = (lattice, basis, atomic_numbers)
+    return molecule
+
+
 def spglib_to_ase(molecule, indices=None):
     basis = molecule[1]
     atomic_numbers = molecule[2]
     if indices == None:
         indices = range(0, len(atomic_numbers))
 
-    #Have to store in Cartesian, not fractional (?)
     lattice = np.transpose(np.asarray(molecule[0]))
-    print(lattice)
+    #print(lattice)
 
     ase_molecule = []
     for ia in indices:
         atomic_symbol = an_to_symbol[atomic_numbers[ia]]
-        # Cartesian
+        # Have to store in Cartesian
         pos = np.matmul(lattice, np.asarray(basis[ia]))
         # Fractional
         #pos = basis[ia]
-        print(ia, basis[ia])
+        #print(ia, basis[ia])
         ase_molecule.append(Atom(atomic_symbol, pos))
 
     return Atoms(ase_molecule, cell=molecule[0])
 
+# Print symmetry data
+# Not in my prefered notation:
+# https://en.wikipedia.org/wiki/Crystallographic_point_group#Hermann–Mauguin_notation
+def print_spg_symmetry_info(dataset, wyckoff=False, equivalent_atoms=False):
+    print("  Spacegroup is %s (%d)." % (dataset['international'], dataset['number']))
+    print("  Pointgroup is %s." % (dataset['pointgroup']))
+    print("  Hall symbol is %s (%d)." % (dataset['hall'], dataset['hall_number']))
+    if wyckoff:
+        print("  Wyckoff letters are: ", dataset['wyckoffs'])
+    if equivalent_atoms:
+        print("  Mapping to equivalent atoms are: ")
+        for i, x in enumerate(dataset['equivalent_atoms']):
+            print("  %d -> %d" % (i + 1, x + 1))
+    return
 
-# Output from ASE in xyz
-indices = asymmetric_cell_atom_indices(dataset)
-ase_asymmetric_cell = spglib_to_ase(molecule, indices)
+
+# Given an spg_molcule and set of atomic indices, return a new spg module
+def create_spg_molecule(input_molecule, indices):
+    lattice        = input_molecule[0]
+    basis          = input_molecule[1]
+    atomic_numbers = input_molecule[2]
+    new_basis = []
+    new_atomic_numbers = []
+
+    for iatom in indices:
+        new_basis.append(tuple(basis[iatom]))
+        new_atomic_numbers.append(atomic_numbers[iatom])
+
+    return (lattice, new_basis, new_atomic_numbers)
+
+
+# -----------------------------------
+# Main Routine
+# -----------------------------------
+
+#Read CIF with ASE and convert to SPG format
+ase_input_data = read("aei.cif", store_tags=False)
+#print(vars(ase_input_data))
+spg_input = ase_to_spglib(ase_input_data)
+print("Number of atoms in input", len(spg_input[2]))
+
+
+# Reduce to primitive cell
+find_primitive = True
+if find_primitive:
+    print(" Find primitive of conventional structure")
+    lattice, positions, numbers = spglib.find_primitive(spg_input, symprec=1e-1)
+    show_cell(lattice, positions, numbers)
+    print("Number of atoms in primitive: ", len(numbers))
+    spg_molecule = (lattice, positions, numbers)
+    ase_primitive_cell = spglib_to_ase(spg_molecule)
+    ase_primitive_cell.set_pbc((1, 1, 1))
+    write('aei_primtive_cell.xyz', ase_primitive_cell)
+else:
+    spg_molecule = spg_input
+
+# Get and print symmetry data
+dataset = spglib.get_symmetry_dataset(spg_molecule)
+print_spg_symmetry_info(dataset, equivalent_atoms=False)
+
+
+# Reduce cell/primitive cell to asymmetric cell of irreducible atomic positions
+neighbouring_atoms = False
+if neighbouring_atoms:
+    irreducible_atom_indices = nearest_neighbour_asymmetric_cell_atom_indices(dataset, spg_molecule)
+else:
+    irreducible_atom_indices = asymmetric_cell_atom_indices(dataset)
+
+# NOTE: Don't appear to be able to find the symmetry of the asymmetric cell
+spg2 = create_spg_molecule(spg_molecule, irreducible_atom_indices)
+dataset2 = spglib.get_symmetry_dataset(spg2)
+print_spg_symmetry_info(dataset2, equivalent_atoms=False)
+
+
+# Convert to ASE and write to xyz
+# Also need to write as CIF
+ase_asymmetric_cell = spglib_to_ase(spg_molecule, irreducible_atom_indices)
 ase_asymmetric_cell.set_pbc((1, 1, 1))
-
-#Need lattice vectors and add PBC
-#Amm2 is base-centred orthorhombic
-#https://en.wikipedia.org/wiki/Orthorhombic_crystal_system#Crystal_classes
-#lattice = bravais.base_centred_orthorhombic('Amm2',13.6770, 12.6070, 18.4970)
-
-write('asym_cell.xyz',ase_asymmetric_cell)
-
-
-
-# ----------------------------------------------------
-# Reduce to primitive cell and find irreducible atoms
-# ----------------------------------------------------
-print(" Find primitive of conventional structure")
-lattice, positions, numbers = spglib.find_primitive(molecule, symprec=1e-1)
-show_cell(lattice, positions, numbers)
-print("Number of atoms in primitive: ", len(numbers))
-primitive_cell = (lattice, positions, numbers)
-
-# https://atztogo.github.io/spglib/python-spglib.html#niggli-reduce
-# The detailed control of standardization of unit cell can be done using standardize_cell.
-
-ase_primitive_cell = spglib_to_ase(primitive_cell)
-write('aei_primtive_cell.xyz',ase_asymmetric_cell)
-
-
-primitive_dataset = spglib.get_symmetry_dataset(primitive_cell)
-print("  Spacegroup is %s (%d)." % (dataset['international'],
-                                    dataset['number']))
-print("  Pointgroup is %s." % (dataset['pointgroup']))
-print("  Hall symbol is %s (%d)." % (dataset['hall'],
-                                     dataset['hall_number']))
-# print("  Wyckoff letters are: ", dataset['wyckoffs'])
-
-print("  Mapping to equivalent atoms are: ")
-for i, x in enumerate(primitive_dataset['equivalent_atoms']):
-    print("  %d -> %d" % (i + 1, x + 1))
-
-# Output from ASE in xyz
-indices = asymmetric_cell_atom_indices(primitive_dataset)
-ase_asymmetric_cell = spglib_to_ase(primitive_cell, indices)
-ase_asymmetric_cell.set_pbc((1, 1, 1))
-write('asym_cell2.xyz',ase_asymmetric_cell)
+write('aei_asymmetric_cell.xyz', ase_asymmetric_cell)
