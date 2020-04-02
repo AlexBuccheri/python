@@ -201,6 +201,30 @@ def create_spg_molecule(input_molecule, indices):
     return (lattice, new_basis, new_atomic_numbers)
 
 
+# https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+# TODO(Alex) Add some asserts for when this won't work
+def rotation_to_align_a_with_b(a, b):
+    norm_a = np.linalg.norm(a)
+    norm_b = np.linalg.norm(b)
+    if not np.allclose(a, a/norm_a):
+        print('Input a vector not unit normal - normalising')
+        a = a / norm_a
+        print(a)
+    if not np.allclose(b, b/norm_b):
+        print('Input b vector not unit normal - normalising')
+        b = b / norm_b
+        print(b)
+
+    v = np.cross(a,b)
+    #s = np.linalg.norm(v)
+    c = np.dot(a,b)
+    f = 1./(1. + c)
+    vmat = np.array([[    0, -v[2],  v[1]],
+                     [ v[2],     0, -v[0]],
+                     [-v[1],  v[0],     0]])
+    return np.eye(3,3) + vmat + f *(np.matmul(vmat,vmat))
+
+
 # -----------------------------------
 # Main Routine
 # -----------------------------------
@@ -252,8 +276,61 @@ ase_asymmetric_cell.set_pbc((1, 1, 1))
 write('aei_asymmetric_cell.xyz', ase_asymmetric_cell)
 
 
+# TEST
 # Use ASE to apply symmetry operations and reproduce original cell from asymmetric cell
 # THIS WORKS
 #aei_cell = ase_spacegroup.crystal(ase_asymmetric_cell, spacegroup=dataset['number'])
 #ase_view(aei_cell)
+#
+# Test; Rotate whole system, output and see if it looks sensible
+# Awesome, this works
+# O (atom5)  - si (atom1)
+# a = ase_asymmetric_cell.positions[4] - ase_asymmetric_cell.positions[0]
+# b = [0,0,1]
+# R = rotation_to_align_a_with_b(a, b)
+# new_positions = []
+# for pos in ase_asymmetric_cell.positions:
+#     new_pos = np.matmul(R, pos)
+#     new_positions.append(new_pos)
+# ase_asymmetric_cell.positions = new_positions
+# write('rotated_aei_asymmetric_cell.xyz', ase_asymmetric_cell)
 
+
+# Scale bond lengths oxygens with one silicon neighbour
+def scale_bondlength_of_oxy_with_one_neighbour(pair_indices, ase_cell, bond_length):
+    z_unit = [0, 0, 1]
+
+    for pair in pair_indices:
+        iOxy = pair['o']
+        iSi = pair['si']
+
+        # Rotate system so O-Si displacement vector points in +z direction
+        disp_o_si = ase_cell.positions[iOxy] - ase_cell.positions[iSi]
+        R = rotation_to_align_a_with_b(disp_o_si, z_unit)
+
+        new_ox_position = np.matmul(R, ase_cell.positions[iSi]) + np.array([0, 0, bond_length])
+        # Transform back to original reference, utilising R is unitary
+        ase_cell.positions[iOxy] = np.matmul(np.transpose(R),new_ox_position)
+    return ase_cell
+
+
+
+# Take an asymmetric cell and convert from a silicate to a boron oxide
+def convert_to_boron_oxide(ase_cell):
+
+    bond_length = 1.
+
+    #Find all oxy with on si neighbour and store like so:
+    pair_indices = [{'o': 4, 'si': 0}]
+    scale_bondlength_of_oxy_with_one_neighbour(pair_indices, ase_cell, bond_length)
+
+    # Scale bond lengths oxygens with two silicon neighbours
+    # => translating everything else attached to that oxygen
+
+
+    # Convert silicons to borons
+
+    return ase_cell
+
+ase_asymmetric_cell = convert_to_boron_oxide(ase_asymmetric_cell)
+write('scaled_aei_asymmetric_cell.xyz', ase_asymmetric_cell)
