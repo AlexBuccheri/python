@@ -314,11 +314,38 @@ def scale_bondlength_of_oxy_with_one_neighbour(pair_indices, ase_cell, bond_leng
     return ase_cell
 
 
+def scale_bondlength_of_oxy_with_two_neighbours(pair_indices, ase_cell, bond_length):
+    z_unit = [0, 0, 1]
+
+    for pair in pair_indices:
+        iOxy = pair['o']
+        iSi = pair['si']
+
+        #Si above O in z
+        disp_si_o = ase_cell.positions[iSi] - ase_cell.positions[iOxy]
+
+        #Rotate whole structure
+        #For all atoms above iOxy, shift them
+        # SEE HARD NOTES
+
+
+    return ase_cell
+
+
+def find_oxy_with_one_neighbour():
+    return
+
+def find_oxy_with_two_neighbours():
+    return
+
+def convert_element(element_a, element_b):
+    return
+
 
 # Take an asymmetric cell and convert from a silicate to a boron oxide
 def convert_to_boron_oxide(ase_cell):
 
-    bond_length = 1.
+    bond_length = 2.
 
     #Find all oxy with on si neighbour and store like so:
     pair_indices = [{'o': 4, 'si': 0}]
@@ -327,10 +354,16 @@ def convert_to_boron_oxide(ase_cell):
     # Scale bond lengths oxygens with two silicon neighbours
     # => translating everything else attached to that oxygen
 
-
     # Convert silicons to borons
+    # This is trivial to do
 
     return ase_cell
 
 ase_asymmetric_cell = convert_to_boron_oxide(ase_asymmetric_cell)
 write('scaled_aei_asymmetric_cell.xyz', ase_asymmetric_cell)
+
+
+# Apply ASE symmetry operations to convert into supercell
+
+# Run in MM package, GFN0 and DFTB+: See what the structure relaxes to
+
