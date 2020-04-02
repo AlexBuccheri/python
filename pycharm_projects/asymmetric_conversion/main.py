@@ -8,6 +8,8 @@
 
 from ase.io import read, write
 from ase.atoms import Atoms, Atom
+from ase import spacegroup as ase_spacegroup
+from ase.visualize import view as ase_view
 import numpy as np
 import spglib
 
@@ -226,20 +228,21 @@ else:
 
 # Get and print symmetry data
 dataset = spglib.get_symmetry_dataset(spg_molecule)
-print_spg_symmetry_info(dataset, equivalent_atoms=False)
+print_spg_symmetry_info(dataset, equivalent_atoms=False, wyckoff=False)
 
 
 # Reduce cell/primitive cell to asymmetric cell of irreducible atomic positions
-neighbouring_atoms = False
+neighbouring_atoms = True
 if neighbouring_atoms:
     irreducible_atom_indices = nearest_neighbour_asymmetric_cell_atom_indices(dataset, spg_molecule)
 else:
     irreducible_atom_indices = asymmetric_cell_atom_indices(dataset)
 
+
 # NOTE: Don't appear to be able to find the symmetry of the asymmetric cell
-spg2 = create_spg_molecule(spg_molecule, irreducible_atom_indices)
-dataset2 = spglib.get_symmetry_dataset(spg2)
-print_spg_symmetry_info(dataset2, equivalent_atoms=False)
+#spg_molecule2 = create_spg_molecule(spg_molecule, irreducible_atom_indices)
+#dataset2 = spglib.get_symmetry_dataset(spg_molecule2)
+#print_spg_symmetry_info(dataset2, equivalent_atoms=False)
 
 
 # Convert to ASE and write to xyz
@@ -247,3 +250,10 @@ print_spg_symmetry_info(dataset2, equivalent_atoms=False)
 ase_asymmetric_cell = spglib_to_ase(spg_molecule, irreducible_atom_indices)
 ase_asymmetric_cell.set_pbc((1, 1, 1))
 write('aei_asymmetric_cell.xyz', ase_asymmetric_cell)
+
+
+# Use ASE to apply symmetry operations and reproduce original cell from asymmetric cell
+# THIS WORKS
+#aei_cell = ase_spacegroup.crystal(ase_asymmetric_cell, spacegroup=dataset['number'])
+#ase_view(aei_cell)
+
