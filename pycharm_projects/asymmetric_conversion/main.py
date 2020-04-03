@@ -14,6 +14,8 @@ import numpy as np
 from scipy import spatial
 import spglib
 
+from modules.electronic_structure.structure import bravais
+
 
 # -------------------------------------------
 # Functions
@@ -165,7 +167,6 @@ def spglib_to_ase(molecule, indices=None):
         # Have to store in Cartesian
         pos = np.matmul(lattice, np.asarray(basis[ia]))
         # Fractional
-        #pos = basis[ia]
         #print(ia, basis[ia])
         ase_molecule.append(Atom(atomic_symbol, pos))
 
@@ -202,6 +203,31 @@ def create_spg_molecule(input_molecule, indices):
     return (lattice, new_basis, new_atomic_numbers)
 
 
+def convert_to_boron_oxide(spg_asymmetric_cell, dataset, lattice_options):
+
+    # My lattice returned column-wise
+    space_group = dataset['international']
+    new_lattice = bravais.base_centred_orthorhombic(space_group,
+        lattice_options.a,
+        lattice_options.b,
+        lattice_options.c)
+    # Convert to row-wise for SPG
+    new_lattice = new_lattice.transpose()
+
+    # basis in fractional
+    new_basis = spg_asymmetric_cell[1]
+
+    # atomic numbers: Replace Si with B
+    atomic_numbers = spg_asymmetric_cell[2]
+    new_atomic_numbers = [5 if an == 14 else an for an in atomic_numbers]
+
+    return (new_lattice, new_basis, new_atomic_numbers)
+
+
+# -----------------------------------------------------------------------------
+# Unused functions that I wrote to modify each bond in structure separately
+# -----------------------------------------------------------------------------
+
 # https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
 # TODO(Alex) Add some asserts for when this won't work
 def rotation_to_align_a_with_b(a, b):
@@ -224,7 +250,6 @@ def rotation_to_align_a_with_b(a, b):
                      [ v[2],     0, -v[0]],
                      [-v[1],  v[0],     0]])
     return np.eye(3,3) + vmat + f *(np.matmul(vmat,vmat))
-
 
 
 def find_atom_pairs(ase_cell, atom_a, threshold, n_neighbours):
@@ -277,13 +302,7 @@ def scale_bondlength_of_oxy_with_two_neighbours(pair_indices, ase_cell, bond_len
         #For all atoms above iOxy, shift them
         # SEE HARD NOTES
 
-
     return ase_cell
-
-
-def convert_element(ase_cell, old_element, new_element):
-    return
-
 
 
 # Take an asymmetric cell and convert from a silicate to a boron oxide
@@ -302,7 +321,6 @@ def convert_to_boron_oxide(ase_cell, ref_bond_length, new_bond_length):
     scale_bondlength_of_oxy_with_two_neighbours(double_pairs, ase_cell, new_bond_length)
 
     # Convert silicons to borons
-    ase_asymmetric_cell = convert_element(ase_cell, 'Si', 'B')
 
     return ase_cell
 
@@ -337,6 +355,8 @@ def convert_to_boron_oxide(ase_cell, ref_bond_length, new_bond_length):
 #             print('popped ', popped)
 #         else:
 #             counting.append(atom_index)
+
+
 
 
 # -----------------------------------
@@ -377,18 +397,38 @@ else:
     irreducible_atom_indices = asymmetric_cell_atom_indices(dataset)
 
 
+spg_asymmetric_cell = create_spg_molecule(spg_molecule, irreducible_atom_indices)
+
 # NOTE: Don't appear to be able to find the symmetry of the asymmetric cell
-#spg_molecule2 = create_spg_molecule(spg_molecule, irreducible_atom_indices)
-#dataset2 = spglib.get_symmetry_dataset(spg_molecule2)
+#dataset2 = spglib.get_symmetry_dataset(spg_asymmetric_cell)
 #print_spg_symmetry_info(dataset2, equivalent_atoms=False)
+
+
+print(" Need lattice constants for structure")
+lattice_options = bravais.LatticeOpt(bravais_type='orthorhombic', a= 20 , b= 20, c= 19)
+spg_bo_asymmetric_cell= convert_to_boron_oxide(spg_asymmetric_cell, dataset, lattice_options)
 
 
 # Convert to ASE and write to xyz
 # Also need to write as CIF
-ase_asymmetric_cell = spglib_to_ase(spg_molecule, irreducible_atom_indices)
+ase_asymmetric_cell = spglib_to_ase(spg_bo_asymmetric_cell)
 ase_asymmetric_cell.set_pbc((1, 1, 1))
 write('aei_asymmetric_cell.xyz', ase_asymmetric_cell)
 
+
+# Apply ASE symmetry operations to convert into supercell - see below
+
+# Run in MM package, GFN0 and DFTB+: See what the structure relaxes to
+
+
+quit()
+
+
+
+
+# ------------------
+# Review
+# ------------------
 
 # TEST
 # Use ASE to apply symmetry operations and reproduce original cell from asymmetric cell
@@ -410,25 +450,12 @@ write('aei_asymmetric_cell.xyz', ase_asymmetric_cell)
 # write('rotated_aei_asymmetric_cell.xyz', ase_asymmetric_cell)
 
 
-
-
-
 #NOTE: SHOULD work with fractional coordinates from here!!!!!
 #Rounded up at last dp
-o_si_bond_length_ang = 1.6133
-# Look up
-o_b_bond_length_ang = 1.8
-ase_asymmetric_cell = convert_to_boron_oxide(ase_asymmetric_cell, o_si_bond_length_ang, o_b_bond_length_ang)
-write('scaled_aei_asymmetric_cell.xyz', ase_asymmetric_cell)
+# o_si_bond_length_ang = 1.6133
+# # Look up
+# o_b_bond_length_ang = 1.8
+# ase_asymmetric_cell = convert_to_boron_oxide(ase_asymmetric_cell, o_si_bond_length_ang, o_b_bond_length_ang)
+# write('scaled_aei_asymmetric_cell.xyz', ase_asymmetric_cell)
 
-
-
-
-
-
-#Convert back fro fractional
-
-# Apply ASE symmetry operations to convert into supercell
-
-# Run in MM package, GFN0 and DFTB+: See what the structure relaxes to
 
