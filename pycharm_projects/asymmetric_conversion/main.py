@@ -191,37 +191,40 @@ def print_spg_symmetry_info(dataset, wyckoff=False, equivalent_atoms=False):
 # Given an spg_molcule and set of atomic indices, return a new spg module
 def create_spg_molecule(input_molecule, indices):
     lattice        = input_molecule[0]
-    basis          = input_molecule[1]
-    atomic_numbers = input_molecule[2]
-    new_basis = []
-    new_atomic_numbers = []
+    old_positions      = input_molecule[1]
+    old_atomic_numbers = input_molecule[2]
+    positions = []
+    atomic_numbers = []
+
+    origin = [0,0,0]
+    #origin = np.asarray(old_positions[0])
 
     for iatom in indices:
-        new_basis.append(tuple(basis[iatom]))
-        new_atomic_numbers.append(atomic_numbers[iatom])
+        positions.append(tuple(old_positions[iatom] - origin))
+        atomic_numbers.append(old_atomic_numbers[iatom])
 
-    return (lattice, new_basis, new_atomic_numbers)
+    return (lattice, positions, atomic_numbers)
 
 
 def convert_to_boron_oxide(spg_asymmetric_cell, dataset, lattice_options):
 
     # My lattice returned column-wise
     space_group = dataset['international']
-    new_lattice = bravais.base_centred_orthorhombic(space_group,
+    lattice = bravais.base_centred_orthorhombic(space_group,
         lattice_options.a,
         lattice_options.b,
         lattice_options.c)
     # Convert to row-wise for SPG
-    new_lattice = new_lattice.transpose()
+    lattice = lattice.transpose()
 
     # basis in fractional
-    new_basis = spg_asymmetric_cell[1]
+    positions = spg_asymmetric_cell[1]
 
     # atomic numbers: Replace Si with B
-    atomic_numbers = spg_asymmetric_cell[2]
-    new_atomic_numbers = [5 if an == 14 else an for an in atomic_numbers]
+    old_atomic_numbers = spg_asymmetric_cell[2]
+    atomic_numbers = [5 if an == 14 else an for an in old_atomic_numbers]
 
-    return (new_lattice, new_basis, new_atomic_numbers)
+    return (lattice, positions, atomic_numbers)
 
 
 # -----------------------------------------------------------------------------
@@ -306,23 +309,23 @@ def scale_bondlength_of_oxy_with_two_neighbours(pair_indices, ase_cell, bond_len
 
 
 # Take an asymmetric cell and convert from a silicate to a boron oxide
-def convert_to_boron_oxide(ase_cell, ref_bond_length, new_bond_length):
-
-    #Find all oxy with one si neighbour and store like so [{'o': 4, 'si': 0}, ...]
-    n_neighbours = 1
-    single_pairs = find_atom_pairs(ase_cell, 'o', ref_bond_length, n_neighbours)
-
-    scale_bondlength_of_oxy_with_one_neighbour(single_pairs, ase_cell, new_bond_length)
-
-    # Scale bond lengths oxygens with two silicon neighbours
-    # => translating everything else attached to that oxygen
-    n_neighbours = 2
-    double_pairs = find_atom_pairs(ase_cell, 'o', ref_bond_length, n_neighbours)
-    scale_bondlength_of_oxy_with_two_neighbours(double_pairs, ase_cell, new_bond_length)
-
-    # Convert silicons to borons
-
-    return ase_cell
+# def convert_to_boron_oxide(ase_cell, ref_bond_length, new_bond_length):
+#
+#     #Find all oxy with one si neighbour and store like so [{'o': 4, 'si': 0}, ...]
+#     n_neighbours = 1
+#     single_pairs = find_atom_pairs(ase_cell, 'o', ref_bond_length, n_neighbours)
+#
+#     scale_bondlength_of_oxy_with_one_neighbour(single_pairs, ase_cell, new_bond_length)
+#
+#     # Scale bond lengths oxygens with two silicon neighbours
+#     # => translating everything else attached to that oxygen
+#     n_neighbours = 2
+#     double_pairs = find_atom_pairs(ase_cell, 'o', ref_bond_length, n_neighbours)
+#     scale_bondlength_of_oxy_with_two_neighbours(double_pairs, ase_cell, new_bond_length)
+#
+#     # Convert silicons to borons
+#
+#     return ase_cell
 
 
 
@@ -399,11 +402,13 @@ else:
 
 spg_asymmetric_cell = create_spg_molecule(spg_molecule, irreducible_atom_indices)
 
+show_cell(spg_asymmetric_cell[0], spg_asymmetric_cell[1], spg_asymmetric_cell[2])
+
 # NOTE: Don't appear to be able to find the symmetry of the asymmetric cell
 #dataset2 = spglib.get_symmetry_dataset(spg_asymmetric_cell)
 #print_spg_symmetry_info(dataset2, equivalent_atoms=False)
 
-
+# Most likely get bond lengths for boroon oxide then convert from bond lengths to (a,b,c)
 print(" Need lattice constants for structure")
 lattice_options = bravais.LatticeOpt(bravais_type='orthorhombic', a= 20 , b= 20, c= 19)
 spg_bo_asymmetric_cell= convert_to_boron_oxide(spg_asymmetric_cell, dataset, lattice_options)
