@@ -11,6 +11,7 @@ from ase.atoms import Atoms, Atom
 from ase import spacegroup as ase_spacegroup
 from ase.visualize import view as ase_view
 import numpy as np
+from scipy import spatial
 import spglib
 
 
@@ -225,6 +226,119 @@ def rotation_to_align_a_with_b(a, b):
     return np.eye(3,3) + vmat + f *(np.matmul(vmat,vmat))
 
 
+
+def find_atom_pairs(ase_cell, atom_a, threshold, n_neighbours):
+    d = spatial.distance_matrix(ase_cell.positions, ase_cell.positions)
+
+    pairs = []
+    for i, an in enumerate(ase_cell.numbers):
+        label_i = an_to_symbol[an].lower()
+        is_atom_a = label_i == atom_a.lower()
+        neighbour_indices = np.where((d[i, :] > 0.) & (d[i, :] <= threshold))[0]
+
+        if is_atom_a and (len(neighbour_indices) == n_neighbours):
+            for j in neighbour_indices:
+                label_j = an_to_symbol[ase_cell.numbers[j]].lower()
+                pairs.append({label_i:i, label_j:j})
+
+    return pairs
+
+
+# Scale bond lengths oxygens with one silicon neighbour
+def scale_bondlength_of_oxy_with_one_neighbour(pair_indices, ase_cell, bond_length):
+    z_unit = [0, 0, 1]
+
+    for pair in pair_indices:
+        iOxy = pair['o']
+        iSi = pair['si']
+
+        #DON"T actually need to rotate - consdier removing
+        # Rotate system so O-Si displacement vector points in +z direction
+        disp_o_si = ase_cell.positions[iOxy] - ase_cell.positions[iSi]
+        R = rotation_to_align_a_with_b(disp_o_si, z_unit)
+
+        new_ox_position = np.matmul(R, ase_cell.positions[iSi]) + np.array([0, 0, bond_length])
+        # Transform back to original reference, utilising R is unitary
+        ase_cell.positions[iOxy] = np.matmul(np.transpose(R),new_ox_position)
+    return ase_cell
+
+
+def scale_bondlength_of_oxy_with_two_neighbours(pair_indices, ase_cell, bond_length):
+    z_unit = [0, 0, 1]
+
+    for pair in pair_indices:
+        iOxy = pair['o']
+        iSi = pair['si']
+
+        #Si above O in z
+        disp_si_o = ase_cell.positions[iSi] - ase_cell.positions[iOxy]
+
+        #Rotate whole structure
+        #For all atoms above iOxy, shift them
+        # SEE HARD NOTES
+
+
+    return ase_cell
+
+
+def convert_element(ase_cell, old_element, new_element):
+    return
+
+
+
+# Take an asymmetric cell and convert from a silicate to a boron oxide
+def convert_to_boron_oxide(ase_cell, ref_bond_length, new_bond_length):
+
+    #Find all oxy with one si neighbour and store like so [{'o': 4, 'si': 0}, ...]
+    n_neighbours = 1
+    single_pairs = find_atom_pairs(ase_cell, 'o', ref_bond_length, n_neighbours)
+
+    scale_bondlength_of_oxy_with_one_neighbour(single_pairs, ase_cell, new_bond_length)
+
+    # Scale bond lengths oxygens with two silicon neighbours
+    # => translating everything else attached to that oxygen
+    n_neighbours = 2
+    double_pairs = find_atom_pairs(ase_cell, 'o', ref_bond_length, n_neighbours)
+    scale_bondlength_of_oxy_with_two_neighbours(double_pairs, ase_cell, new_bond_length)
+
+    # Convert silicons to borons
+    ase_asymmetric_cell = convert_element(ase_cell, 'Si', 'B')
+
+    return ase_cell
+
+
+
+# Find pairs of atom_a with all other atoms within threshold
+# def find_atom_pairs(ase_cell, atom_a, threshold):
+#     d = spatial.distance_matrix(ase_cell.positions, ase_cell.positions)
+#
+#     pairs = []
+#     for i, an in enumerate(ase_cell.numbers):
+#         label_i = an_to_symbol[an].lower()
+#         is_atom_a = label_i == atom_a.lower()
+#
+#         if is_atom_a:
+#             for j in range(0, d.shape[0]):
+#                 if (d[i, j] <= threshold) and (i != j):
+#                     label_j = an_to_symbol[ase_cell.numbers[j]].lower()
+#                     pairs.append({label_i:i, label_j:j})
+#
+#     return pairs
+
+
+# Split pairs into those with one pair and those with > one pair
+#Not sure this helps - need to remove all double pairs
+# def split_pairs(pairs, label_a):
+#     counting = [pairs[0]['o']]
+#     for pair_index, pair in enumerate(pairs[1:]):
+#         atom_index = pair['o']
+#         if atom_index in counting:
+#             popped = pairs.pop(pair_index)
+#             print('popped ', popped)
+#         else:
+#             counting.append(atom_index)
+
+
 # -----------------------------------
 # Main Routine
 # -----------------------------------
@@ -296,72 +410,23 @@ write('aei_asymmetric_cell.xyz', ase_asymmetric_cell)
 # write('rotated_aei_asymmetric_cell.xyz', ase_asymmetric_cell)
 
 
-# Scale bond lengths oxygens with one silicon neighbour
-def scale_bondlength_of_oxy_with_one_neighbour(pair_indices, ase_cell, bond_length):
-    z_unit = [0, 0, 1]
-
-    for pair in pair_indices:
-        iOxy = pair['o']
-        iSi = pair['si']
-
-        # Rotate system so O-Si displacement vector points in +z direction
-        disp_o_si = ase_cell.positions[iOxy] - ase_cell.positions[iSi]
-        R = rotation_to_align_a_with_b(disp_o_si, z_unit)
-
-        new_ox_position = np.matmul(R, ase_cell.positions[iSi]) + np.array([0, 0, bond_length])
-        # Transform back to original reference, utilising R is unitary
-        ase_cell.positions[iOxy] = np.matmul(np.transpose(R),new_ox_position)
-    return ase_cell
 
 
-def scale_bondlength_of_oxy_with_two_neighbours(pair_indices, ase_cell, bond_length):
-    z_unit = [0, 0, 1]
 
-    for pair in pair_indices:
-        iOxy = pair['o']
-        iSi = pair['si']
-
-        #Si above O in z
-        disp_si_o = ase_cell.positions[iSi] - ase_cell.positions[iOxy]
-
-        #Rotate whole structure
-        #For all atoms above iOxy, shift them
-        # SEE HARD NOTES
-
-
-    return ase_cell
-
-
-def find_oxy_with_one_neighbour():
-    return
-
-def find_oxy_with_two_neighbours():
-    return
-
-def convert_element(element_a, element_b):
-    return
-
-
-# Take an asymmetric cell and convert from a silicate to a boron oxide
-def convert_to_boron_oxide(ase_cell):
-
-    bond_length = 2.
-
-    #Find all oxy with on si neighbour and store like so:
-    pair_indices = [{'o': 4, 'si': 0}]
-    scale_bondlength_of_oxy_with_one_neighbour(pair_indices, ase_cell, bond_length)
-
-    # Scale bond lengths oxygens with two silicon neighbours
-    # => translating everything else attached to that oxygen
-
-    # Convert silicons to borons
-    # This is trivial to do
-
-    return ase_cell
-
-ase_asymmetric_cell = convert_to_boron_oxide(ase_asymmetric_cell)
+#NOTE: SHOULD work with fractional coordinates from here!!!!!
+#Rounded up at last dp
+o_si_bond_length_ang = 1.6133
+# Look up
+o_b_bond_length_ang = 1.8
+ase_asymmetric_cell = convert_to_boron_oxide(ase_asymmetric_cell, o_si_bond_length_ang, o_b_bond_length_ang)
 write('scaled_aei_asymmetric_cell.xyz', ase_asymmetric_cell)
 
+
+
+
+
+
+#Convert back fro fractional
 
 # Apply ASE symmetry operations to convert into supercell
 
