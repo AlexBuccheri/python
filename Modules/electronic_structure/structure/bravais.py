@@ -14,7 +14,7 @@ import numpy as np
 
 
 class LatticeOpt:
-    def __init__(self, bravais_type, a=None, b=None, c=None, alpha=None, beta=None, gamma=None, units=None):
+    def __init__(self, bravais_type, a=None, b=None, c=None, alpha=None, beta=None, gamma=None, units='angstrom'):
         self.a = a
         self.b = b
         self.c = c
@@ -23,11 +23,9 @@ class LatticeOpt:
         self.gamma = gamma
         self.bravais_type = bravais_type
         # Convert to ENUM class
-        if units != None:
+        if units != 'angstrom':
             self.units = units
-        else:
-            self.units = 'angstrom'
-
+ 
 
 # ----------------------------------------------------------------------
 # Triclinic
@@ -74,11 +72,26 @@ def simple_orthorhombic(a,b,c):
                       [0, 0, c]])
     return cell
 
-def base_centred_orthorhombic_A(self, a,b,c):
+def base_centred_orthorhombic_A(a,b,c):
     cell = np.array( [[a,   0.     , 0.     ],
                       [0.,  0.5 * b, 0.5 * b],
                       [0., -0.5 * c, 0.5 * c]]);
     return cell
+
+def base_centred_orthorhombic_C(a,b,c):
+    cell = np.array( [[ 0.5 * a,  0.5 * a,  0.],
+                      [-0.5 * b,  0.5 * b,  0.],
+                      [ 0.     ,  0.     ,  c]]);
+    return cell
+
+def base_centred_orthorhombic(spacegroup, a,b,c):
+    if spacegroup[0] =='A':
+        return base_centred_orthorhombic_A(a,b,c)
+    elif spacegroup[0] =='C':
+        return base_centred_orthorhombic_C(a,b,c)
+    else:
+        exit('Space group must start with A or C')
+
 
 # def body_centred_orthorhombic(self, a,b,c):
 #     return cell
