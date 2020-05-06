@@ -1,7 +1,7 @@
 
 # Write structure in xyz format
 # Input = list of atoms.Atom i.e. [atoms.Atom(species,pos), atoms.Atom(species,pos), ...]
-def xyz(molecule, header = None):
+def xyz_string(molecule, header = None):
     hdr = ''
     if header != None:
         hdr += header
@@ -14,6 +14,14 @@ def xyz(molecule, header = None):
 
     return string
 
+def xyz(file_name, molecule, header = None):
+    if file_name[-4:] != ".xyz":
+        file_name += ".xyz"
+    fid = open(file_name, "w")
+    file_string = xyz_string(molecule, header)
+    fid.write(file_string)
+    fid.close()
+    return
 
 # Also accepted by periodic xTB
 # TODO(Alex) Be able to pass lattice vectors instead of lattice_opts
