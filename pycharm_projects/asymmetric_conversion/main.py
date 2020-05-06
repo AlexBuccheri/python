@@ -367,7 +367,7 @@ def scale_bondlength_of_oxy_with_two_neighbours(pair_indices, ase_cell, bond_len
 # -----------------------------------
 
 #Read CIF with ASE and convert to SPG format
-ase_input_data = read("aei.cif", store_tags=False)
+ase_input_data = read("inputs/aei.cif", store_tags=False)
 #print(vars(ase_input_data))
 spg_input = ase_to_spglib(ase_input_data)
 print("Number of atoms in input", len(spg_input[2]))
@@ -391,7 +391,6 @@ else:
 dataset = spglib.get_symmetry_dataset(spg_molecule)
 print_spg_symmetry_info(dataset, equivalent_atoms=False, wyckoff=False)
 
-
 # Reduce cell/primitive cell to asymmetric cell of irreducible atomic positions
 neighbouring_atoms = True
 if neighbouring_atoms:
@@ -401,32 +400,56 @@ else:
 
 
 spg_asymmetric_cell = create_spg_molecule(spg_molecule, irreducible_atom_indices)
-
 show_cell(spg_asymmetric_cell[0], spg_asymmetric_cell[1], spg_asymmetric_cell[2])
-
 # NOTE: Don't appear to be able to find the symmetry of the asymmetric cell
 #dataset2 = spglib.get_symmetry_dataset(spg_asymmetric_cell)
 #print_spg_symmetry_info(dataset2, equivalent_atoms=False)
 
-# Most likely get bond lengths for boroon oxide then convert from bond lengths to (a,b,c)
-print(" Need lattice constants for structure")
-lattice_options = bravais.LatticeOpt(bravais_type='orthorhombic', a= 20 , b= 20, c= 19)
-spg_bo_asymmetric_cell= convert_to_boron_oxide(spg_asymmetric_cell, dataset, lattice_options)
 
 
-# Convert to ASE and write to xyz
-# Also need to write as CIF
-ase_asymmetric_cell = spglib_to_ase(spg_bo_asymmetric_cell)
-ase_asymmetric_cell.set_pbc((1, 1, 1))
-write('aei_asymmetric_cell.xyz', ase_asymmetric_cell)
+
+test_sym_ops = True
+if test_sym_ops:
+    ase_asymmetric_cell = spglib_to_ase(spg_asymmetric_cell)
+    # primitive_cell=True gives something erroneous
+    #  size=(2, 2, 2) works
+    #  symprec=0.05 deals with duplicates but also gets rid of some other required atoms
+    aei_cell = ase_spacegroup.crystal(ase_asymmetric_cell, spacegroup=dataset['number'])
+    #ase_view(aei_cell)
+    write('reconstructed_aei_cell.xyz', aei_cell)
 
 
-# Apply ASE symmetry operations to convert into supercell - see below
+# From the asymmetric AEI cell, do the insert and a) relax with periodic BC OR b) symmetrise with SPGLIB then relax
 
-# Run in MM package, GFN0 and DFTB+: See what the structure relaxes to
+
+
+
+# Remove duplicates - not ideal but worth a test
+
+
+# Structurally relax with ASE
+
 
 
 quit()
+
+# Most likely get bond lengths for boroon oxide then convert from bond lengths to (a,b,c)
+print(" Need lattice constants for structure")
+lattice_options = bravais.LatticeOpt(bravais_type='orthorhombic', a= 13.7112 , b= 13.7112, c= 18.52770)
+spg_bo_asymmetric_cell= convert_to_boron_oxide(spg_asymmetric_cell, dataset, lattice_options)
+
+# Convert to ASE and write asymetric cell to xyz
+ase_asymmetric_cell = spglib_to_ase(spg_bo_asymmetric_cell)
+ase_asymmetric_cell.set_pbc((1, 1, 1))
+write('bo_asymmetric_cell.xyz', ase_asymmetric_cell)
+
+# Apply ASE symmetry operations to convert into supercell - see below
+aei_cell = ase_spacegroup.crystal(ase_asymmetric_cell, spacegroup=dataset['number'])
+#ase_view(aei_cell)
+write('reconstructed_bo_cell.xyz', aei_cell)
+
+# Run in MM package, GFN0 and DFTB+: See what the structure relaxes to
+
 
 
 
