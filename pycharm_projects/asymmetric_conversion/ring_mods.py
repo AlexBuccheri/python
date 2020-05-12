@@ -145,20 +145,26 @@ if print_intermediate:
 # Assume Br-O bond length
 
 #TODO(Alex) Currently only for one si-o-o unit
-neighbouring_ring_atoms = find_closest_ring_oxygens(species, positions, si_oo_units[0])
+si_oo_unit = si_oo_units[0]
 
+neighbouring_ring_atoms = find_closest_ring_oxygens(species, positions, si_oo_unit)
 
-# Just test moving the unit
-
+# Move an si-o-o unit to bond to one of the ring oxys
 bond_length_bo = 1.7
 ring_oxy = neighbouring_ring_atoms[0]
 pos_oxy = positions[ring_oxy]
 print('pos_oxy', pos_oxy)
-pos_si = positions[si_oo_units[0][0]]
+pos_si = positions[si_oo_unit[0]]
 displacement = np.array(pos_si - pos_oxy)
 scaled_displacement = bond_length_bo * displacement / np.linalg.norm(displacement)
 assert(np.isclose(np.linalg.norm(scaled_displacement), bond_length_bo))
-positions[si_oo_units[0][0]] = pos_oxy + scaled_displacement
+
+d_O1 = np.array(positions[si_oo_unit[1]] - pos_si)
+d_O2 = np.array(positions[si_oo_unit[2]] - pos_si)
+
+positions[si_oo_unit[0]] = pos_oxy + scaled_displacement
+positions[si_oo_unit[1]] = positions[si_oo_unit[0]] + d_O1
+positions[si_oo_unit[2]] = positions[si_oo_unit[0]] + d_O2
 
 molecule = atoms.Atoms(species, positions)
 write.xyz("one_unit.xyz", molecule)
