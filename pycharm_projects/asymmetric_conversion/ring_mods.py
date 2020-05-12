@@ -4,6 +4,7 @@
 
 import numpy as np
 from scipy import spatial
+from enum import Enum
 
 # My modules
 from modules.fileio import read, write
@@ -63,14 +64,31 @@ def move_atoms_radially(atom_indices, positions, centre, length):
         new_positions.append(scaled_radial_vector + position)
     return new_positions
 
-def flatten(l):
-  out = []
-  for item in l:
-    if isinstance(item, (list, tuple)):
-      out.extend(flatten(item))
-    else:
-      out.append(item)
-  return out
+
+def find_closest_ring_oxygens(species, positions, si_oo_unit):
+
+    class unit(Enum):
+        Si = 0
+        O1 = 1
+        O2 = 2
+
+    d = spatial.distance_matrix(positions, positions)
+    si = si_oo_unit[unit.Si.value]
+    assert (species[si] == 'Si')
+
+    # After itself (Si) and two bonded oxy, get the closest two atoms
+    neighbouring_ring_atom_distances = np.sort(d[si, :])[3:5]
+
+    neighbouring_ring_atoms = []
+    for distance in neighbouring_ring_atom_distances:
+        neighbouring_ring_atoms.append(np.where(d[si, :] == distance)[0][0])
+
+    assert (len(neighbouring_ring_atoms) == 2)
+    assert (species[neighbouring_ring_atoms[0]] == 'O')
+    assert (species[neighbouring_ring_atoms[1]] == 'O')
+    return neighbouring_ring_atoms
+
+
 
 # -------------------
 # Main routine
@@ -85,7 +103,7 @@ tetrahedra_units = find_tetrahedral_units(species, nn_list)
 oxy_ring_atoms = find_oxygens_in_ring(species, nn_list)
 
 
-# Remove ring oxygens from tetrahedral units
+# Remove ring oxygens from tetrahedral units. Could also look to do this with numpy
 si_oo_units = []
 for tetrahedron in tetrahedra_units:
     for oxy in oxy_ring_atoms:
@@ -93,14 +111,9 @@ for tetrahedron in tetrahedra_units:
             tetrahedron.remove(oxy)
     si_oo_units.append(tetrahedron)
 
-# numpy approach to above
-# si_oo_units = []
-# for tetrahedron in tetrahedra_units:
-#     si_oo_units.append(tetrahedron[tetrahedron != oxy_ring_atoms])
-
 
 # Move each si_oo_unit
-length = 5
+length = 8
 for unit in si_oo_units:
     # Find unit centre
     unit_centre = geometry.find_centre([positions[iatom] for iatom in unit])
@@ -126,23 +139,33 @@ if print_intermediate:
     write.xyz("select.xyz", molecule)
 
 
+
 # For each Si-O-O, move a unit towards each of the two closest ring oxygens,
 # until the Si-O bond_length matches the target, then remove one of the two oxygens from the unit
 # Assume Br-O bond length
 
-d = spatial.distance_matrix(positions, positions)
-# After itself and two bonded oxy, get the closest two atoms
-# Replace first 0 with an ENUM
-si = si_oo_units[0][0]
-assert(species[si] == 'Si')
-neighbouring_ring_atom_distances = np.sort(d[si,:])[3:5]
+#TODO(Alex) Currently only for one si-o-o unit
+neighbouring_ring_atoms = find_closest_ring_oxygens(species, positions, si_oo_units[0])
 
-neighbouring_ring_atoms = []
-for distance in neighbouring_ring_atom_distances:
-    neighbouring_ring_atoms.append(np.where(d[si,:] == distance)[0][0])
 
-assert(species[neighbouring_ring_atoms[0]] == 'O')
-assert(species[neighbouring_ring_atoms[1]] == 'O')
+# Just test moving the unit
+
+bond_length_bo = 1.7
+ring_oxy = neighbouring_ring_atoms[0]
+pos_oxy = positions[ring_oxy]
+print('pos_oxy', pos_oxy)
+pos_si = positions[si_oo_units[0][0]]
+displacement = np.array(pos_si - pos_oxy)
+scaled_displacement = bond_length_bo * displacement / np.linalg.norm(displacement)
+assert(np.isclose(np.linalg.norm(scaled_displacement), bond_length_bo))
+positions[si_oo_units[0][0]] = pos_oxy + scaled_displacement
+
+molecule = atoms.Atoms(species, positions)
+write.xyz("one_unit.xyz", molecule)
+
+quit()
+
+
 
 new_units = []
 bond_length_bo = 1.7
