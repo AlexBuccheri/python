@@ -126,6 +126,22 @@ def translate_si_o_o_unit(species, si_oo_unit, neighbouring_ring_atoms):
     return translated_species, translated_positions
 
 
+# Ref: http://rightfootin.blogspot.com/2006/09/more-on-python-flatten.html
+def flatten(l, ltypes=(list, tuple)):
+    ltype = type(l)
+    l = list(l)
+    i = 0
+    while i < len(l):
+        while isinstance(l[i], ltypes):
+            if not l[i]:
+                l.pop(i)
+                i -= 1
+                break
+            else:
+                l[i:i + 1] = l[i]
+        i += 1
+    return ltype(l)
+
 
 # -------------------
 # Main routine
@@ -185,18 +201,15 @@ bond_length_bo = 1.7
 translated_species = []
 translated_positions = []
 
-si_oo_unit = si_oo_units[0]
-
-neighbouring_ring_atoms = find_closest_ring_oxygens(species, positions, si_oo_unit)
-ts, tp = translate_si_o_o_unit(species, si_oo_unit, neighbouring_ring_atoms)
-translated_species += ts
-translated_positions += tp
-
-print(translated_species)
-print(translated_positions)
+for si_oo_unit in si_oo_units:
+    neighbouring_ring_atoms = find_closest_ring_oxygens(species, positions, si_oo_unit)
+    ts, tp = translate_si_o_o_unit(species, si_oo_unit, neighbouring_ring_atoms)
+    translated_species += ts
+    translated_positions += tp
 
 # Remove old atoms
-atom_indices =  np.delete(np.arange(0, n_atoms), si_oo_unit)
+
+atom_indices =  np.delete(np.arange(0, n_atoms), flatten(si_oo_units))
 new_species = []
 new_positions = []
 for iatom in atom_indices:
