@@ -149,85 +149,45 @@ si_oo_unit = si_oo_units[0]
 
 neighbouring_ring_atoms = find_closest_ring_oxygens(species, positions, si_oo_unit)
 
-# Move an si-o-o unit to bond to one of the ring oxys
 bond_length_bo = 1.7
-ring_oxy = neighbouring_ring_atoms[0]
-pos_oxy = positions[ring_oxy]
-print('pos_oxy', pos_oxy)
-pos_si = positions[si_oo_unit[0]]
-displacement = np.array(pos_si - pos_oxy)
-scaled_displacement = bond_length_bo * displacement / np.linalg.norm(displacement)
-assert(np.isclose(np.linalg.norm(scaled_displacement), bond_length_bo))
 
+pos_si = positions[si_oo_unit[0]]
 d_O1 = np.array(positions[si_oo_unit[1]] - pos_si)
 d_O2 = np.array(positions[si_oo_unit[2]] - pos_si)
 
-positions[si_oo_unit[0]] = pos_oxy + scaled_displacement
-positions[si_oo_unit[1]] = positions[si_oo_unit[0]] + d_O1
-positions[si_oo_unit[2]] = positions[si_oo_unit[0]] + d_O2
-
-molecule = atoms.Atoms(species, positions)
-write.xyz("one_unit.xyz", molecule)
-
-quit()
-
-
-
-new_units = []
-bond_length_bo = 1.7
-for iring,oxy in enumerate(neighbouring_ring_atoms):
-    unit = []
-    pos_oxy = positions[oxy]
-    print('pos_oxy', pos_oxy)
-    pos_si = positions[si_oo_units[0][0]]
-    # Scaled so |displacement| = bond_length
-    displacement = np.array(pos_oxy - pos_si)
-    print("displacement ", displacement)
+translated_positions = []
+translated_species = []
+for ring_oxy in neighbouring_ring_atoms:
+    pos_oxy = positions[ring_oxy]
+    displacement = np.array(pos_si - pos_oxy)
     scaled_displacement = bond_length_bo * displacement / np.linalg.norm(displacement)
-    assert(np.isclose(np.linalg.norm(scaled_displacement), bond_length_bo))
-    # Can't do this as need to keep the reference for the unit and shift again
-    print("pos_oxy + displacement ",pos_oxy - scaled_displacement)
-    unit.append(pos_oxy + scaled_displacement)
-    # Can turn this into a list
-    if iring == 0:
-        unit_oxy = 1
-    if iring == 1:
-        unit_oxy = 2
-    unit.append(unit[0]+ (positions[si_oo_units[0][unit_oxy]] - pos_si))
-    new_units.append(unit)
+    assert (np.isclose(np.linalg.norm(scaled_displacement), bond_length_bo))
 
-for unit in new_units:
-    print(unit)
+    translated_positions.append(pos_oxy + scaled_displacement)
+    translated_positions.append(pos_oxy + scaled_displacement + d_O1)
+    translated_positions.append(pos_oxy + scaled_displacement + d_O2)
+    translated_species += ['Si', 'O', 'O']
 
-# Remove old positions by leaving out
-print(si_oo_units[0])
 
+# Remove old atoms
+atom_indices =  np.delete(np.arange(0, n_atoms), si_oo_unit)
 new_species = []
 new_positions = []
-for iatom in range(0, n_atoms):
-    if iatom not in si_oo_units[0]:
-        print(iatom)
-        new_species.append(species[iatom])
-        new_positions.append(positions[iatom])
-assert(len(new_species) == len(new_positions))
+for iatom in atom_indices:
+    new_species.append(species[iatom])
+    new_positions.append(positions[iatom])
 
-# Add new ones in
-for unit in new_units:
-    for iatom,xyz in enumerate(unit):
-        # Turn into a list
-        if iatom == 0:
-            new_species.append('Br')
-        else:
-            new_species.append('C')
-        new_positions.append(xyz)
+# Add new atoms
+for iatom in range(0, len(translated_species)):
+    new_species.append(translated_species[iatom])
+    new_positions.append(translated_positions[iatom])
 
 assert(len(new_species) == len(new_positions))
 
-for i in range(0,len(new_species)):
-    print(new_species[i], new_positions[i])
 
 molecule = atoms.Atoms(new_species, new_positions)
 write.xyz("one_unit.xyz", molecule)
+
 
 
 # TODO(Alex)
