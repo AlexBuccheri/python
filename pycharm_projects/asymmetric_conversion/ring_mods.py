@@ -88,6 +88,43 @@ def find_closest_ring_oxygens(species, positions, si_oo_unit):
     assert (species[neighbouring_ring_atoms[1]] == 'O')
     return neighbouring_ring_atoms
 
+# Scales a vector to have a magnitude (length) equal to bond_length
+def scaled_vector(bond_length, v):
+    scaled_v = bond_length * v / np.linalg.norm(v)
+    assert (np.isclose(np.linalg.norm(scaled_v), bond_length))
+    return scaled_v
+
+def translate_si_o_o_unit(species, si_oo_unit, neighbouring_ring_atoms):
+
+    assert (len(neighbouring_ring_atoms) == 2)
+    si_index = 0
+    o1_index = 1
+    o2_index = 2
+    assert (species[si_oo_unit[si_index]] == 'Si')
+    assert (species[si_oo_unit[o1_index]] == 'O')
+    assert (species[si_oo_unit[o2_index]] == 'O')
+
+    pos_si = positions[si_oo_unit[si_index]]
+    pos_o1 = positions[si_oo_unit[o1_index]]
+    pos_o2 = positions[si_oo_unit[o2_index]]
+
+    d_O1 = np.array(pos_o1 - pos_si)
+    d_O2 = np.array(pos_o2 - pos_si)
+
+    translated_positions = []
+    translated_species = []
+
+    for ring_oxy in neighbouring_ring_atoms:
+        pos_oxy = positions[ring_oxy]
+        scaled_displacement = scaled_vector(bond_length_bo, np.array(pos_si - pos_oxy))
+
+        translated_positions.append(pos_oxy + scaled_displacement)
+        translated_positions.append(pos_oxy + scaled_displacement + d_O1)
+        translated_positions.append(pos_oxy + scaled_displacement + d_O2)
+        translated_species += ['B', 'O', 'O']
+
+    return translated_species, translated_positions
+
 
 
 # -------------------
@@ -140,34 +177,23 @@ if print_intermediate:
 
 
 
-# For each Si-O-O, move a unit towards each of the two closest ring oxygens,
-# until the Si-O bond_length matches the target, then remove one of the two oxygens from the unit
-# Assume Br-O bond length
+# For each Si-O-O, move a unit towards each of the two closest ring oxygens.
 
-#TODO(Alex) Currently only for one si-o-o unit
+# Assume Br-O bond length
+bond_length_bo = 1.7
+
+translated_species = []
+translated_positions = []
+
 si_oo_unit = si_oo_units[0]
 
 neighbouring_ring_atoms = find_closest_ring_oxygens(species, positions, si_oo_unit)
+ts, tp = translate_si_o_o_unit(species, si_oo_unit, neighbouring_ring_atoms)
+translated_species += ts
+translated_positions += tp
 
-bond_length_bo = 1.7
-
-pos_si = positions[si_oo_unit[0]]
-d_O1 = np.array(positions[si_oo_unit[1]] - pos_si)
-d_O2 = np.array(positions[si_oo_unit[2]] - pos_si)
-
-translated_positions = []
-translated_species = []
-for ring_oxy in neighbouring_ring_atoms:
-    pos_oxy = positions[ring_oxy]
-    displacement = np.array(pos_si - pos_oxy)
-    scaled_displacement = bond_length_bo * displacement / np.linalg.norm(displacement)
-    assert (np.isclose(np.linalg.norm(scaled_displacement), bond_length_bo))
-
-    translated_positions.append(pos_oxy + scaled_displacement)
-    translated_positions.append(pos_oxy + scaled_displacement + d_O1)
-    translated_positions.append(pos_oxy + scaled_displacement + d_O2)
-    translated_species += ['Si', 'O', 'O']
-
+print(translated_species)
+print(translated_positions)
 
 # Remove old atoms
 atom_indices =  np.delete(np.arange(0, n_atoms), si_oo_unit)
