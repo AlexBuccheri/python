@@ -105,7 +105,7 @@ def trigonal_point_groups():
     point_groups = []
     a = 1
     c = 1.2
-    alpha = 130 * (np.pi/180.)
+    alpha = 130  * (np.pi/180.)
 
     hex_lattice = bravais.hexagonal(a, c)
     pg = find_point_group(hex_lattice)
