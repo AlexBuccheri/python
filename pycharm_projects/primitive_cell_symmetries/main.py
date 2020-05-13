@@ -1,6 +1,8 @@
-# ------------------------------------------------------------------
-# Determine the point groups of the reciprocal primitive unit cells
-# ------------------------------------------------------------------
+# -----------------------------------------------------------------------
+# Determine the point groups of the reciprocal primitive crystal lattices
+# Shown that in all cases, the point group of the real-space lattice
+# is equal to the point group of the reciprocal-space lattice
+# -----------------------------------------------------------------------
 
 import numpy as np
 import spglib
@@ -100,15 +102,150 @@ def tetragonal_point_groups():
 
 
 def trigonal_point_groups():
+    point_groups = []
+    a = 1
+    c = 1.2
+    alpha = 130 * (np.pi/180.)
+
+    hex_lattice = bravais.hexagonal(a, c)
+    pg = find_point_group(hex_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of hexagonal:', pg)
+
+    recip_lattice = lattice.reciprocal_lattice_vectors(hex_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of hexagonal:', pg)
+
+    #TODO(Alex) This is questionable: 2/m looks like monoclinic on wiki
+    rhom_hex_setting_lattice = bravais.rhombohedral_hex_setting(a, c)
+    pg = find_point_group(rhom_hex_setting_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of rhombohedral (hexagonal setting):', pg)
+
+    #TODO(Alex) This is questionable: 2/m looks like monoclinic on wiki
+    recip_lattice = lattice.reciprocal_lattice_vectors(rhom_hex_setting_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of rhombohedral (hexagonal setting):', pg)
+
+    #TODO(Alex) This is questionable: 2/m looks like monoclinic on wiki
+    rhom_rhom_setting_lattice = bravais.rhombohedral_hex_setting(a, alpha)
+    pg = find_point_group(rhom_rhom_setting_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of rhombohedral (rhom setting):', pg)
+
+    #TODO(Alex) This is questionable: 2/m looks like monoclinic on wiki
+    recip_lattice = lattice.reciprocal_lattice_vectors(rhom_rhom_setting_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of rhombohedral (rhom setting):', pg, '\n')
+
     return
 
+
+
 def orthorhombic_point_groups():
+    point_groups = []
+    a = 1
+    b = 2
+    c = 3
+
+    orth_lattice = bravais.simple_orthorhombic(a, b, c)
+    pg = find_point_group(orth_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of simple orthorhombic:', pg)
+
+    recip_lattice = lattice.reciprocal_lattice_vectors(orth_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of simple orthorhombic:', pg)
+
+    orth_lattice = bravais.base_centred_orthorhombic_A(a, b, c)
+    pg = find_point_group(orth_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of base-centred orthorhombic A:', pg)
+
+    recip_lattice = lattice.reciprocal_lattice_vectors(orth_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of base-centred orthorhombic A:', pg)
+
+    orth_lattice = bravais.base_centred_orthorhombic_C(a, b, c)
+    pg = find_point_group(orth_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of base-centred orthorhombic C:', pg)
+
+    recip_lattice = lattice.reciprocal_lattice_vectors(orth_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of base-centred orthorhombic C:', pg)
+
+    orth_lattice = bravais.face_centred_orthorhombic(a, b, c)
+    pg = find_point_group(orth_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of face-centred orthorhombic:', pg)
+
+    recip_lattice = lattice.reciprocal_lattice_vectors(orth_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of face-centred orthorhombic:', pg, '\n')
+
+    assert check_all_equal(point_groups, 'mmm')
+
     return
 
 def monoclinic_point_groups():
+    point_groups = []
+    a = 1
+    b = 2
+    c = 3
+
+    beta =  101 * (np.pi/180.)
+    mono_lattice = bravais.simple_monoclinic(a,b,c,beta)
+    pg = find_point_group(mono_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of simple monoclinic:', pg)
+
+    recip_lattice = lattice.reciprocal_lattice_vectors(mono_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of simple monoclinic:', pg)
+
+    mono_lattice = bravais.simple_monoclinic(a, b, c, beta)
+    pg = find_point_group(mono_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of simple monoclinic:', pg)
+
+    recip_lattice = lattice.reciprocal_lattice_vectors(mono_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of simple monoclinic:', pg, '\n')
+
+    assert check_all_equal(point_groups, '2/m')
+
     return
 
 def triclinic_point_group():
+    point_groups = []
+
+    a = 1
+    b = 2
+    c = 3
+    alpha = 85 * (np.pi/180.)
+    beta  = 91 * (np.pi/180.)
+    gamma = 57 * (np.pi/180.)
+
+    tric_lattice = bravais.simple_triclinic(a,b,c, alpha, beta, gamma)
+    pg = find_point_group(tric_lattice)
+    point_groups.append(pg)
+    print(' Real lattice of triclinic:', pg)
+
+    recip_lattice = lattice.reciprocal_lattice_vectors(tric_lattice)
+    pg = find_point_group(recip_lattice)
+    point_groups.append(pg)
+    print(' Reciprocal lattice of triclinic:', pg)
+
     return
 
 # Test for ENTOS
@@ -131,3 +268,16 @@ cubic_point_groups()
 print("Tetragonal lattices:")
 tetragonal_point_groups()
 
+# TODO(Alex) Rhombohedral point group disagrees with wiki, totally
+print("Trigonal lattices:")
+trigonal_point_groups()
+
+print("Orthorhombic lattices:")
+orthorhombic_point_groups()
+
+# Note, 2/m has more symmetry than m
+print("Monoclinic lattices:")
+monoclinic_point_groups()
+
+print("Triclinic lattices:")
+triclinic_point_group()
