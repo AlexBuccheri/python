@@ -1,0 +1,194 @@
+{
+  "1": {
+    "ops": "{{x, y, z}}",
+    "Hermann": "1",
+    "Shoenflies": "C_1",
+    "axes": null
+  },
+  "2": {
+    "ops": "{{x, y, z}, {-x, -y, -z}}",
+    "Hermann": "-1",
+    "Shoenflies": "C_i",
+    "axes": null
+  },
+  "3": {
+    "ops": "{{x, y, z}, {-x, y, -z}}",
+    "Hermann": "2",
+    "Shoenflies": "C_2",
+    "axes": "Unique axes b"
+  },
+  "4": {
+    "ops": "{{x, y, z}, {x, -y, z}}",
+    "Hermann": "m",
+    "Shoenflies": "C_s",
+    "axes": "Unique axes b"
+  },
+  "5": {
+    "ops": "{{x, y, z}, {-x, y, -z}, {-x, -y, -z}, {x, -y, z}}",
+    "Hermann": "2/m",
+    "Shoenflies": "C_2h",
+    "axes": "Unique axes b"
+  },
+  "6": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-x, y, -z}, {x, -y, -z}}",
+    "Hermann": "222",
+    "Shoenflies": "D_2",
+    "axes": null
+  },
+  "7": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {x, -y, z}, {-x, y, z}}",
+    "Hermann": "mm2",
+    "Shoenflies": "C_2v",
+    "axes": null
+  },
+  "8": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-x, y, -z}, {x, -y, -z}, {-x, -y, -z}, {x, y, -z}, {x, -y, z}, {-x, y, z}}",
+    "Hermann": "mmm",
+    "Shoenflies": "D_2h",
+    "axes": null
+  },
+  "9": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-y, x, z}, {y, -x, z}}",
+    "Hermann": "4",
+    "Shoenflies": "C_4",
+    "axes": null
+  },
+  "10": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {y, -x, -z}, {-y, x, -z}}",
+    "Hermann": "-4",
+    "Shoenflies": "S_4",
+    "axes": null
+  },
+  "11": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-y, x, z}, {y, -x, z}, {-x, -y, -z}, {x, y, -z}, {y, -x, -z}, {-y, x, -z}}",
+    "Hermann": "4/m",
+    "Shoenflies": "C_4h",
+    "axes": null
+  },
+  "12": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-y, x, z}, {y, -x, z}, {-x, y, -z}, {x, -y, -z}, {y, x, -z}, {-y, -x, -z}}",
+    "Hermann": "422",
+    "Shoenflies": "D_4",
+    "axes": null
+  },
+  "13": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-y, x, z}, {y, -x, z}, {x, -y, z}, {-x, y, z}, {-y, -x, z}, {y, x, z}}",
+    "Hermann": "4mm",
+    "Shoenflies": "C_4v",
+    "axes": null
+  },
+  "14": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {y, -x, -z}, {-y, x, -z}, {-x, y, -z}, {x, -y, -z}, {-y, -x, z}, {y, x, z}}",
+    "Hermann": "-42m",
+    "Shoenflies": "D_2d",
+    "axes": null
+  },
+  "15": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-y, x, z}, {y, -x, z}, {-x, y, -z}, {x, -y, -z}, {y, x, -z}, {-y, -x, -z}, {-x, -y, -z}, {x, y, -z}, {y, -x, -z}, {-y, x, -z}, {x, -y, z}, {-x, y, z}, {-y, -x, z}, {y, x, z}}",
+    "Hermann": "4/mmm",
+    "Shoenflies": "D_4h",
+    "axes": null
+  },
+  "16": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}}",
+    "Hermann": "3",
+    "Shoenflies": "C_3",
+    "axes": "Hexagonal axes"
+  },
+  "17": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {-x, -y, -z}, {y, -x+y, -z}, {x-y, x, -z}}",
+    "Hermann": "-3",
+    "Shoenflies": "C_3i",
+    "axes": "Hexagonal axes"
+  },
+  "18": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {-y, -x, -z}, {-x+y, y, -z}, {x, x-y, -z}}",
+    "Hermann": "312",
+    "Shoenflies": "D_3",
+    "axes": "Hexagonal axes"
+  },
+  "19": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {-y, -x, z}, {-x+y, y, z}, {x, x-y, z}}",
+    "Hermann": "3m1",
+    "Shoenflies": "C_3v",
+    "axes": "Hexagonal axes"
+  },
+  "20": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {-y, -x, -z}, {-x+y, y, -z}, {x, x-y, -z}, {-x, -y, -z}, {y, -x+y, -z}, {x-y, x, -z}, {y, x, z}, {x-y, -y, z}, {-x, -x+y, z}}",
+    "Hermann": "-31m",
+    "Shoenflies": "D_3d",
+    "axes": "Hexagonal axes"
+  },
+  "21": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {-x, -y, z}, {y, -x+y, z}, {x-y, x, z}}",
+    "Hermann": "6",
+    "Shoenflies": "C_6",
+    "axes": null
+  },
+  "22": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {x, y, -z}, {-y, x-y, -z}, {-x+y, -x, -z}}",
+    "Hermann": "-6",
+    "Shoenflies": "C_3h",
+    "axes": null
+  },
+  "23": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {-x, -y, z}, {y, -x+y, z}, {x-y, x, z}, {-x, -y, -z}, {y, -x+y, -z}, {x-y, x, -z}, {x, y, -z}, {-y, x-y, -z}, {-x+y, -x, -z}}",
+    "Hermann": "6/m",
+    "Shoenflies": "C_6h",
+    "axes": null
+  },
+  "24": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {-x, -y, z}, {y, -x+y, z}, {x-y, x, z}, {y, x, -z}, {x-y, -y, -z}, {-x, -x+y, -z}, {-y, -x, -z}, {-x+y, y, -z}, {x, x-y, -z}}",
+    "Hermann": "622",
+    "Shoenflies": "D_6",
+    "axes": null
+  },
+  "25": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {-x, -y, z}, {y, -x+y, z}, {x-y, x, z}, {-y, -x, z}, {-x+y, y, z}, {x, x-y, z}, {y, x, z}, {x-y, -y, z}, {-x, -x+y, z}}",
+    "Hermann": "6mm",
+    "Shoenflies": "C_6v",
+    "axes": null
+  },
+  "26": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {x, y, -z}, {-y, x-y, -z}, {-x+y, -x, -z}, {-y, -x, z}, {-x+y, y, z}, {x, x-y, z}, {-y, -x, -z}, {-x+y, y, -z}, {x, x-y, -z}}",
+    "Hermann": "-6m2",
+    "Shoenflies": "D_3h",
+    "axes": null
+  },
+  "27": {
+    "ops": "{{x, y, z}, {-y, x-y, z}, {-x+y, -x, z}, {-x, -y, z}, {y, -x+y, z}, {x-y, x, z}, {y, x, -z}, {x-y, -y, -z}, {-x, -x+y, -z}, {-y, -x, -z}, {-x+y, y, -z}, {x, x-y, -z}, {-x, -y, -z}, {y, -x+y, -z}, {x-y, x, -z}, {x, y, -z}, {-y, x-y, -z}, {-x+y, -x, -z}, {-y, -x, z}, {-x+y, y, z}, {x, x-y, z}, {y, x, z}, {x-y, -y, z}, {-x, -x+y, z}}",
+    "Hermann": "6/mmm",
+    "Shoenflies": "D_6h",
+    "axes": null
+  },
+  "28": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-x, y, -z}, {x, -y, -z}, {z, x, y}, {z, -x, -y}, {-z, -x, y}, {-z, x, -y}, {y, z, x}, {-y, z, -x}, {y, -z, -x}, {-y, -z, x}}",
+    "Hermann": "23",
+    "Shoenflies": "T",
+    "axes": null
+  },
+  "29": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-x, y, -z}, {x, -y, -z}, {z, x, y}, {z, -x, -y}, {-z, -x, y}, {-z, x, -y}, {y, z, x}, {-y, z, -x}, {y, -z, -x}, {-y, -z, x}, {-x, -y, -z}, {x, y, -z}, {x, -y, z}, {-x, y, z}, {-z, -x, -y}, {-z, x, y}, {z, x, -y}, {z, -x, y}, {-y, -z, -x}, {y, -z, x}, {-y, z, x}, {y, z, -x}}",
+    "Hermann": "m-3",
+    "Shoenflies": "T_h",
+    "axes": null
+  },
+  "30": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-x, y, -z}, {x, -y, -z}, {z, x, y}, {z, -x, -y}, {-z, -x, y}, {-z, x, -y}, {y, z, x}, {-y, z, -x}, {y, -z, -x}, {-y, -z, x}, {y, x, -z}, {-y, -x, -z}, {y, -x, z}, {-y, x, z}, {x, z, -y}, {-x, z, y}, {-x, -z, -y}, {x, -z, y}, {z, y, -x}, {z, -y, x}, {-z, y, x}, {-z, -y, -x}}",
+    "Hermann": "432",
+    "Shoenflies": "O",
+    "axes": null
+  },
+  "31": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-x, y, -z}, {x, -y, -z}, {z, x, y}, {z, -x, -y}, {-z, -x, y}, {-z, x, -y}, {y, z, x}, {-y, z, -x}, {y, -z, -x}, {-y, -z, x}, {y, x, z}, {-y, -x, z}, {y, -x, -z}, {-y, x, -z}, {x, z, y}, {-x, z, -y}, {-x, -z, y}, {x, -z, -y}, {z, y, x}, {z, -y, -x}, {-z, y, -x}, {-z, -y, x}}",
+    "Hermann": "-43m",
+    "Shoenflies": "T_d",
+    "axes": null
+  },
+  "32": {
+    "ops": "{{x, y, z}, {-x, -y, z}, {-x, y, -z}, {x, -y, -z}, {z, x, y}, {z, -x, -y}, {-z, -x, y}, {-z, x, -y}, {y, z, x}, {-y, z, -x}, {y, -z, -x}, {-y, -z, x}, {y, x, -z}, {-y, -x, -z}, {y, -x, z}, {-y, x, z}, {x, z, -y}, {-x, z, y}, {-x, -z, -y}, {x, -z, y}, {z, y, -x}, {z, -y, x}, {-z, y, x}, {-z, -y, -x}, {-x, -y, -z}, {x, y, -z}, {x, -y, z}, {-x, y, z}, {-z, -x, -y}, {-z, x, y}, {z, x, -y}, {z, -x, y}, {-y, -z, -x}, {y, -z, x}, {-y, z, x}, {y, z, -x}, {-y, -x, z}, {y, x, z}, {-y, x, -z}, {y, -x, -z}, {-x, -z, y}, {x, -z, -y}, {x, z, y}, {-x, z, -y}, {-z, -y, x}, {-z, y, -x}, {z, -y, -x}, {z, y, x}}",
+    "Hermann": "m-3m",
+    "Shoenflies": "O_h",
+    "axes": null
+  }
+}
