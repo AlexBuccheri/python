@@ -11,12 +11,14 @@ class InputEntry:
         if unit == None:
             self.unit = ""
 
+
 class SingleOption:
     def __init__(self, option):
         self.option = option
     def __iter__(self):
         for attr, value in self.__dict__.items():
             yield attr, value
+
 
 class EwaldOptions:
     def __init__(self, real_cutoff, recip_cutoff, alpha=None, relative_error=None):
@@ -53,11 +55,62 @@ class KGridOptions:
             yield attr, value
 
 
+class LatticeOpt:
+    def __init__(self, a=None, b=None, c=None, alpha=None, beta=None, gamma=None,
+                 length_unit = 'angstrom', angle_unit = 'degree'):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+        self.length_unit = length_unit
+        self.angle_unit = angle_unit
+
+    def __iter__(self):
+        for attr, value in self.__dict__.items():
+            yield attr, value
+
+
+def generate_structure_string(unit: str, lattice: LatticeOpt, atoms: list, bravais: str):
+
+    #For formatting
+    string = "structure( " + unit + "=["
+    atom = atoms[0]
+    string += "[" + atom[0] + "," + list_to_string(atom[1:])[1:] + ',\n'
+    white_space = " " * 11
+
+    for atom in atoms[1:]:
+        assert len(atom) == 4
+        string += white_space + "[" + atom[0] + "," + list_to_string(atom[1:])[1:] +',\n'
+    string = string[:-2] + '] \n'
+
+    lattice_opts = dict(lattice)
+    angle_unit = lattice_opts.pop('angle_unit')
+    length_unit = lattice_opts.pop('length_unit')
+
+    string +=  "   lattice( \n"
+    for key, entry in lattice_opts.items():
+        # Not the cleanest but doesn't matter
+        if len(key) == 1:
+            unit = length_unit
+        else:
+            unit = angle_unit
+        if entry != None:
+            string += white_space + key + " = " + str(entry) + " " + unit +'\n'
+
+    string += white_space + "bravais = " + bravais +'\n'
+    string += white_space + ")\n"
+    string += "        )\n"
+
+    return string
+
+
 def list_to_string(grid_integers):
     assert len(grid_integers) == 3
     return "[" + str(grid_integers[0]) + "," \
-               + str(grid_integers[1]) + "," \
-               + str(grid_integers[2]) + "]"
+           + str(grid_integers[1]) + "," \
+           + str(grid_integers[2]) + "]"
 
 
 def generic_str(value) -> str:
@@ -82,28 +135,33 @@ def options_to_string(*args):
             string += entry.command + " = " + generic_str(entry.value) + " " + str(entry.unit) + '\n'
     return string
 
+def generate_xtb_string(named_result, *args):
+    xtb_string = named_result + " := xtb(\n"
+    for string in args:
+        xtb_string += string
+    xtb_string += ")"
+    return xtb_string
 
 
-# def generate_entos_command_string(named_result, cutoff_options, ewald_options, temperature, mk_grid, symmetry_reduction):
-#     structure_string = \
-#         """   structure( fractional=[[Si, 0,    0,    0   ],
-#                                   [Si, 0.25, 0.25, 0.25]]
-#                          lattice( a = 5.431 angstrom
-#                                   bravais = fcc
-#                                 )
-#                      )
-#         """
-#
+# Set up an entos xTB input file for primitive silicon
+def primitive_silicon():
+    named_result = "si_kgrid"
+    atoms = [['Si', 0, 0, 0],
+             ['Si', 0.25, 0.25, 0.25]]
+
+    lattice_options = LatticeOpt(a=5.431, length_unit='angstrom')
+    structure_string = generate_structure_string(unit='fractional', lattice=lattice_options, atoms=atoms, bravais='fcc')
+
+    cutoff_options = TranslationCutoffOptions(h0=40, overlap=40, repulsive=40)
+    ewald_options = EwaldOptions(real_cutoff=10, recip_cutoff=2, alpha=0.5)
+    kgrid_options = KGridOptions(grid_integers=[2, 2, 2], symmetry_reduction=False)
+    temperature_option = SingleOption(InputEntry(command="temperature", value=0, unit="kelvin"))
+
+    options_string = options_to_string(cutoff_options, ewald_options, kgrid_options, temperature_option)
+
+    return generate_xtb_string(named_result, structure_string, options_string)
 
 
-named_result = "si_kgrid"
-cutoff_options = TranslationCutoffOptions(h0=40, overlap=40, repulsive=40)
-ewald_options = EwaldOptions(real_cutoff=10, recip_cutoff=2, alpha=0.5)
-kgrid_options = KGridOptions(grid_integers=[2,2,2], symmetry_reduction=False)
-temperature_option = SingleOption(InputEntry(command="temperature", value=0, unit="kelvin"))
-string = options_to_string(cutoff_options, ewald_options, kgrid_options, temperature_option)
-print(string)
+print(primitive_silicon())
 
-
-
-
+# Check out how entos is called from the command line and implement
