@@ -1,6 +1,5 @@
 import json
 import subprocess
-import sys
 
 class InputEntry:
     def __init__(self, command, value, unit=None):
@@ -36,9 +35,9 @@ class EwaldOptions:
 
 class TranslationCutoffOptions:
     def __init__(self, h0, overlap, repulsive, unit='bohr'):
-        self.h0 = InputEntry('h0', h0, unit)
-        self.overlap = InputEntry('overlap', overlap, unit)
-        self.repulsive = InputEntry('repulsive', repulsive, unit)
+        self.h0 = InputEntry('h0_cutoff', h0, unit)
+        self.overlap = InputEntry('overlap_cutoff', overlap, unit)
+        self.repulsive = InputEntry('repulsive_cutoff', repulsive, unit)
 
     def __iter__(self):
         for attr, value in self.__dict__.items():
@@ -162,6 +161,17 @@ def primitive_silicon():
     return generate_xtb_string(named_result, structure_string, options_string)
 
 
-print(primitive_silicon())
+# Run a job
+silicon_input_string = primitive_silicon()
+print(silicon_input_string)
+silicon_input_string.replace('\n', ' ')
+entos_exe = '/Users/alexanderbuccheri/Codes/entos/cmake-build-debug/entos'
+entos_command = [entos_exe, '--format','json', '-s', silicon_input_string]
+entos_json_result = subprocess.check_output(entos_command)
 
-# Check out how entos is called from the command line and implement
+# Get the result
+result = json.loads(entos_json_result)
+
+# Extract the total energy - put this in a loop and check convergence
+
+
