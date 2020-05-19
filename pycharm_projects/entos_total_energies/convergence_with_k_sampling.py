@@ -14,9 +14,6 @@ class InputEntry:
 class SingleOption:
     def __init__(self, option):
         self.option = option
-    def __iter__(self):
-        for attr, value in self.__dict__.items():
-            yield attr, value
 
 
 class EwaldOptions:
@@ -28,10 +25,6 @@ class EwaldOptions:
         if relative_error != None:
             self.relative_error = InputEntry('ewald_relative_error', relative_error)
 
-    def __iter__(self):
-        for attr, value in self.__dict__.items():
-            yield attr, value
-
 
 class TranslationCutoffOptions:
     def __init__(self, h0, overlap, repulsive, unit='bohr'):
@@ -39,19 +32,11 @@ class TranslationCutoffOptions:
         self.overlap = InputEntry('overlap_cutoff', overlap, unit)
         self.repulsive = InputEntry('repulsive_cutoff', repulsive, unit)
 
-    def __iter__(self):
-        for attr, value in self.__dict__.items():
-            yield attr, value
-
 
 class KGridOptions:
     def __init__(self, grid_integers, symmetry_reduction=False):
         self.grid_integers = InputEntry("monkhorst_pack", grid_integers)
         self.symmetry_reduction = InputEntry("symmetry_reduction", symmetry_reduction)
-
-    def __iter__(self):
-        for attr, value in self.__dict__.items():
-            yield attr, value
 
 
 class LatticeOpt:
@@ -65,10 +50,6 @@ class LatticeOpt:
         self.gamma = gamma
         self.length_unit = length_unit
         self.angle_unit = angle_unit
-
-    def __iter__(self):
-        for attr, value in self.__dict__.items():
-            yield attr, value
 
 
 def generate_structure_string(unit: str, lattice: LatticeOpt, atoms: list, bravais: str):
@@ -84,7 +65,7 @@ def generate_structure_string(unit: str, lattice: LatticeOpt, atoms: list, brava
         string += white_space + "[" + atom[0] + "," + list_to_string(atom[1:])[1:] +',\n'
     string = string[:-2] + '] \n'
 
-    lattice_opts = dict(lattice)
+    lattice_opts = lattice.__dict__
     angle_unit = lattice_opts.pop('angle_unit')
     length_unit = lattice_opts.pop('length_unit')
 
@@ -115,9 +96,7 @@ def list_to_string(grid_integers):
 def generic_str(value) -> str:
     if isinstance(value, str):
         return value
-    elif isinstance(value, int):
-        return str(value)
-    elif isinstance(value, float):
+    elif isinstance(value, int) or isinstance(value, float):
         return str(value)
     elif isinstance(value, bool):
         return str(value).lower()
@@ -130,9 +109,10 @@ def generic_str(value) -> str:
 def options_to_string(*args):
     string = ""
     for options in args:
-        for key, entry in dict(options).items():
+        for key, entry in options.__dict__.items():
             string += entry.command + " = " + generic_str(entry.value) + " " + str(entry.unit) + '\n'
     return string
+
 
 def generate_xtb_string(named_result, *args):
     xtb_string = named_result + " := xtb(\n"
@@ -150,7 +130,6 @@ def primitive_silicon():
 
     lattice_options = LatticeOpt(a=5.431, length_unit='angstrom')
     structure_string = generate_structure_string(unit='fractional', lattice=lattice_options, atoms=atoms, bravais='fcc')
-
     cutoff_options = TranslationCutoffOptions(h0=40, overlap=40, repulsive=40)
     ewald_options = EwaldOptions(real_cutoff=10, recip_cutoff=2, alpha=0.5)
     kgrid_options = KGridOptions(grid_integers=[2, 2, 2], symmetry_reduction=False)
