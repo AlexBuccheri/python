@@ -38,6 +38,6 @@ sol := xtb(
 )
 """.format(solvent=solvent, structure=str(structure))
 input_str.replace('\n', ' ')
-#entos_command = [sys.argv[1], '--mute', '--json-results', '-s', input_str]
 
-print(input_str)
+entos_command = [sys.argv[1], '--mute', '--json-results', '-s', input_str]
+#print(input_str)
