@@ -2,6 +2,8 @@ import numpy as np
 import json
 import subprocess
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
 import time
 
 from options import *
@@ -32,12 +34,17 @@ def plot_convergence(n_k_points, n_irreducible_k_points, total_energy):
     # Add number of irreducible k-points as numbers next to each point
     for i, n_irreducible_k_point in enumerate(n_irreducible_k_points):
         ax.annotate(n_irreducible_k_point, (n_k_points[i] + 0.02, total_energy[i] + 0.02), size=14, color='red')
-    #plt.legend([ax.annotate], ["Num of irreducible k-points"])
+
+    # See: https://matplotlib.org/3.1.1/gallery/text_labels_and_annotations/custom_legends.html
+    red_line = mlines.Line2D([0], [0], color='w', markeredgecolor='red', marker='$1,2,...$', markersize=20,
+                              label='Num of irreducible k-points')
+    plt.legend(handles=[red_line])
 
     plt.title("Convergence with k-sampling. Bulk silicon", fontsize=16)
     plt.xlabel("Number of Monkhorst-Pack k-points", fontsize=16)
     plt.ylabel("Total Energy (H)", fontsize=16)
     ax.tick_params(axis='both', which='major', labelsize=14)
+    plt.show()
     return fig, ax
 
 
@@ -47,7 +54,7 @@ def plot_convergence(n_k_points, n_irreducible_k_points, total_energy):
 # Run a job
 print_level = 1
 entos_exe = '/Users/alexanderbuccheri/Codes/entos/cmake-build-debug/entos'
-k_grids = [[1,1,1], [1,2,1]]  #, [1,2,2], [2,2,2], [3,3,3], [4,4,4], [5,5,5], [6,6,6]]  #[7,7,7], [8,8,8]]
+k_grids = [[1,1,1], [1,2,1], [1,2,2], [2,2,2], [3,3,3], [4,4,4], [5,5,5], [6,6,6]]  #[7,7,7], [8,8,8]]
 
 # Converge total energy w.r.t. MP grid density
 n_k_points = []
@@ -82,4 +89,4 @@ for k in range(0, len(k_grids)):
     print(n_k_points[k], n_irreducible_k_points[k], total_energy[k], timing[k])
 
 fig, ax = plot_convergence(n_k_points, n_irreducible_k_points, total_energy)
-plt.show()
+
