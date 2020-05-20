@@ -44,7 +44,6 @@ def plot_convergence(n_k_points, n_irreducible_k_points, total_energy):
     plt.xlabel("Number of Monkhorst-Pack k-points", fontsize=16)
     plt.ylabel("Total Energy (H)", fontsize=16)
     ax.tick_params(axis='both', which='major', labelsize=14)
-    plt.show()
     return fig, ax
 
 
@@ -54,7 +53,7 @@ def plot_convergence(n_k_points, n_irreducible_k_points, total_energy):
 # Run a job
 print_level = 1
 entos_exe = '/Users/alexanderbuccheri/Codes/entos/cmake-build-debug/entos'
-k_grids = [[1,1,1], [1,2,1], [1,2,2], [2,2,2], [3,3,3], [4,4,4], [5,5,5], [6,6,6]]  #[7,7,7], [8,8,8]]
+k_grids = [[1,1,1], [1,2,1], [1,2,2], [2,2,2], [3,3,3], [4,4,4], [5,5,5], [6,6,6], [7,7,7], [8,8,8]]
 
 # Converge total energy w.r.t. MP grid density
 n_k_points = []
@@ -89,4 +88,5 @@ for k in range(0, len(k_grids)):
     print(n_k_points[k], n_irreducible_k_points[k], total_energy[k], timing[k])
 
 fig, ax = plot_convergence(n_k_points, n_irreducible_k_points, total_energy)
+plt.show()
 
