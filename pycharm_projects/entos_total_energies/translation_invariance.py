@@ -3,6 +3,7 @@
 
 import json
 import subprocess
+import collections
 
 def list_to_string(mylist: list, joiner: str) -> str:
     return joiner.join([str(i) for i in mylist])
@@ -54,27 +55,97 @@ def silicon_translational_invariance():
     return abs(energy[1] - energy[0])
 
 
-    #TODO(Alex) Fill in skeleton routines
-    def diamond_translational_invariance():
-        return abs(energy[1] - energy[0])
+def rutile_translational_invariance():
+    # Reference: https: // materialsproject.org / materials / mp - 2657 /
+    input_string = """bulk_rutile := xtb( 
+                    structure( fractional=[[Ti, {pos0:s}],
+                                           [Ti, {pos1:s}],
+                                           [ O, {pos2:s}],
+                                           [ O, {pos3:s}],
+                                           [ O, {pos4:s}],
+                                           [ O, {pos5:s}]]
+                           lattice( a = 4.6068 angstrom
+            	                    c = 2.9916 angstrom
+                                    bravais = tetragonal
+                                   )
+                             )
 
-    def boron_nitride_hex():
-        return abs(energy[1] - energy[0])
+                     repulsive_cutoff = 40.0 bohr
+                     overlap_cutoff = 40.0 bohr
+                     h0_cutoff = 40.0 bohr
+                     temperature = 0 kelvin
+                     ewald_real_cutoff = 10 bohr
+                     ewald_reciprocal_cutoff = 2
+                     ewald_alpha = 0.5
+                     monkhorst_pack = [2, 2, 2]
+                     symmetry_reduction = false
+                    ) """
 
-    def sodium_chloride():
-        return abs(energy[1] - energy[0])
+    positions = [[0.000000, 0.000000, 0.000000],
+                 [0.500000, 0.500000, 0.500000],
+                 [0.695526, 0.695526, 0.000000],
+                 [0.304474, 0.304474, 0.000000],
+                 [0.195526, 0.804474, 0.500000],
+                 [0.804474, 0.195526, 0.500000]]
 
-    def anatase():
-        return abs(energy[1] - energy[0])
+    arb_shift = 0.134
 
-    def calcium_carbonate():
-        return abs(energy[1] - energy[0])
+    fractional_strings = {}
+    fractional_shift_strings = {}
+    for i, position in enumerate(positions):
+        fractional_strings['pos'+str(i)] = list_to_string(position, ',')
+        shifted_position = [xyz + arb_shift for xyz in position]
+        fractional_shift_strings['pos'+str(i)] = list_to_string(shifted_position, ',')
 
-# Main Routine
-energy_difference = silicon_translational_invariance()
+    # ** unpacks the dictionary
+    input_noshift = input_string.format(**fractional_strings).replace('\n', ' ')
+    input_shift = input_string.format(**fractional_shift_strings).replace('\n', ' ')
 
-if energy_difference > 1.e-6:
-    print('Silicon primitive unit cell')
-    print("Energy should be invariant w.r.t. translation of basis positions,"
-          "however we find |delta E| (Ha) = ", energy_difference)
+    energy = []
+    for input in [input_noshift, input_shift]:
+        entos_command = [entos_exe, '--format', 'json', '-s', input]
+        entos_output = subprocess.check_output(entos_command)
+        result = json.loads(entos_output)
+        energy.append(result['bulk_rutile']['energy'])
+        print(energy)
+
+    return abs(energy[1] - energy[0])
+
+
+#TODO(Alex) Fill in skeleton routines
+# def diamond_translational_invariance():
+#     return abs(energy[1] - energy[0])
+#
+# def boron_nitride_hex():
+#     return abs(energy[1] - energy[0])
+#
+# def sodium_chloride():
+#     return abs(energy[1] - energy[0])
+
+# def anatase():
+#     return abs(energy[1] - energy[0])
+#
+# def calcium_carbonate():
+#     return abs(energy[1] - energy[0])
+#
+# def lead_sulphide():
+#     return abs(energy[1] - energy[0])
+
+
+# Compute energy differences
+energy_difference = collections.OrderedDict()
+
+energy_difference['silicon'] = silicon_translational_invariance()
+
+energy_difference['rutile'] = rutile_translational_invariance()
+
+# Evaluate energy differences
+for key, value in energy_difference:
+    if energy_difference > 1.e-6:
+        print(key + ' primitive unit cell')
+        print("Energy should be invariant w.r.t. translation of basis positions,"
+              "however we find |delta E| (Ha) = ", value)
+
+
+
 
