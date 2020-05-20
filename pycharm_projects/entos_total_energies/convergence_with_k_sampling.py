@@ -96,10 +96,11 @@ def list_to_string(grid_integers):
 def generic_str(value) -> str:
     if isinstance(value, str):
         return value
-    elif isinstance(value, int) or isinstance(value, float):
-        return str(value)
+    # bool can also be evaluated as int, hence bool comes first
     elif isinstance(value, bool):
         return str(value).lower()
+    elif isinstance(value, int) or isinstance(value, float):
+        return str(value)
     elif isinstance(value, list):
         return list_to_string(value)
     else:
@@ -123,8 +124,7 @@ def generate_xtb_string(named_result, *args):
 
 
 # Set up an entos xTB input file for primitive silicon
-def primitive_silicon():
-    named_result = "si_kgrid"
+def primitive_silicon(named_result):
     atoms = [['Si', 0, 0, 0],
              ['Si', 0.25, 0.25, 0.25]]
 
@@ -132,18 +132,20 @@ def primitive_silicon():
     structure_string = generate_structure_string(unit='fractional', lattice=lattice_options, atoms=atoms, bravais='fcc')
     cutoff_options = TranslationCutoffOptions(h0=40, overlap=40, repulsive=40)
     ewald_options = EwaldOptions(real_cutoff=10, recip_cutoff=2, alpha=0.5)
-    kgrid_options = KGridOptions(grid_integers=[2, 2, 2], symmetry_reduction=False)
+    kgrid_options = KGridOptions(grid_integers=[1, 1, 1], symmetry_reduction=True)
     temperature_option = SingleOption(InputEntry(command="temperature", value=0, unit="kelvin"))
 
     options_string = options_to_string(cutoff_options, ewald_options, kgrid_options, temperature_option)
+    xtb_string = generate_xtb_string(named_result, structure_string, options_string)
+    xtb_string.replace('\n', ' ')
 
-    return generate_xtb_string(named_result, structure_string, options_string)
+    return xtb_string
 
 
 # Run a job
-silicon_input_string = primitive_silicon()
-print(silicon_input_string)
-silicon_input_string.replace('\n', ' ')
+named_result = "si_kgrid"
+silicon_input_string = primitive_silicon(named_result)
+#print(silicon_input_string)
 entos_exe = '/Users/alexanderbuccheri/Codes/entos/cmake-build-debug/entos'
 entos_command = [entos_exe, '--format','json', '-s', silicon_input_string]
 entos_json_result = subprocess.check_output(entos_command)
@@ -151,6 +153,11 @@ entos_json_result = subprocess.check_output(entos_command)
 # Get the result
 result = json.loads(entos_json_result)
 
-# Extract the total energy - put this in a loop and check convergence
 
+view_keys = True
+if view_keys:
+    print(result[named_result].keys())
+
+# Extract the total energy - put this in a loop and check convergence
+print(result[named_result]['energy'])
 
