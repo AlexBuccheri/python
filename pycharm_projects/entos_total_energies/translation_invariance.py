@@ -5,15 +5,22 @@
 import json
 import subprocess
 import collections
+import typing
 
 
-entos_exe = '/Users/alexanderbuccheri/Codes/entos/cmake-build-debug/entos'
+entos_root = '/Users/alexanderbuccheri/Codes/entos/'
+entos_exe = entos_root + 'cmake-build-debug/entos'
 
 # Run entos energy differences from python
 run_energy_differences = False
 
 # Generate equivalent app test inputs from python
 generate_app_test_inputs = True
+
+#TODO(Alex) Structures to add
+# def sodium_chloride():
+# def calcium_carbonate():
+# def G2O3
 
 
 # -----------------------------------
@@ -23,7 +30,8 @@ generate_app_test_inputs = True
 def list_to_string(mylist: list, joiner: str) -> str:
     return joiner.join([str(i) for i in mylist])
 
-def get_energies(named_result, inputs):
+
+def get_energies(named_result: str, inputs: typing.List[str]) -> typing.List[float]:
     energy = []
     for input in inputs:
         entos_command = [entos_exe, '--format', 'json', '-s', input.replace('\n', ' ')]
@@ -32,7 +40,11 @@ def get_energies(named_result, inputs):
         energy.append(result[named_result]['energy'])
     return energy
 
-def get_energy_differences(named_result, strings_function, arbitrary_shift):
+
+def get_energy_differences(named_result: str,
+                           strings_function: typing.Callable,
+                           arbitrary_shift: float) -> typing.List[float]:
+
     input_strings = strings_function(named_result, arbitrary_shift)
     energies = get_energies(named_result, input_strings)
 
@@ -42,7 +54,8 @@ def get_energy_differences(named_result, strings_function, arbitrary_shift):
 
     return energy_diffs
 
-def evaluate_energy_differences(energy_difference, tol=1.e-6):
+
+def evaluate_energy_differences(energy_difference: typing.Dict, tol=1.e-6) -> bool:
     all_pass = True
     for key, value in energy_difference.items():
         if value > tol:
@@ -52,11 +65,12 @@ def evaluate_energy_differences(energy_difference, tol=1.e-6):
             all_pass = False
     return all_pass
 
+
 # ----------------------------------------
 # entos string functions for translations
 # ----------------------------------------
 
-def silicon_translational_invariance_strings(named_result, arbitrary_shift):
+def silicon_translational_invariance_strings(named_result: str, arbitrary_shift: float) -> typing.Tuple[str]:
     input_string = named_result + """ := xtb(
         structure( fractional=[[Si,{pos0:s}],
                                [Si,{pos1:s}]] 
@@ -92,7 +106,7 @@ def silicon_translational_invariance_strings(named_result, arbitrary_shift):
     return (input_noshift, input_shift)
 
 
-def rutile_translational_invariance_strings(named_result, arb_shift):
+def rutile_translational_invariance_strings(named_result: str, arb_shift: float) -> typing.Tuple[str]:
     # Reference: https://materialsproject.org/materials/mp-2657/
     input_string = named_result + """ := xtb(
                        structure( fractional=[[Ti, {pos0:s}],
@@ -138,7 +152,7 @@ def rutile_translational_invariance_strings(named_result, arb_shift):
     return (input_noshift, input_shift)
 
 
-def boron_nitride_hex_translational_invariance_strings(named_result, arb_shift):
+def boron_nitride_hex_translational_invariance_strings(named_result: str, arb_shift: float) -> typing.Tuple[str]:
     # Reference: https://materialsproject.org/materials/mp-984/
     input_string = named_result + """ := xtb(
          structure( fractional=[[B, {pos0:s}],
@@ -179,46 +193,50 @@ def boron_nitride_hex_translational_invariance_strings(named_result, arb_shift):
     return (input_noshift, input_shift)
 
 
-# Fill in skeleton routines
-#
-# def diamond_translational_invariance():
-#     return abs(energy[1] - energy[0])
-#
-# def sodium_chloride():
-#     return abs(energy[1] - energy[0])
-
-# def anatase():
-#     return abs(energy[1] - energy[0])
-#
-# def calcium_carbonate():
-#     return abs(energy[1] - energy[0])
-#
-# def lead_sulphide():
-#     return abs(energy[1] - energy[0])
-#
-# graphite:
-# Looks like CIF contains asymmetric cell and vesta converts to conventional
-# Need primitive cell
-
-
 # -----------------------------------------------
 # Generate entos input files
 # -----------------------------------------------
 
-def boron_nitride_input_str():
+# TODO(Alex) Could generalise this
+def silicon_input_str() -> str:
+    named_result = 'silicon'
+    (input1, input2) = silicon_translational_invariance_strings(named_result, arbitrary_shift=0.43)
+    assert_string = " assert(load = " + named_result + " variable = n_iter value = 8)\n"
+    assert_string += " assert(load = " + named_result + " variable = energy value =  -3.669686) \n\n"
+    return input1 + '\n' + assert_string + input2 + '\n' + assert_string
+
+
+def rutile_input_str() -> str:
+    named_result = 'rutile'
+    (input1, input2) = rutile_translational_invariance_strings(named_result, arb_shift=0.134)
+    assert_string = " assert(load = " + named_result + " variable = n_iter value = 35)\n"
+    assert_string += " assert(load = " + named_result + " variable = energy value =   -150.135037) \n\n"
+    return input1 + '\n' + assert_string + input2 + '\n' + assert_string
+
+
+def boron_nitride_hex_input_str() -> str:
     named_result = 'bn_hex'
+    comments = "! Periodic D3 should really be included for an accurate total energy \n"
     (input1, input2) = boron_nitride_hex_translational_invariance_strings(named_result, arb_shift=0.13)
-    assert_string = " assert(load = " + named_result + " variable = n_iterations value = 6)\n"
+    assert_string = " assert(load = " + named_result + " variable = n_iter value = 6)\n"
     assert_string += " assert(load = " + named_result + " variable = energy value =  -9.431841) \n\n"
-    print(input1 + '\n' + assert_string + input2 + assert_string)
+    return comments + input1 + '\n' + assert_string + input2 + '\n' + assert_string
+
 
 if generate_app_test_inputs:
-    boron_nitride_input_str()
+    string_functions = [silicon_input_str(), rutile_input_str(), boron_nitride_hex_input_str()]
+    input_string = "! Translation invariance of the Total Energy. \n" \
+                   "! For each material, do two calculations and assert that the energies are the same\n\n"
+    for material_input_str in string_functions:
+        input_string += material_input_str + "\n\n"
+    fid = open(entos_root + 'test/xtb_periodic_trans_inv.in', 'w')
+    fid.write(input_string)
+    fid.close()
 
 
-# -----------------------------------------------
-# Compute energy differences
-# -----------------------------------------------
+# ----------------------------------------------------
+# Compute energy differences via python calling entos
+# ----------------------------------------------------
 
 if run_energy_differences:
     energy_difference = collections.OrderedDict()
