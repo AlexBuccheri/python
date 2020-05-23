@@ -66,11 +66,35 @@ def evaluate_energy_differences(energy_difference: typing.Dict, tol=1.e-6) -> bo
     return all_pass
 
 
+def substitute_positions_in_input(input_string: str, positions: typing.List, arb_shift: float) \
+        -> typing.Tuple[str]:
+    """ Fills in positions using string.format
+
+        Inputs:
+          positions. List of positions. Must be in fractional coordinates
+
+        Returns a tuple containing string with a) original positions subbed and b) shifted positions subbed
+    """
+
+    fractional_strings = {}
+    fractional_shift_strings = {}
+
+    for i, position in enumerate(positions):
+        fractional_strings['pos' + str(i)] = list_to_string(position, ',')
+        shifted_position = [xyz + arb_shift for xyz in position]
+        fractional_shift_strings['pos' + str(i)] = list_to_string(shifted_position, ',')
+
+    # ** unpacks the dictionary
+    input_noshift = input_string.format(**fractional_strings)
+    input_shift = input_string.format(**fractional_shift_strings)
+    return (input_noshift, input_shift)
+
+
 # ----------------------------------------
 # entos string functions for translations
 # ----------------------------------------
 
-def silicon_translational_invariance_strings(named_result: str, arbitrary_shift: float) -> typing.Tuple[str]:
+def silicon_translational_invariance_strings(named_result: str, arb_shift: float) -> typing.Tuple[str]:
     input_string = named_result + """ := xtb(
         structure( fractional=[[Si,{pos0:s}],
                                [Si,{pos1:s}]] 
@@ -90,20 +114,9 @@ def silicon_translational_invariance_strings(named_result: str, arbitrary_shift:
         )
         """
 
-    fractional_0 = [0.00, 0.00, 0.00]
-    fractional_1 = [0.25, 0.25, 0.25]
+    positions = [[0.00, 0.00, 0.00],[0.25, 0.25, 0.25]]
 
-    fractional_0_shifted = [round(i + arbitrary_shift, 3) for i in fractional_0]
-    fractional_1_shifted = [round(i + arbitrary_shift, 3) for i in fractional_1]
-
-    fractional_0_str = list_to_string(fractional_0, ',')
-    fractional_1_str = list_to_string(fractional_1, ',')
-    input_noshift = input_string.format(pos0=fractional_0_str, pos1=fractional_1_str)
-
-    fractional_0_shifted_str = list_to_string(fractional_0_shifted, ',')
-    fractional_1_shifted_str = list_to_string(fractional_1_shifted, ',')
-    input_shift = input_string.format(pos0=fractional_0_shifted_str, pos1=fractional_1_shifted_str)
-    return (input_noshift, input_shift)
+    return substitute_positions_in_input(input_string, positions, arb_shift)
 
 
 def rutile_translational_invariance_strings(named_result: str, arb_shift: float) -> typing.Tuple[str]:
@@ -139,17 +152,7 @@ def rutile_translational_invariance_strings(named_result: str, arb_shift: float)
                  [0.195526, 0.804474, 0.500000],
                  [0.804474, 0.195526, 0.500000]]
 
-    fractional_strings = {}
-    fractional_shift_strings = {}
-    for i, position in enumerate(positions):
-        fractional_strings['pos' + str(i)] = list_to_string(position, ',')
-        shifted_position = [xyz + arb_shift for xyz in position]
-        fractional_shift_strings['pos' + str(i)] = list_to_string(shifted_position, ',')
-
-    # ** unpacks the dictionary
-    input_noshift = input_string.format(**fractional_strings)
-    input_shift = input_string.format(**fractional_shift_strings)
-    return (input_noshift, input_shift)
+    return substitute_positions_in_input(input_string, positions, arb_shift)
 
 
 def boron_nitride_hex_translational_invariance_strings(named_result: str, arb_shift: float) -> typing.Tuple[str]:
@@ -180,17 +183,71 @@ def boron_nitride_hex_translational_invariance_strings(named_result: str, arb_sh
                  [0.333333, 0.666667, 0.750000],
                  [0.666667, 0.333333, 0.250000]]
 
-    fractional_strings = {}
-    fractional_shift_strings = {}
-    for i, position in enumerate(positions):
-        fractional_strings['pos'+str(i)] = list_to_string(position, ',')
-        shifted_position = [xyz + arb_shift for xyz in position]
-        fractional_shift_strings['pos'+str(i)] = list_to_string(shifted_position, ',')
+    return substitute_positions_in_input(input_string, positions, arb_shift)
 
-    input_noshift = input_string.format(**fractional_strings)
-    input_shift = input_string.format(**fractional_shift_strings)
 
-    return (input_noshift, input_shift)
+def calcium_titanate_translational_invariance_strings(named_result: str, arb_shift: float) -> typing.Tuple[str]:
+    # Ref: https://materialsproject.org/materials/mp-4019/
+    input_string = named_result + """ := xtb(
+         structure( fractional=[[Ca, {pos0:s}],  
+                                 Ca, {pos1:s}], 
+                                 Ca, {pos2:s}], 
+                                 Ca, {pos3:s}], 
+                                 Ti, {pos4:s}], 
+                                 Ti, {pos5:s}], 
+                                 Ti, {pos6:s}], 
+                                 Ti, {pos7:s}], 
+                                 O , {pos8:s}],
+                                 O , {pos9:s}],
+                                 O , {pos10:s}],
+                                 O , {pos11:s}],
+                                 O , {pos12:s}],
+                                 O , {pos13:s}],
+                                 O , {pos14:s}],
+                                 O , {pos15:s}],
+                                 O , {pos16:s}],
+                                 O , {pos17:s}],
+                                 O , {pos18:s}],
+                                 O , {pos19:s}]] 
+                lattice(  a=5.40444906
+                          b=5.51303112
+                          c=7.69713264
+                          bravais = orthorhombic
+                        )
+                )
+      repulsive_cutoff = 40.0 bohr
+      overlap_cutoff = 40.0 bohr
+      h0_cutoff = 40.0 bohr
+      temperature = 0 kelvin
+      ewald_real_cutoff = 10 bohr
+      ewald_reciprocal_cutoff = 2
+      ewald_alpha = 0.5
+      monkhorst_pack = [2, 2, 2]
+      symmetry_reduction = false
+     ) """
+
+    positions = [[0.991521, 0.044799, 0.750000],
+                 [0.491521, 0.455201, 0.250000],
+                 [0.508479, 0.544799, 0.750000],
+                 [0.008479, 0.955201, 0.250000],
+                 [0.500000, 0.000000, 0.500000],
+                 [0.000000, 0.500000, 0.500000],
+                 [0.000000, 0.500000, 0.000000],
+                 [0.500000, 0.000000, 0.000000],
+                 [0.921935, 0.520580, 0.250000],
+                 [0.421935, 0.979420, 0.750000],
+                 [0.578065, 0.020580, 0.250000],
+                 [0.078065, 0.479420, 0.750000],
+                 [0.707456, 0.291917, 0.959281],
+                 [0.207456, 0.208083, 0.040719],
+                 [0.792544, 0.791917, 0.540719],
+                 [0.292544, 0.708083, 0.459281],
+                 [0.707456, 0.291917, 0.540719],
+                 [0.207456, 0.208083, 0.459281],
+                 [0.292544, 0.708083, 0.040719],
+                 [0.792544, 0.791917, 0.959281]]
+
+    return substitute_positions_in_input(input_string, positions, arb_shift)
 
 
 # -----------------------------------------------
@@ -200,7 +257,7 @@ def boron_nitride_hex_translational_invariance_strings(named_result: str, arb_sh
 # TODO(Alex) Could generalise this
 def silicon_input_str() -> str:
     named_result = 'silicon'
-    (input1, input2) = silicon_translational_invariance_strings(named_result, arbitrary_shift=0.43)
+    (input1, input2) = silicon_translational_invariance_strings(named_result, arb_shift=0.43)
     assert_string = " assert(load = " + named_result + " variable = n_iter value = 8)\n"
     assert_string += " assert(load = " + named_result + " variable = energy value =  -3.669686) \n\n"
     return input1 + '\n' + assert_string + input2 + '\n' + assert_string
@@ -226,7 +283,9 @@ def boron_nitride_hex_input_str() -> str:
 if generate_app_test_inputs:
     string_functions = [silicon_input_str(), rutile_input_str(), boron_nitride_hex_input_str()]
     input_string = "! Translation invariance of the Total Energy. \n" \
-                   "! For each material, do two calculations and assert that the energies are the same\n\n"
+                   "! For each material, do two calculations and assert that the energies are the same\n\n" \
+                   "! Autogenerated by translation_invariance.py. Material refs within"
+
     for material_input_str in string_functions:
         input_string += material_input_str + "\n\n"
     fid = open(entos_root + 'test/xtb_periodic_trans_inv.in', 'w')
