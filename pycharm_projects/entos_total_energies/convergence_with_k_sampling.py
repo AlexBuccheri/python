@@ -23,7 +23,7 @@ entos_exe = '/Users/alexanderbuccheri/Codes/entos/cmake-build-debug/entos'
 def plot_convergence(n_k_points:typing.List[int],
                      n_irreducible_k_points:typing.List[int],
                      total_energy:typing.List[float],
-                     title:str=None):
+                     title:str = None):
     """Plot convergence in total energy w.r.t. MP grid density
     """
     fig, ax = plt.subplots()
@@ -111,6 +111,7 @@ def primitive_neutral_fcc_input_string(named_result:str, kgrid_options, element,
 def primitive_silicon_input_string(named_result:str, kgrid_options):
     """ Set up an entos xTB input file for primitive silicon
         Ref for lattice constant: Probably wiki.
+        Note, quite different to: https://materialsproject.org/materials/mp-149/
     """
     element = 'Si'
     a = 5.431
