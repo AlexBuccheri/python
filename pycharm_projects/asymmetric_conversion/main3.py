@@ -97,7 +97,6 @@ unit_cell_positions = [atom.position for atom in unit_cell]
 d = spatial.distance_matrix(unit_cell_positions, unit_cell_positions)
 
 # Index loose atoms
-
 radius = 1.8
 loose_atoms = []
 for ia in range(0, n_atoms_prim):
@@ -107,24 +106,30 @@ for ia in range(0, n_atoms_prim):
 
 assert len(loose_atoms) == 4
 
-# Should do this for each loose atom and reduce to a set
-ia = loose_atoms[0]
-pos_atom = unit_cell[ia].position
-loose_atom_positions = [pos_atom + translation for translation in translations]
-d_loose = spatial.distance_matrix(loose_atom_positions, unit_cell_positions)
+def find_valid_equivalent_positions(loose_index, unit_cell, radius=1.8):
+    loose_atom_position = unit_cell[loose_index].position
+    equivalent_positions = [loose_atom_position + translation for translation in translations]
+    d_loose = spatial.distance_matrix(equivalent_positions, unit_cell_positions)
+    valid_equivalents = []
+    for ia in range(0, len(equivalent_positions)):
+        indices = np.where((d_loose[ia, :] > 0.) & (d_loose[ia, :] <= radius))[0]
+        if len(indices) > 0:
+            valid_equivalents.append(ia)
+    return valid_equivalents
+
 valid_equivalents = []
-for ja in range(0, len(loose_atom_positions)):
-    indices = np.where((d_loose[ja, :] > 0.) & (d_loose[ja, :] <= radius))[0]
-    if len(indices) > 0:
-        valid_equivalents.append(ja)
+for loose_index in loose_atoms:
+    valid_equivalents.append(find_valid_equivalent_positions(loose_index, unit_cell))
 
-
-
+# Don't need to keep track of how original indices correspond to equivalent indices
+valid_equivalents = set(flatten_list(valid_equivalents))
+valid_equivalents = list(valid_equivalents)
 print(valid_equivalents)
+
 
 neighbours = []
 for ia in valid_equivalents:
-    position = loose_atom_positions[ia]
+    position = unit_cell[ia].position
     neighbours.append(atoms.Atom(position=position, species='B'))
 
 
