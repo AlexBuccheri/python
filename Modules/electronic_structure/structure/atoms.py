@@ -13,15 +13,29 @@ class Atom:
     def atomic_number(self) -> int:
         return elements.symbol_to_an[self.species]
 
-# Should this be a class or a function?
 class Atoms:
     def __init__(self):
         return
+
     def __new__(self, species: List[str], positions: List[float]) -> List[Atom]:
         molecule = []
         for ia in range(0, len(species)):
             molecule.append(Atom(species=species[ia], position=positions[ia]))
         return molecule
+
+    def __add__(self, other: List[Atom]) -> List[Atom]:
+        return self.molecule + other
+
+    def __getitem__(self, atom_index: int):
+        return self.molecule[atom_index]
+
+    def __setitem__(self, atom_index: int, atom: Atom):
+        self.molecule[atom_index] = atom
+
+    def __delitem__(self, atom_index: int):
+        del self.molecule[atom_index]
+
+
 
 class CoordinateType(Enum):
     XYZ = 1

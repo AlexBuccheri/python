@@ -1,4 +1,4 @@
-import numpy as np 
+import numpy as np
 
 from . import atoms
 
@@ -8,6 +8,40 @@ class CellMinMax:
         self.max = max
 
 
+def get_supercell_vectors_alt(lattice, max_integers):
+    """ Expect lattice vectors colunwise... transpose both of these to get th docs right
+         np.array([[a1, a2, a3],                 np.array([[n, n, n],
+                   [b1, b2, b3],   element_wise            [m, m, m]
+                   [c1, c2, c3]])                          [l, l, l]])   
+    return columwise:  [[n.a1, m.b1, c1]           
+                        [n.a2, m.b2, c2]           
+                        [n.a3, m.b3, c3]]           """
+
+    repeated_max_integers = np.array([[max_integers],
+                                      [max_integers],
+                                      [max_integers]])
+    return np.multiply(lattice_vectors, repeated_max_integers)
+
+# Test for some non-orthogonal vectors 
+
+def get_supercell_vector(lattice, max_integers):
+    """ Expect lattice vectors colunwise 
+        Do (a, b, c) P where a, b and c are unit cell vectors 
+        and P is the affine transformation matrix:
+
+       [[a1, b1, c1]      [[n, 0, 0]        [[n.a1, m.b1, l.c1]    
+        [a2, b2, c2]       [0, m, 0]   =     [n.a2, m.b2, l.c2]        
+        [a3, b3, c3]]      [0, 0, l]]        [n.a3, m.b3, l.c3]]
+    
+      Return supercell vectors stored columnwise
+    """
+    assert len(max_integers) == 3 
+    P = np.zeros(shape=(3,3))
+    P.diagonal(max_integers)
+    return lattice * P
+                             
+
+        
 def supercell_limits(n, centred_on_zero = False):
     limits = []
     if centred_on_zero:
@@ -66,6 +100,7 @@ def translation_vectors(lattice, n, centred_on_zero = False):
         for iy in range(limits[1].min, limits[1].max):
             for ix in range(limits[0].min, limits[0].max):
                 translations.append(np.matmul(lattice, np.array([ix, iy, iz])))
+
     return translations
 
 
@@ -99,4 +134,5 @@ def list_global_atom_indices_per_cells(unit_cell, translations):
 # Lattice vectors define the dimensions & shape of the box
 def molecule_in_supercell(lattice):
     supercell = []
-    return supercell 
+    return supercell
+
