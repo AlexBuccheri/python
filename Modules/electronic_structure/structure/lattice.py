@@ -1,7 +1,9 @@
 # Operations done on lattice vectors
 
-from maths.math import triple_product
-from maths.matrix_utils import off_diagonal_indices
+import numpy as np 
+
+from modules.maths.math import triple_product, angle_between_vectors
+from modules.maths.matrix_utils import off_diagonal_indices
 
 #Volume of parallepiped cell
 #Expect lattice vectors stored column-wise
@@ -35,3 +37,24 @@ def test_reciprocal_lattice_vectors(a,b):
         return False
     else:
         return True
+
+def cell_angles(lattice, return_unit='radian'):
+    """ Angles of a parallelpiped unit cell
+        See https://en.wikipedia.org/wiki/Crystal_structure#Lattice_systems for convention
+    :param lattice: 3x3 np.array, lattice vectors stored columnwise
+    :return: tuple containing cell angles
+    """
+    assert lattice.shape == (3,3)
+    a = lattice[:, 0]
+    b = lattice[:, 1]
+    c = lattice[:, 2]
+    alpha = angle_between_vectors(b, c)
+    beta  = angle_between_vectors(c, a)
+    gamma = angle_between_vectors(a, b)
+
+    if return_unit == 'radian':
+     return (alpha, beta, gamma)
+    elif return_unit == 'degrees':
+     return [angle * (180. / np.pi) for angle in (alpha, beta, gamma)]
+    else:
+        quit("Return unit not valid: ", return_unit)
