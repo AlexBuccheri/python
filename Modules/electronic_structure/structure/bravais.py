@@ -133,6 +133,8 @@ def simple_orthorhombic(a,b,c):
      -----
        http://aflowlib.org/CrystalDatabase/orthorhombic_lattice.html
      """
+    assert a < b
+    assert b < c
     cell = np.array( [[a, 0, 0],
                       [0, b, 0],
                       [0, 0, c]])
@@ -151,9 +153,9 @@ def base_centred_orthorhombic_C(a,b,c):
     return cell
 
 def base_centred_orthorhombic(spacegroup: str, a,b,c):
-    if spacegroup[0] =='A':
+    if spacegroup[0].lower() =='a':
         return base_centred_orthorhombic_A(a,b,c)
-    elif spacegroup[0] =='C':
+    elif spacegroup[0].lower() =='c':
         return base_centred_orthorhombic_C(a,b,c)
     else:
         raise Exception('Space group must start with A or C')
