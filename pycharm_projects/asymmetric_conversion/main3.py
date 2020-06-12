@@ -1,3 +1,8 @@
+""" In order to apply substitutions to the system, one needs a system where all atoms are connected.
+    As such, I'm translating all loose atoms into positions in other unit cells BUT are connected as
+    nearest neighbours to atoms in the central cell. One can then perform substitutions on this system
+    and fold any positions that lie outside the central cell of the final structure, back inside
+"""
 
 # External libraries
 import numpy as np
@@ -72,161 +77,133 @@ unit_cell = atoms.Atoms(species=species, positions=positions_ang)
 # [-1:1] per dimension, centred on zero
 n = [3, 3, 3]
 translations = supercell.translation_vectors(lattice_vectors, n, centred_on_zero=True)
-s_cell = supercell.build_supercell(unit_cell, translations)
-
-# Output it in xyz
-alex_xyz(output_dir + '/' + "aei_supercell", s_cell)
 
 n_atoms_prim = len(unit_cell)
-n_atoms_super = len(s_cell)
-assert n_atoms_super == np.product(n) * n_atoms_prim
+n_atoms_super = np.product(n) * n_atoms_prim
 
 print("N atoms in primitive cell ", n_atoms_prim)
 print("N atoms in supercell: ",n_atoms_super)
 
+visualise = False
+if visualise:
+    s_cell = supercell.build_supercell(unit_cell, translations)
+    # Output it in xyz
+    # alex_xyz(output_dir + '/' + "aei_supercell", s_cell)
+    n_atoms_super = len(s_cell)
+    assert n_atoms_super == np.product(n) * n_atoms_prim
 
-# -----------------------------------------------------------------------
-# Smarter way to do this bit is just translate loose atoms by each translation
-# vector and see if any positions put it as a NN
-# This is the structure one works with
-# Finally, once the boron structure has been constructed, one wraps all
-# atoms outside the cell to inside
-# -----------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
+# Translate each loose atom by all translation vectors and see if any
+# equivalent position put each loose atom as a NN of an atom in the central cell
+#
+# Retain these and dump the uncoordinated atoms. This is the structure one works
+# with for boron substitutions
+#
+# Once the boron framework has been constructed, one wraps all atoms outside
+# the cell to inside
+# -------------------------------------------------------------------------------
+
+def index_loose_atoms(unit_cell_positions):
+    """ Index loose or uncoordinated atoms """
+
+    d = spatial.distance_matrix(unit_cell_positions, unit_cell_positions)
+    upper_bound_length = 1.8
+    loose_atom_indices = []
+    for ia in range(0, n_atoms_prim):
+        indices = np.where((d[ia, :] > 0.) & (d[ia, :] <= upper_bound_length))[0]
+        if len(indices) == 0:
+            loose_atom_indices.append(ia)
+
+    assert len(loose_atom_indices) == 4
+    return loose_atom_indices
+
+
+def find_equivalent_position(loose_atom_index, unit_cell, translations, verbose=False):
+
+    # Target bond length is ~ 1.529 - 1.6
+    lower_bound = 1.4
+    upper_bound = 1.8
+
+    loose_atom_position = unit_cell[loose_atom_index].position
+    loose_atom_positions = [loose_atom_position + translation for translation in translations]
+    d_loose = spatial.distance_matrix(loose_atom_positions, unit_cell_positions)
+
+    valid_equivalent = []
+    for ia in range(0, len(loose_atom_positions)):
+        # neighbours of loose atom in central cell
+        indices = np.where((d_loose[ia, :] > lower_bound) & (d_loose[ia, :] <= upper_bound))[0]
+        if len(indices) > 0:
+            if verbose: print("distance:", d_loose[ia, indices])
+            valid_equivalent.append(loose_atom_positions[ia].tolist())
+
+    assert len(valid_equivalent) == 1
+    return valid_equivalent[0]
+
+
+def replace_loose_atoms(unit_cell, loose_atom_indices, equivalent_positions, visualise_parts=False):
+    """ replace_loose_atoms """
+
+    # Remove loose atoms from unit cell - can't use pop as it changes the indexing each time
+    new_unit_cell = []
+    removed_atoms = []
+    for ia in range(0, len(unit_cell)):
+        if ia not in loose_atom_indices:
+            new_unit_cell.append(unit_cell[ia])
+        else:
+            removed_atoms.append(unit_cell[ia])
+
+    # I know they're all oxygens but should treat this correctly if making general
+    replacements = [atoms.Atom(position=position, species='O') for position in equivalent_positions]
+
+    if visualise_parts:
+        alex_xyz(output_dir + '/' + "aei_central_cell", unit_cell)
+        alex_xyz(output_dir + '/' + "aei_replacements_cell", replacements)
+        alex_xyz(output_dir + '/' + "aei_removed_atoms", removed_atoms)
+
+    return new_unit_cell + replacements
+
 
 unit_cell_positions = [atom.position for atom in unit_cell]
-d = spatial.distance_matrix(unit_cell_positions, unit_cell_positions)
+loose_atom_indices = index_loose_atoms(unit_cell_positions)
 
-# Index loose atoms
+# One equivalent position per loose atom
+equivalent_positions = []
+for ia in loose_atom_indices:
+    equivalent_positions.append(find_equivalent_position(ia, unit_cell, translations))
 
-radius = 1.8
-loose_atoms = []
-for ia in range(0, n_atoms_prim):
-    indices = np.where((d[ia, :] > 0.) & (d[ia, :] <= radius))[0]
+unit_cell = replace_loose_atoms(unit_cell, loose_atom_indices, equivalent_positions)
+assert len(unit_cell) == n_atoms_prim
+alex_xyz(output_dir + '/' + "aei_primitive_cell_fullcon", unit_cell)
+print("Output a cell with full connectivity. "
+      "Atoms that lie outside the primitive cell can be folded back in")
+
+# -------------------------------------------------------
+# Test folding back in
+# -------------------------------------------------------
+def position_in_cell(pos):
+    """ For positions outside of the unit cell,
+       fold them back in  """
+
+    indices = np.where((pos < 0) | (pos > 1))[0]
     if len(indices) == 0:
-        loose_atoms.append(ia)
+        return pos
+    else:
+        for i in indices:
+            pos[i] = pos[i] - np.floor(pos[i])
 
-assert len(loose_atoms) == 4
-
-# Should do this for each loose atom and reduce to a set
-# target bond length is ~ 1.529 (I THINK) => Set lower bond too
-def find_equivalent_position(ia, unit_cell, translations):
-    pos_atom = unit_cell[ia].position
-    loose_atom_positions = [pos_atom + translation for translation in translations]
-    d_loose = spatial.distance_matrix(loose_atom_positions, unit_cell_positions)
-    valid_equivalent = []
-    for ja in range(0, len(loose_atom_positions)):
-        indices = np.where((d_loose[ja, :] > 1.4) & (d_loose[ja, :] <= 1.8))[0]
-        if len(indices) > 0:
-            print("distance:", d_loose[ja, indices])
-            valid_equivalent.append(loose_atom_positions[ja])
-    assert len(valid_equivalent) == 1
-    return valid_equivalent
-
-valid_equivalents = []
-for ia in loose_atoms:
-    valid_equivalents.append(find_equivalent_position(ia, unit_cell, translations))
+    return pos
 
 
-print(valid_equivalents)
+inv_lattice = np.linalg.inv(lattice)
+for ia,atom in enumerate(unit_cell):
+    fractional_position = np.matmul(inv_lattice, atom.position)
+    fractional_position = position_in_cell(fractional_position)
+    unit_cell[ia].position = np.matmul(lattice, fractional_position)
+    #print(atom.species, unit_cell[ia].position)
 
-neighbours = []
-for position in valid_equivalents:
-    print("in loop", position)
-    neighbours.append(atoms.Atom(position=position[0].tolist(), species='B'))
-
-
-unit_cell_and_neighbours = unit_cell + neighbours
-
-for atom in unit_cell_and_neighbours:
-    print(atom.species, atom.position)
-
-alex_xyz(output_dir + '/' + "aei_central_NN_cell", unit_cell_and_neighbours)
-
-
-
-
-
-quit()
-# -------------------------------------------------------
-# Index atoms in central cell
-# -------------------------------------------------------
-
-# Central cell index valid when translation vectors centred on zero
-central_cell_index = int(0.5 * len(translations))
-central_cell_atom_indices = np.arange(n_atoms_prim * central_cell_index,
-                                      n_atoms_prim * (central_cell_index + 1))
-
-check_central_cell = False
-if check_central_cell:
-    central_cell = []
-    for ia in central_cell_atom_indices:
-        central_cell.append(s_cell[ia])
-    alex_xyz(output_dir + '/' + "aei_central_cell", central_cell)
-
-
-# -----------------------------------------------------------------------
-# Find neighbours to atoms of central cell that exist in adjacent cells
-# -----------------------------------------------------------------------
-
-def atoms_neighbouring_central_cell(central_cell_atom_indices, super_cell, radius, flatten=True):
-
-    positions = [atom.position for atom in super_cell]
-    d = spatial.distance_matrix(positions, positions)
-
-    neighbours_of_central_cell = []
-    for ia in central_cell_atom_indices:
-        indices = np.where((d[ia, :] > 0.) & (d[ia, :] <= radius))[0]
-        neighbours_of_central_cell.append(indices.tolist())
-
-    if flatten:
-        neighbours_of_central_cell = flatten_list(neighbours_of_central_cell)
-        # Remove duplicates
-        neighbours_of_central_cell = set(neighbours_of_central_cell)
-        neighbours_of_central_cell = list(neighbours_of_central_cell)
-
-    return neighbours_of_central_cell
-
-def remove_central_cell_atoms(central_cell_atom_indices, neighbours_of_central_cell):
-
-    neigbours_outside_cell = []
-    for iN in neighbours_of_central_cell:
-        if iN not in central_cell_atom_indices:
-            neigbours_outside_cell.append(iN)
-
-    return neigbours_outside_cell
-
-
-neighbours_of_central_cell = atoms_neighbouring_central_cell(central_cell_atom_indices, s_cell, radius=1.8, flatten=True)
-neighbours_outside_cell = remove_central_cell_atoms(central_cell_atom_indices, neighbours_of_central_cell)
-
-neighbours = []
-for iN in neighbours_outside_cell:
-    position = s_cell[iN].position
-    species = s_cell[iN].species
-    neighbours.append(atoms.Atom(position=position, species=species))
-
-unit_cell_and_neighbours = unit_cell + neighbours
-
-
-# -----------------------------------------------------------------------
-# Fold these atoms into central cell and see if they coincide with free-floating oxygens
-# -----------------------------------------------------------------------
-
-folded_neighbours = []
-
-# Convert into fractional coordinates
-
-# If so, then unit_cell_and_neighbours defines the set of atomic positions with which to work with
-
-# Print out
-#alex_xyz(output_dir + '/' + "aei_central_NN_cell", unit_cell_and_neighbours)
-
-
-
-
-
-
-
+alex_xyz(output_dir + '/' + "aei_primitive_cell_folded_back", unit_cell)
+print("folded atomic positions back in: aei_primitive_cell_folded_back",)
 
 
 # -------------------------------------------------------
