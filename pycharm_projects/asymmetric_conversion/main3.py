@@ -108,27 +108,38 @@ for ia in range(0, n_atoms_prim):
 assert len(loose_atoms) == 4
 
 # Should do this for each loose atom and reduce to a set
-ia = loose_atoms[0]
-pos_atom = unit_cell[ia].position
-loose_atom_positions = [pos_atom + translation for translation in translations]
-d_loose = spatial.distance_matrix(loose_atom_positions, unit_cell_positions)
-valid_equivalents = []
-for ja in range(0, len(loose_atom_positions)):
-    indices = np.where((d_loose[ja, :] > 0.) & (d_loose[ja, :] <= radius))[0]
-    if len(indices) > 0:
-        valid_equivalents.append(ja)
+# target bond length is ~ 1.529 (I THINK) => Set lower bond too
+def find_equivalent_position(ia, unit_cell, translations):
+    pos_atom = unit_cell[ia].position
+    loose_atom_positions = [pos_atom + translation for translation in translations]
+    d_loose = spatial.distance_matrix(loose_atom_positions, unit_cell_positions)
+    valid_equivalent = []
+    for ja in range(0, len(loose_atom_positions)):
+        indices = np.where((d_loose[ja, :] > 1.4) & (d_loose[ja, :] <= 1.8))[0]
+        if len(indices) > 0:
+            print("distance:", d_loose[ja, indices])
+            valid_equivalent.append(loose_atom_positions[ja])
+    assert len(valid_equivalent) == 1
+    return valid_equivalent
 
+valid_equivalents = []
+for ia in loose_atoms:
+    valid_equivalents.append(find_equivalent_position(ia, unit_cell, translations))
 
 
 print(valid_equivalents)
 
 neighbours = []
-for ia in valid_equivalents:
-    position = loose_atom_positions[ia]
-    neighbours.append(atoms.Atom(position=position, species='B'))
+for position in valid_equivalents:
+    print("in loop", position)
+    neighbours.append(atoms.Atom(position=position[0].tolist(), species='B'))
 
 
 unit_cell_and_neighbours = unit_cell + neighbours
+
+for atom in unit_cell_and_neighbours:
+    print(atom.species, atom.position)
+
 alex_xyz(output_dir + '/' + "aei_central_NN_cell", unit_cell_and_neighbours)
 
 
