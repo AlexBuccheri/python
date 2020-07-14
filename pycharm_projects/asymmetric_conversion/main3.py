@@ -90,47 +90,49 @@ print("N atoms in supercell: ",n_atoms_super)
 # such that every atom in the central cell is fully coordinated
 # --------------------------------------------------------------
 
-# Move central cell translation vector to start of list
-translations.pop(int(0.5*len(translations)))
-translations = [np.array([0, 0, 0])] + translations
+def find_atoms_neighbouring_central_cell(unit_cell, translations, visualise=False):
 
-# Unit cell that is fully coordinated
-visualise = False
-super_cell = supercell.build_supercell(unit_cell, translations)
-assert len(super_cell) == np.product(n) * n_atoms_prim
-if visualise:
-    alex_xyz(output_dir + '/' + "aei_supercell", super_cell)
+    # Move central cell translation vector to start of list
+    # Makes central-cell atoms entries [0: n_atoms_prim]
+    translations.pop(int(0.5 * len(translations)))
+    translations = [np.array([0, 0, 0])] + translations
 
-positions = [atom.position for atom in super_cell]
-d_supercell = spatial.distance_matrix(positions, positions)
-assert d_supercell.shape[0] == len(super_cell) and d_supercell.shape[1] == len(super_cell)
-upper_bound_length = 1.8
+    # Super cell = Unit cell that is fully coordinated
+    super_cell = supercell.build_supercell(unit_cell, translations)
+    assert len(super_cell) == len(translations) * n_atoms_prim
 
-# For atoms (ia) in central cell, check for neighbours outside of central cell
-coordinating_atom_indices = []
-for ia in range(0, n_atoms_prim):
-    # This doesn't give the correct answer and I can't see why
-    # indices = np.where((d_supercell[ia, n_atoms_prim:] > 0.) &
-    #                    (d_supercell[ia, n_atoms_prim:] <= upper_bound_length))[0]
-    indices = np.where((d_supercell[ia, :] > 0.) &
-                       (d_supercell[ia, :] <= upper_bound_length))[0]
-    # Put these straight into the coordinating cell
-    coordinating_atom_indices.extend(indices)
+    positions = [atom.position for atom in super_cell]
+    d_supercell = spatial.distance_matrix(positions, positions)
+    assert d_supercell.shape[0] == len(super_cell) and \
+           d_supercell.shape[1] == len(super_cell)
 
-# Remove dups
-coordinating_atom_indices = list(set(coordinating_atom_indices))
+    # For atoms (ia) in central cell, check for neighbours inside and outside of central cell
+    upper_bound_length = 1.8
+    coordinating_atom_indices = []
+    for ia in range(0, n_atoms_prim):
+        # This should only check for neighbours outside of the central cell
+        # but doesn't give the correct answer and I can't see why
+        # indices = np.where((d_supercell[ia, n_atoms_prim:] > 0.) &
+        #                    (d_supercell[ia, n_atoms_prim:] <= upper_bound_length))[0]
+        indices = np.where((d_supercell[ia, :] > 0.) &
+                           (d_supercell[ia, :] <= upper_bound_length))[0]
+        coordinating_atom_indices.extend(indices)
 
-# Remove indices associated with atoms in central cell
-coordinating_atom_indices = np.asarray(coordinating_atom_indices)
-coordinating_atom_indices = coordinating_atom_indices[coordinating_atom_indices >= n_atoms_prim]
+    # Remove dups
+    coordinating_atom_indices = list(set(coordinating_atom_indices))
+    # Remove indices associated with atoms in central cell
+    coordinating_atom_indices = np.asarray(coordinating_atom_indices)
+    coordinating_atom_indices = coordinating_atom_indices[coordinating_atom_indices >= n_atoms_prim]
+    # Store coordinating atoms
+    coordinating_atoms = [super_cell[ia] for ia in coordinating_atom_indices]
 
-# Store coordinating atoms
-coordinating_atoms = []
-for ia in coordinating_atom_indices:
-    coordinating_atoms.append(super_cell[ia])
+    if visualise:
+        alex_xyz(output_dir + '/' + "aei_supercell", super_cell)
+        alex_xyz(output_dir + '/' + "aei_central_cell", unit_cell)
+        alex_xyz(output_dir + '/' + "aei_neighbours", coordinating_atoms)
 
-alex_xyz(output_dir + '/' + "aei_central_cell", unit_cell)
-alex_xyz(output_dir + '/' + "aei_neighbours", coordinating_atoms)
+    return coordinating_atoms
+
 
 quit()
 
