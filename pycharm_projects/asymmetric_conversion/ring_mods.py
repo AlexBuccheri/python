@@ -11,6 +11,7 @@ from modules.fileio import read, write
 from modules.electronic_structure.structure import atoms
 from modules.maths import geometry
 
+import cell_operations
 
 # -----------------------
 # Local functions
@@ -169,7 +170,7 @@ def convert_ring(species, positions):
                 tetrahedron.remove(oxy)
         si_oo_units.append(tetrahedron)
 
-    # Move each si_oo_unit
+    # Move each si_oo_unit, length found from trial and error (specific to AEI)
     length = 8
     for unit in si_oo_units:
         # Find unit centre
@@ -249,24 +250,94 @@ def convert_ring(species, positions):
     return new_species, new_positions
 
 
+# ------------------------------------
+# For operating on the unit cell
+# ------------------------------------
+
+# Simple hack as I know the structure beforehand
+# If in the correct spatial region and is bonded (could remove the 2nd assertion)
+def ring_indices(unit_cell, in_ring):
+
+    positions = [atom.position for atom in unit_cell]
+    d = spatial.distance_matrix(positions, positions)
+    max_bond_length = 1.7
+
+    indices = []
+    for ia in range(0, len(unit_cell)):
+        if in_ring(positions[ia]):
+            neighbours = np.where((d[ia, :] > 0.) & (d[ia, :] <= max_bond_length))[0]
+            if len(neighbours) > 0:
+                indices.append(ia)
+    return indices
+
+
+def get_ring(ring_indices, unit_cell):
+    species = []
+    positions = []
+    for i in ring_indices:
+        species.append(unit_cell[i].species)
+        positions.append(unit_cell[i].position)
+    return species, positions
+
+
+def swap_ring(ring_indices, unit_cell):
+    species, positions = get_ring(ring_indices, unit_cell)
+    # write.xyz("extracted_ring.xyz", atoms.Atoms(species, positions))
+    new_species, new_positions = convert_ring(species, positions)
+    converted_ring = atoms.Atoms(new_species, new_positions)
+
+    # New structure, with old ring swapped out for the new
+    unit_cell_minus_ring = []
+    for i, atom in enumerate(unit_cell):
+        if i not in ring_indices:
+            unit_cell_minus_ring.append(atom)
+
+    return unit_cell_minus_ring + converted_ring
+
+
+
+
 
 
 # -------------------
 # Main routine
 # -------------------
 
-# Read in the primitive structure
-# Add coordinating atoms
+# Read in CIF and convert to primitive cell
+directories = cell_operations.Directories(structure='aei',
+                                          input='inputs',
+                                          output='aei_outputs')
+
+unit_cell, lattice_vectors = cell_operations.get_primitive_unit_cell(directories)
+translations = cell_operations.translations_for_fully_coordinated_unit(unit_cell, lattice_vectors)
+coordinating_atoms = cell_operations.find_atoms_neighbouring_central_cell(
+    unit_cell, translations)
+
+# For AEI primitive cell, the rings are:
+# Every connected atom above x value of 11.52979
+# Every connected atom below an x value of 7
+top_ring_indices = ring_indices(unit_cell, lambda pos: pos[0] > 11.5)
+bottom_ring_indices = ring_indices(unit_cell, lambda pos: pos[0] <= 7)
+
+new_structure = swap_ring(top_ring_indices, unit_cell)
+write.xyz("new_ring.xyz", new_structure)
+
+
 # Identify the ring and extract species, positions
 # Apply the call below
 # Print out
 # Repeat for the lower ring
 
 
-species, positions = read.xyz("inputs/ring.xyz")
-new_species, new_positions = convert_ring(species, positions)
-molecule = atoms.Atoms(new_species, new_positions)
-write.xyz("one_unit.xyz", molecule)
+def ring_test():
+    species, positions = read.xyz("inputs/ring.xyz")
+    new_species, new_positions = convert_ring(species, positions)
+    molecule = atoms.Atoms(new_species, new_positions)
+    write.xyz("one_unit.xyz", molecule)
+
+
+
+
 
 
 
