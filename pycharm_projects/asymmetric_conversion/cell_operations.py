@@ -50,7 +50,7 @@ def get_primitive_unit_cell(directories: Directories, visualise=False):
     if visualise:
         spg_molecule = (lattice, positions, numbers)
         #spg_show_cell(lattice, positions, numbers)
-        spg_write(output_dir + '/' + structure_name + '_primtive_cell.xyz', spg_molecule, pbc=(1, 1, 1))
+        spg_write(output_dir + '/' + structure_name + '_primitive_cell.xyz', spg_molecule, pbc=(1, 1, 1))
 
     # Need lattice vectors column-wise, in np array
     lattice_vectors = np.zeros(shape=(3, 3))
@@ -321,11 +321,13 @@ def ensure_atoms_in_central_cell(unit_cell, lattice_vectors):
     as defined by the lattice vectors
     """
     #TODO(Alex) Make sure lattice is in numpy
-    inv_lattice = np.linalg.inv(lattice_vectors)
+    # LOOKS like I was originally using lattice (from ASE or SPG?) not lattice_vectors
+    # hence why I have to take the transpose for this to work.... still weird. RESOLVE
+    inv_lattice = np.linalg.inv(np.transpose(lattice_vectors))
     for ia, atom in enumerate(unit_cell):
         fractional_position = np.matmul(inv_lattice, atom.position)
         fractional_position = position_in_central_cell(fractional_position)
-        unit_cell[ia].position = np.matmul(lattice_vectors, fractional_position)
+        unit_cell[ia].position = np.matmul(np.transpose(lattice_vectors), fractional_position)
         # print(atom.species, unit_cell[ia].position)
     # alex_xyz(output_dir + '/' + "aei_primitive_cell_folded_back", unit_cell)
     # print("folded atomic positions back in: aei_primitive_cell_folded_back",)
