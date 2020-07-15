@@ -16,6 +16,10 @@ from modules.maths import geometry
 # Local functions
 # -----------------------
 
+# Global to remove
+# Assume Br-O bond length
+bond_length_bo = 1.7
+
 #TODO(Alex) Turn into function in module
 # Should write something to control return type
 def neighbour_list(positions, cutoff, include_self = False):
@@ -146,113 +150,134 @@ def flatten(l, ltypes=(list, tuple)):
     return ltype(l)
 
 
+#TODO(Alex) Routine is too large - split it
+def convert_ring(species, positions):
+
+    ring_centre = geometry.find_centre(positions)
+    n_atoms = len(species)
+    # In angstrom. Vesta shows bond-lengths differ slightly (:s)
+    rounded_bl = 1.7
+    nn_list = neighbour_list(positions, rounded_bl)
+    tetrahedra_units = find_tetrahedral_units(species, nn_list)
+    oxy_ring_atoms = find_oxygens_in_ring(species, nn_list)
+
+    # Remove ring oxygens from tetrahedral units. Could also look to do this with numpy
+    si_oo_units = []
+    for tetrahedron in tetrahedra_units:
+        for oxy in oxy_ring_atoms:
+            if oxy in tetrahedron:
+                tetrahedron.remove(oxy)
+        si_oo_units.append(tetrahedron)
+
+    # Move each si_oo_unit
+    length = 8
+    for unit in si_oo_units:
+        # Find unit centre
+        unit_centre = geometry.find_centre([positions[iatom] for iatom in unit])
+        # Point outwards from the ring centre
+        radial_vector = np.asarray(unit_centre) - ring_centre
+        scaled_radial_vector = scaled_vector(length, radial_vector)
+        # Update each position
+        for atom in unit:
+            positions[atom] = scaled_radial_vector + positions[atom]
+
+    # Move each oxy atom in the ring
+    oxy_ring_positions = move_atoms_radially(oxy_ring_atoms, positions, ring_centre, 2)  # 5
+    cnt = 0
+    for iatom in oxy_ring_atoms:
+        positions[iatom] = oxy_ring_positions[cnt]
+        cnt += 1
+
+    print_intermediate = False
+    if print_intermediate:
+        molecule = atoms.Atoms(species, positions)
+        write.xyz("select.xyz", molecule)
+
+    # Assume Br-O bond length
+    bond_length_bo = 1.7
+
+    # For each Si-O-O of a former tetrahedron, move a unit towards each of the two closest ring oxygens
+    # cleave off one of the oxy and convert Si -> Br
+    translated_species = []
+    translated_positions = []
+
+    for si_oo_unit in si_oo_units:
+        neighbouring_ring_atoms = find_closest_ring_oxygens(species, positions, si_oo_unit)
+        ts, tp = translate_si_o_o_unit(species, si_oo_unit, neighbouring_ring_atoms)
+        translated_species += ts
+        translated_positions += tp
+
+    # Remove old atoms
+    atom_indices = np.delete(np.arange(0, n_atoms), flatten(si_oo_units))
+    new_species = []
+    new_positions = []
+    for iatom in atom_indices:
+        new_species.append(species[iatom])
+        new_positions.append(positions[iatom])
+
+    # Add new atoms
+    assert len(translated_species) % 2 == 0
+    for iatom in range(0, len(translated_species)):
+        new_species.append(translated_species[iatom])
+        new_positions.append(translated_positions[iatom])
+
+    assert (len(new_species) == len(new_positions))
+
+    # Smart way to do this is to create sets of pair indices from the translated silicons,
+    # then put oxygens between them
+    # I always do operations in pairs, so should go [b,o,b,o,b,o...] => elements 0 and 2 are a pair in the ring.
+    n_atoms = len(new_species)
+    boron_indices = [i for i in range(0, n_atoms) if new_species[i] == 'B']
+
+    # Create list of pairs
+    boron_pairs = []
+    for i in range(0, len(boron_indices), 2):
+        boron_A = boron_indices[i]
+        boron_B = boron_indices[i + 1]
+        print(new_species[boron_A], new_species[boron_B])
+        boron_pairs.append([boron_A, boron_B])
+
+    # Put oxygens between these pairs
+    for pair in boron_pairs:
+        pos_A = np.asarray(new_positions[pair[0]])
+        pos_B = np.asarray(new_positions[pair[1]])
+        print(np.linalg.norm(pos_A - pos_B))
+        pos_oxy = 0.5 * (pos_A + pos_B)
+        new_positions.append(pos_oxy.tolist())
+        new_species.append('O')
+
+    return new_species, new_positions
+
+
 
 
 # -------------------
 # Main routine
 # -------------------
+
+# Read in the primitive structure
+# Add coordinating atoms
+# Identify the ring and extract species, positions
+# Apply the call below
+# Print out
+# Repeat for the lower ring
+
+
 species, positions = read.xyz("inputs/ring.xyz")
-ring_centre = geometry.find_centre(positions)
-n_atoms = len(species)
-# In angstrom. Vesta shows bond-lengths differ slightly (:s)
-rounded_bl = 1.7
-nn_list = neighbour_list(positions, rounded_bl)
-tetrahedra_units = find_tetrahedral_units(species, nn_list)
-oxy_ring_atoms = find_oxygens_in_ring(species, nn_list)
-
-
-# Remove ring oxygens from tetrahedral units. Could also look to do this with numpy
-si_oo_units = []
-for tetrahedron in tetrahedra_units:
-    for oxy in oxy_ring_atoms:
-        if oxy in tetrahedron:
-            tetrahedron.remove(oxy)
-    si_oo_units.append(tetrahedron)
-
-
-# Move each si_oo_unit
-length = 8
-for unit in si_oo_units:
-    # Find unit centre
-    unit_centre = geometry.find_centre([positions[iatom] for iatom in unit])
-    # Point outwards from the ring centre
-    radial_vector = np.asarray(unit_centre) - ring_centre
-    scaled_radial_vector = scaled_vector(length, radial_vector)
-    # Update each position
-    for atom in unit:
-        positions[atom] = scaled_radial_vector + positions[atom]
-
-# Move each oxy atom in the ring
-oxy_ring_positions = move_atoms_radially(oxy_ring_atoms, positions, ring_centre, 2)  #5
-cnt = 0
-for iatom in oxy_ring_atoms:
-    positions[iatom] = oxy_ring_positions[cnt]
-    cnt+=1
-
-print_intermediate = False
-if print_intermediate:
-    molecule = atoms.Atoms(species, positions)
-    write.xyz("select.xyz", molecule)
-
-
-# Assume Br-O bond length
-bond_length_bo = 1.7
-
-# For each Si-O-O of a former tetrahedron, move a unit towards each of the two closest ring oxygens
-# cleave off one of the oxy and convert Si -> Br
-translated_species = []
-translated_positions = []
-
-for si_oo_unit in si_oo_units:
-    neighbouring_ring_atoms = find_closest_ring_oxygens(species, positions, si_oo_unit)
-    ts, tp = translate_si_o_o_unit(species, si_oo_unit, neighbouring_ring_atoms)
-    translated_species += ts
-    translated_positions += tp
-
-# Remove old atoms
-atom_indices =  np.delete(np.arange(0, n_atoms), flatten(si_oo_units))
-new_species = []
-new_positions = []
-for iatom in atom_indices:
-    new_species.append(species[iatom])
-    new_positions.append(positions[iatom])
-
-# Add new atoms
-assert len(translated_species) % 2 == 0
-for iatom in range(0, len(translated_species)):
-    new_species.append(translated_species[iatom])
-    new_positions.append(translated_positions[iatom])
-
-assert(len(new_species) == len(new_positions))
-
-# Smart way to do this is to create sets of pair indices from the translated silicons,
-# then put oxygens between them
-# I always do operations in pairs, so should go [b,o,b,o,b,o...] => elements 0 and 2 are a pair in the ring.
-n_atoms = len(new_species)
-boron_indices = [i for i in range(0, n_atoms) if new_species[i] == 'B']
-
-# Create list of pairs
-boron_pairs = []
-for i in range(0, len(boron_indices), 2):
-    boron_A = boron_indices[i]
-    boron_B = boron_indices[i + 1]
-    print(new_species[boron_A], new_species[boron_B] )
-    boron_pairs.append([boron_A, boron_B])
-
-
-# Put oxygens between these pairs
-for pair in boron_pairs:
-
-    pos_A = np.asarray(new_positions[pair[0]])
-    pos_B = np.asarray(new_positions[pair[1]])
-    print(np.linalg.norm(pos_A-pos_B))
-    pos_oxy = 0.5 * (pos_A + pos_B)
-    new_positions.append(pos_oxy.tolist())
-    new_species.append('O')
-
-
+new_species, new_positions = convert_ring(species, positions)
 molecule = atoms.Atoms(new_species, new_positions)
 write.xyz("one_unit.xyz", molecule)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
