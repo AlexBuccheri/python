@@ -90,10 +90,13 @@ def find_closest_ring_oxygens(species, positions, si_oo_unit):
 
 # Scales a vector to have a magnitude (length) equal to bond_length
 def scaled_vector(bond_length, v):
+    # scaled_radial_vector = length * unit vector
     scaled_v = bond_length * v / np.linalg.norm(v)
     assert (np.isclose(np.linalg.norm(scaled_v), bond_length))
     return scaled_v
 
+# Translate si-o-o to each of the two closest ring oxygens, convert Si to Br
+# and remove alternating oxygens
 def translate_si_o_o_unit(species, si_oo_unit, neighbouring_ring_atoms):
 
     assert (len(neighbouring_ring_atoms) == 2)
@@ -110,18 +113,18 @@ def translate_si_o_o_unit(species, si_oo_unit, neighbouring_ring_atoms):
 
     d_O1 = np.array(pos_o1 - pos_si)
     d_O2 = np.array(pos_o2 - pos_si)
+    d_O = [d_O1, d_O2]
 
     translated_positions = []
     translated_species = []
 
-    for ring_oxy in neighbouring_ring_atoms:
+    for i,ring_oxy in enumerate(neighbouring_ring_atoms):
         pos_oxy = positions[ring_oxy]
         scaled_displacement = scaled_vector(bond_length_bo, np.array(pos_si - pos_oxy))
 
         translated_positions.append(pos_oxy + scaled_displacement)
-        translated_positions.append(pos_oxy + scaled_displacement + d_O1)
-        translated_positions.append(pos_oxy + scaled_displacement + d_O2)
-        translated_species += ['B', 'O', 'O']
+        translated_positions.append(pos_oxy + scaled_displacement + d_O[i])
+        translated_species += ['B', 'O']
 
     return translated_species, translated_positions
 
@@ -141,6 +144,8 @@ def flatten(l, ltypes=(list, tuple)):
                 l[i:i + 1] = l[i]
         i += 1
     return ltype(l)
+
+
 
 
 # -------------------
@@ -172,15 +177,13 @@ for unit in si_oo_units:
     unit_centre = geometry.find_centre([positions[iatom] for iatom in unit])
     # Point outwards from the ring centre
     radial_vector = np.asarray(unit_centre) - ring_centre
-    # scaled_radial_vector = length * unit vector
-    scaled_radial_vector = length *  radial_vector / np.linalg.norm(radial_vector)
-    assert (np.isclose(np.linalg.norm(scaled_radial_vector), length))
+    scaled_radial_vector = scaled_vector(length, radial_vector)
     # Update each position
     for atom in unit:
         positions[atom] = scaled_radial_vector + positions[atom]
 
 # Move each oxy atom in the ring
-oxy_ring_positions = move_atoms_radially(oxy_ring_atoms, positions, ring_centre, 5)
+oxy_ring_positions = move_atoms_radially(oxy_ring_atoms, positions, ring_centre, 2)  #5
 cnt = 0
 for iatom in oxy_ring_atoms:
     positions[iatom] = oxy_ring_positions[cnt]
@@ -192,12 +195,11 @@ if print_intermediate:
     write.xyz("select.xyz", molecule)
 
 
-
-# For each Si-O-O, move a unit towards each of the two closest ring oxygens.
-
 # Assume Br-O bond length
 bond_length_bo = 1.7
 
+# For each Si-O-O of a former tetrahedron, move a unit towards each of the two closest ring oxygens
+# cleave off one of the oxy and convert Si -> Br
 translated_species = []
 translated_positions = []
 
@@ -208,7 +210,6 @@ for si_oo_unit in si_oo_units:
     translated_positions += tp
 
 # Remove old atoms
-
 atom_indices =  np.delete(np.arange(0, n_atoms), flatten(si_oo_units))
 new_species = []
 new_positions = []
@@ -217,11 +218,79 @@ for iatom in atom_indices:
     new_positions.append(positions[iatom])
 
 # Add new atoms
+assert len(translated_species) % 2 == 0
 for iatom in range(0, len(translated_species)):
     new_species.append(translated_species[iatom])
     new_positions.append(translated_positions[iatom])
 
 assert(len(new_species) == len(new_positions))
+
+# Smart way to do this is to create sets of pair indices from the translated silicons,
+# then put oxygens between them
+# I always do operations in pairs, so should go [b,o,b,o,b,o...] => elements 0 and 2 are a pair in the ring.
+n_atoms = len(new_species)
+boron_indices = [i for i in range(0, n_atoms) if new_species[i] == 'B']
+
+# Create list of pairs
+boron_pairs = []
+for i in range(0, len(boron_indices), 2):
+    boron_A = boron_indices[i]
+    boron_B = boron_indices[i + 1]
+    print(new_species[boron_A], new_species[boron_B] )
+    boron_pairs.append([boron_A, boron_B])
+
+
+# Put oxygens between these pairs
+for pair in boron_pairs:
+
+    pos_A = np.asarray(new_positions[pair[0]])
+    pos_B = np.asarray(new_positions[pair[1]])
+    print(np.linalg.norm(pos_A-pos_B))
+    pos_oxy = 0.5 * (pos_A + pos_B)
+    new_positions.append(pos_oxy.tolist())
+    new_species.append('O')
+
+
+molecule = atoms.Atoms(new_species, new_positions)
+write.xyz("one_unit.xyz", molecule)
+
+
+
+
+
+
+
+
+
+
+
+
+quit()
+
+first_boron_index = next(i for i,symbol in enumerate(new_species) if symbol == 'B')
+
+#TODO(Alex) This doesn't work properly
+# Find 2nd-shortest B-B bond length.
+n_atoms = len(new_species)
+boron_indices = [i for i in range(0, n_atoms) if new_species[i] == 'B']
+new_positions = np.asarray(new_positions)
+new_species = np.asarray(new_species)
+boron_positions = new_positions[boron_indices]
+d_boron = spatial.distance_matrix(boron_positions, boron_positions)
+molecule = atoms.Atoms(new_species[boron_indices], boron_positions)
+write.xyz("borons.xyz", molecule)
+
+# This gets lucky
+second_shortest_distance = np.sort(d_boron[0,:])[2]
+
+# Create list of pairs
+boron_pairs = []
+for i in range(0, len(boron_indices)):
+    j = np.where(d_boron[i,:] == second_shortest_distance)
+    print(j)
+    boron_pairs.append([i,j])
+
+# Put oxygens between these boron pairs
 
 
 molecule = atoms.Atoms(new_species, new_positions)
@@ -230,8 +299,8 @@ write.xyz("one_unit.xyz", molecule)
 
 
 # TODO(Alex)
-# Deal with si-o-o and, potentially, floating oxygens
-# Need to write something to identify the rings in the primitive cell
+# Deal with si-o-o and, potentially
+# Need to write something to identify the rings in the primitive cell: Just list manually.
 
 
 
