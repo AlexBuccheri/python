@@ -124,7 +124,8 @@ def find_atoms_neighbouring_central_cell(unit_cell: atoms.Atoms, translations: l
     assert d_supercell.shape[0] == len(super_cell), "d_supercell.shape[0] != len(super_cell)"
     assert d_supercell.shape[1] == d_supercell.shape[0], "distance matrix is not square"
 
-    # For atoms (ia) in central cell, check for neighbours inside and outside of central cell
+    # For atoms (indexed by ia) in central cell,
+    # list neighbours inside and outside of central cell
     coordinating_atom_indices = []
     for ia in range(0, n_atoms_prim):
         # This should only check for neighbours outside of the central cell
@@ -151,6 +152,87 @@ def find_atoms_neighbouring_central_cell(unit_cell: atoms.Atoms, translations: l
         xyz(output_dir + '/' + "aei_central_cell", unit_cell)
         xyz(output_dir + '/' + "aei_neighbours", coordinating_atoms)
 
+    return coordinating_atoms
+
+
+def find_neighbour_cell_oxygens(unit_cell: atoms.Atoms, translations: list, distance_cutoff=2.5):
+    """
+    :brief: For a given unit cell, list all oxygens in adjacent cells that are
+    neighbours with silicons in the (central) unit cell
+
+    :param unit_cell: A list of atoms in the unit cell
+    :param translations: List of translation vectors
+    :param distance_cutoff: Upper bound for NN bond length of AEI framework (in angstrom)
+    Found the default via trial and error
+    :return coordinating_atoms: A list of oxygen atoms in adjacent unit cells that neighbour
+    silicon atoms in the central unit_cell.
+    """
+    assert len(unit_cell) > 0, "len(unit_cell) = 0"
+    assert isinstance(unit_cell, list), "unit_cell should be list[atoms.Atom]"
+    assert isinstance(unit_cell[0], atoms.Atom), "unit_cell should be list[atoms.Atom]"
+    assert len(translations) == 27, "Require 27 translation vectors for central cell to be fully coordinated"
+    n_atoms = len(unit_cell)
+
+    # Move central cell translation vector to start of list
+    # Makes central-cell atoms entries [0: n_atoms]
+    zero_translation = np.array([0, 0, 0])
+    for i, translation in enumerate(translations):
+        if np.array_equal(translation, zero_translation):
+            translations.insert(0, translations.pop(i))
+            break
+
+    # Super cell = Unit cell plus all coordinating cells
+    super_cell = supercell.build_supercell(unit_cell, translations)
+    assert len(super_cell) == len(translations) * n_atoms
+
+    # Check 1st n_atoms in supercell correspond to the unit cell
+    species_same = []
+    pos_same = []
+    for ia in range(0, n_atoms):
+        species_same.append(unit_cell[ia].species == super_cell[ia].species)
+        posAB = unit_cell[ia].position - super_cell[ia].position
+        pos_same.append(np.array_equal(posAB, [0, 0, 0]))
+    assert all(species_same) is True
+    assert all(pos_same) is True
+
+    # Distance matrix for supercell
+    positions = [atom.position for atom in super_cell]
+    d_supercell = spatial.distance_matrix(positions, positions)
+    assert d_supercell.shape[0] == len(super_cell), "d_supercell.shape[0] != len(super_cell)"
+    assert d_supercell.shape[1] == d_supercell.shape[0], "distance matrix is not square"
+
+    # Find silicon indices in central cell
+    silicon_indices = []
+    for ia in range(0, n_atoms):
+        if super_cell[ia].species.lower() == 'si':
+            silicon_indices.append(ia)
+
+    # def all_species(indices, 'o'):
+    #     for i in indices:
+    #
+
+    # Find all within a distance_cutoff oxygen
+    indices = []
+    coordinating_atom_indices = []
+    for iSi in silicon_indices:
+        #TODO(Alex) Establish why using distance_cutoff doesn't give same result
+        indices = np.where((d_supercell[iSi, :] > 0.) &
+                           (d_supercell[iSi, :] <= 2.5))[0]
+        # REALLY expect this to be 4, for each Si to be fully-coordinated: May need to play with it
+        assert len(indices) == 4, "Expect 4 indices to be found for each Si to be fully coordinated"
+        #TODO(Alex) Assert that they're all oxygen (finish above)
+        coordinating_atom_indices.extend(indices)
+
+    # Remove dups
+    coordinating_atom_indices = list(set(coordinating_atom_indices))
+    # Remove indices associated with atoms in central cell
+    # TODO(Alex) Should replace this with numpy way done above
+    coordinating_atom_indices2 = []
+    for index in coordinating_atom_indices:
+        if index >= n_atoms:
+            coordinating_atom_indices2.append(index)
+
+    coordinating_atoms = [super_cell[ia] for ia in coordinating_atom_indices2]
     return coordinating_atoms
 
 
@@ -247,6 +329,28 @@ def replace_loose_atoms(unit_cell: list, loose_atom_indices: List[int], equivale
         xyz(output_dir + '/' + "aei_removed_atoms", removed_atoms)
 
     return new_unit_cell + replacements
+
+
+def delete_uncoordinated_atoms(unit_cell: list) -> List[atoms.Atom]:
+    """
+    Identify non-bonded atoms in the unit cell and delete them
+    """
+
+    # AEI Si and O bond bounds (angstrom)
+    bond_bounds = BondLengthBounds(1.4, 1.8)
+
+    unit_cell_positions = [atom.position for atom in unit_cell]
+    loose_atom_indices = index_loose_atoms(unit_cell_positions, bond_bounds.upper)
+    assert len(loose_atom_indices) == 4, \
+        "For the AEI structure, expect 4 Oxy atoms with no connections in the central cell"
+
+    # Can't use pop as it changes the indexing each time
+    new_unit_cell = []
+    for ia in range(0, len(unit_cell)):
+        if ia not in loose_atom_indices:
+            new_unit_cell.append(unit_cell[ia])
+
+    return new_unit_cell
 
 
 def replace_uncoordinated_atoms(unit_cell: list, translations: list) -> List[atoms.Atom]:
