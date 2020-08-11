@@ -155,6 +155,17 @@ def find_atoms_neighbouring_central_cell(unit_cell: atoms.Atoms, translations: l
     return coordinating_atoms
 
 
+def cells_are_the_same(unit_cellA, unit_cellB):
+    species_same = []
+    pos_same = []
+    for ia in range(0, len(unit_cellA)):
+        species_same.append(unit_cellA[ia].species == unit_cellB[ia].species)
+        posAB = unit_cellA[ia].position - unit_cellB[ia].position
+        pos_same.append(np.array_equal(posAB, [0, 0, 0]))
+    assert all(species_same) is True
+    assert all(pos_same) is True
+    return
+
 def find_neighbour_cell_oxygens(unit_cell: atoms.Atoms, translations: list, distance_cutoff=2.5):
     """
     :brief: For a given unit cell, list all oxygens in adjacent cells that are
@@ -184,16 +195,7 @@ def find_neighbour_cell_oxygens(unit_cell: atoms.Atoms, translations: list, dist
     # Super cell = Unit cell plus all coordinating cells
     super_cell = supercell.build_supercell(unit_cell, translations)
     assert len(super_cell) == len(translations) * n_atoms
-
-    # Check 1st n_atoms in supercell correspond to the unit cell
-    species_same = []
-    pos_same = []
-    for ia in range(0, n_atoms):
-        species_same.append(unit_cell[ia].species == super_cell[ia].species)
-        posAB = unit_cell[ia].position - super_cell[ia].position
-        pos_same.append(np.array_equal(posAB, [0, 0, 0]))
-    assert all(species_same) is True
-    assert all(pos_same) is True
+    cells_are_the_same(unit_cell, super_cell[0:n_atoms])
 
     # Distance matrix for supercell
     positions = [atom.position for atom in super_cell]
@@ -207,26 +209,27 @@ def find_neighbour_cell_oxygens(unit_cell: atoms.Atoms, translations: list, dist
         if super_cell[ia].species.lower() == 'si':
             silicon_indices.append(ia)
 
-    # def all_species(indices, 'o'):
-    #     for i in indices:
-    #
+    def all_species_equal_to(iSi, species, label: str):
+        species_lowercase = [i.lower() for i in species]
+        if species_lowercase.count(label.lower()) != len(species):
+            print("For si index " + str(iSi) + "neighbour species:",
+                  species)
+            quit("They should all be '" + label + "'")
+        return
 
     # Find all within a distance_cutoff oxygen
     indices = []
     coordinating_atom_indices = []
     for iSi in silicon_indices:
-        #TODO(Alex) Establish why using distance_cutoff doesn't give same result
         indices = np.where((d_supercell[iSi, :] > 0.) &
-                           (d_supercell[iSi, :] <= 2.5))[0]
-        # REALLY expect this to be 4, for each Si to be fully-coordinated: May need to play with it
+                           (d_supercell[iSi, :] <= distance_cutoff))[0]
         assert len(indices) == 4, "Expect 4 indices to be found for each Si to be fully coordinated"
-        #TODO(Alex) Assert that they're all oxygen (finish above)
+        all_species_equal_to(iSi, [super_cell[i].species for i in indices], 'o')
         coordinating_atom_indices.extend(indices)
 
     # Remove dups
     coordinating_atom_indices = list(set(coordinating_atom_indices))
     # Remove indices associated with atoms in central cell
-    # TODO(Alex) Should replace this with numpy way done above
     coordinating_atom_indices2 = []
     for index in coordinating_atom_indices:
         if index >= n_atoms:

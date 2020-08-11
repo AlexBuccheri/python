@@ -21,11 +21,14 @@ unit_cell, lattice_vectors = cell_operations.get_primitive_unit_cell(directories
 xyz("fully_coordinated/unit_cell", unit_cell)
 translations = cell_operations.translations_for_fully_coordinated_unit(unit_cell, lattice_vectors)
 
+# Ah, the below won't work properly if I pass unit_cell_no_dangling to find_neighbour_cell_oxygens
+# because the supercell is then constructed from a unit cell that doesn't contain ALL oxygen atoms
+#
 # Find and delete atoms that are not coordinated
-unit_cell_no_dangling = cell_operations.delete_uncoordinated_atoms(unit_cell)
-xyz("fully_coordinated/unit_no_dangling", unit_cell_no_dangling)
+# unit_cell_no_dangling = cell_operations.delete_uncoordinated_atoms(unit_cell)
+# xyz("fully_coordinated/unit_no_dangling", unit_cell_no_dangling)
 
-# Find oxygens from other cells that neighbour those in the central cell
+# Find oxygens from other cells that neighbour Si in the central cell
 coordinating_atoms = cell_operations.find_neighbour_cell_oxygens(unit_cell, translations)
 xyz("fully_coordinated/coordinating_oxy", coordinating_atoms)
 
