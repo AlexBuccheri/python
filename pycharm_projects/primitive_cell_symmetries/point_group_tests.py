@@ -1,8 +1,10 @@
 import numpy as np
+import spglib
 
 from modules.electronic_structure.structure import bravais
 from modules.electronic_structure.crystal_point_groups import crystal_point_groups as wykcoff
 from modules.electronic_structure.structure import lattice
+
 
 # Sample real-space lattice
 
@@ -80,6 +82,39 @@ def check_equivalent_points_are_in_grid(equivalent_points, grid):
 
 # Main Routine
 
+theta = np.pi   #1 * (np.pi / 180)
+r_z = np.array( [[np.cos(theta), -np.sin(theta), 0],
+                 [np.sin(theta),  np.cos(theta), 0],
+                 [0,              0,             1]])
+
+print(np.matmul(r_z, np.array([1,1,1])))
+quit()
+
+# Test wykcoff positions
+
+equivalent_points = wykcoff.wyckoff_positions(wykcoff.PointGroup.C_1, np.array([1,2,5.5]))
+print(equivalent_points)
+
+quit()
+
+mapping, grid = spglib.get_ir_reciprocal_mesh(mesh, cell, is_shift=[0, 0, 0])
+
+a = 1
+lattice = bravais.face_centred_cubic(a)
+grid_sampling = [3, 3, 3]
+grid = sample_grid(lattice, grid_sampling)
+
+found = []
+for point in grid:
+
+    print(equivalent_points)
+    found.append(check_equivalent_points_are_in_grid(equivalent_points, grid))
+
+print(found)
+print(np.all(found))
+
+quit()
+
 a = 1
 lattice = bravais.simple_cubic(a)
 grid_sampling = [3, 3, 3]
@@ -109,7 +144,7 @@ for point in grid:
 # This passes as all wykcoff positions in C_2v are in O_h.
 # That is, all point groups are a subgroup of O_h
 if np.all(found):
-    print("Test passed! Cubic is C_2v")
+    print("Test passed! Cubic contains C_2v")
 else:
     print("Test failed! Cubic is not C_2v")
 

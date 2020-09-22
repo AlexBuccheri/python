@@ -35,6 +35,11 @@ class Atoms:
     def __delitem__(self, atom_index: int):
         del self.molecule[atom_index]
 
+    def get_species(self):
+        return[atom.species for atom in self.molecule]
+
+    def get_position(self):
+        return[atom.position for atom in self.molecule]
 
 
 class CoordinateType(Enum):

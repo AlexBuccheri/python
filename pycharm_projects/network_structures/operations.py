@@ -65,16 +65,23 @@ def triangle_from(tetrahedron):
     bond_length = si_o_0
     si_0 = np.asarray(silicon[0].position)
 
+    print("bond_length",bond_length)
+
     # Alt way of stepping
     # sep = 1000
     # pos = np.zeros(shape=(3))
     # for dr in np.linspace(0, bond_length, sep):
 
     # ang
-    step = 0.001
+    step = 0.001 * bond_length
     pos = np.zeros(shape=(3))
     for dr in np.arange(0 + step, bond_length + step, step):
         pos += si_0 + (dr * unit_normal)
+        # print("pos,",pos)
+        # print(np.linalg.norm(pos - triangle[0].position), \
+        #       np.linalg.norm(pos - triangle[1].position), \
+        #       np.linalg.norm(pos - triangle[2].position))
+        # print(si_o_0, si_o_1, si_o_2)
 
         if (np.linalg.norm(pos - triangle[0].position) <= si_o_0) and \
            (np.linalg.norm(pos - triangle[1].position) <= si_o_1) and \

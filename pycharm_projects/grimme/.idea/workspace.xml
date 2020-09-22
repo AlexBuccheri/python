@@ -1,10 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="38e2b9b4-ae78-4b94-98f3-a39e2b06e13c" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../cell_builder/.idea/dictionaries/alexanderbuccheri.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../cell_builder/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../cell_builder/molecule_in_box.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../cell_builder/silicon_supercell.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../cell_builder/test1_find_basis.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../cell_builder/test2_find_basis.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gfn0_comparisons/.idea/dictionaries/alexanderbuccheri.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gfn0_comparisons/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gfn0_comparisons/entos.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gfn0_comparisons/grimme.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/alexanderbuccheri.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/grimme.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gfn1_inputs/silicon_cells.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/conversion_py/DL_DFTB.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dftb_py/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dftb_py/classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dftb_py/conversion.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dftb_py/hsd.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/dlpoly_py/dl_classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/fileio_py/fileio.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/plotting_py/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/plotting_py/gnuplot.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/scheduler_py/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/scheduler_py/pbs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/scheduler_py/slurm.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Modules/scheduler_py/sun.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/average_outputs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/collate_statis.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/format_f90.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/process_sio2_output.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/produce_config/ase_config.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/produce_config/cif_inputs/sio2.cif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/select_configs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/split_RDFs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_utils/statis.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_workflows/VvsT.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_workflows/functions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/DLPOLY_workflows/settings.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/String_Matching_Replacing/Details .rtf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/String_Matching_Replacing/Prior_Versions/input.fdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/String_Matching_Replacing/match_substring.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/String_Matching_Replacing/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/conversion_scripts/dl2dftb.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/conversion_scripts/gin2xyz.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_parameterisation/SSK" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/inputs/dftb_in.hsd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/inputs/forces_0.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/inputs/forces_1.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/inputs/structure_0.gen" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/JSON/save_data.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/setup_dftb_inputs/dftb_inputs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_utils/setup_dftb_inputs/sio2.cif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_workflows/band_structure/generate_bs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Scripts/dftb_workflows/band_structure/submit_bs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Standalone/composite_indices.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/conversion/convert_geometry.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/conversion/inputs/CONFIG" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/conversion/inputs/struct.gen" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/dftb/test_geometry_class.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/dlpoly/test_dlpoly_classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/fileio/Test1/input.fdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Tests/fileio/Test1/t_fileio.py" beforeDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/grimme$silicon_cells.coverage" NAME="silicon_cells Coverage Results" MODIFIED="1580754445269" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/gfn1_inputs" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/gfn1_inputs/silicon_cells.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="583">
+              <caret line="53" column="4" selection-start-line="53" selection-start-column="4" selection-end-line="53" selection-end-column="4" />
+              <folding>
+                <element signature="e#62#80#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../modules/electronic_structure/structure/bravais.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="390">
+              <caret line="26" column="30" selection-start-line="26" selection-start-column="25" selection-end-line="26" selection-end-column="30" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../modules/electronic_structure/structure/crystals.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../modules/fileio/write.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="480">
+              <caret line="32" column="40" selection-start-line="32" selection-start-column="40" selection-end-line="32" selection-end-column="40" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/../../modules/fileio/write.py" />
+        <option value="$PROJECT_DIR$/gfn1_inputs/silicon_cells.py" />
+      </list>
+    </option>
+  </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="49" />
-    <option name="y" value="115" />
+    <option name="x" value="76" />
+    <option name="y" value="183" />
     <option name="width" value="1941" />
     <option name="height" value="965" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="grimme" type="b2602c69:ProjectViewProjectNode" />
+              <item name="grimme" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -19,5 +175,127 @@
         <option name="mySdkHome" value="/usr/local/bin/python3.6" />
       </console-settings>
     </option>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="silicon_cells" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="grimme" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/gfn1_inputs" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/gfn1_inputs/silicon_cells.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.silicon_cells" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="38e2b9b4-ae78-4b94-98f3-a39e2b06e13c" name="Default Changelist" comment="" />
+      <created>1580749796702</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1580749796702</updated>
+      <workItem from="1580749798148" duration="346000" />
+      <workItem from="1580750194375" duration="66000" />
+      <workItem from="1580750273962" duration="161000" />
+      <workItem from="1580750878738" duration="1935000" />
+      <workItem from="1580901114972" duration="4000" />
+      <workItem from="1580908383418" duration="248000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="2760000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="76" y="183" width="1941" height="965" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.26276988" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.3298969" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" />
+      <window_info anchor="bottom" id="Database Changes" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Terminal" order="11" />
+      <window_info anchor="bottom" id="Python Console" order="12" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="SciView" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/gfn1_inputs/silicon_cells.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="583">
+          <caret line="53" column="4" selection-start-line="53" selection-start-column="4" selection-end-line="53" selection-end-column="4" />
+          <folding>
+            <element signature="e#62#80#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../modules/electronic_structure/structure/bravais.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="26" column="30" selection-start-line="26" selection-start-column="25" selection-end-line="26" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../modules/electronic_structure/structure/crystals.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../modules/fileio/write.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="32" column="40" selection-start-line="32" selection-start-column="40" selection-end-line="32" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
   </component>
 </project>
