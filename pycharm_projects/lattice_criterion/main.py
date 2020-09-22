@@ -1,8 +1,14 @@
-""" For each of the Bravais lattices, generate a set of maximum
+"""
+For each of the Bravais lattices, generate a set of maximum
 translation integers corresponding to a translation summation cut-off, output the
 sueprcells resulting from using these integers in conjunction with a
 radial lattice sum and confirm the outputs are as close to spherical as
-possible"""
+possible
+
+Tested on:
+cubic, BCC, FCC, simple_tetragonal, hexagonal, rhomohedral,
+simple_orthorhombic, simple_monoclinic
+"""
 
 import numpy as np
 
