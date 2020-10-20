@@ -11,15 +11,18 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
+# Models
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import cross_val_score
+
 # My modules for this task
 from get_data import HOUSING_PATH
 import load
 import stratum
 import visualise
 import transformers
-
-
-# My functions
 
 
 def print_info(housing):
@@ -119,6 +122,58 @@ def transformer_combine_attributes(housing):
 # Use StandardScaler in sklearn transformers
 
 
+def pipeline_wrapper(housing: pd.DataFrame, hyper_parameters=None):
+    """
+    Create a pipeline
+    i.e. a set of transformers that are sequentially applied to the data
+
+    We have a pre-processing pipeline that takes the full housing data
+    (numerical and categorised attributes)
+    and applies the appropriate transformations to each column.
+
+    TODO(Alex)
+    Try combining imputer, attribs_adder and std_scaler
+    into my own class, that contains the methods:
+    fit() (returning self), transform(), and fit_transform().
+    Would also be useful to have a function that splits numerical and
+    categorised data (I have that)
+
+    :param housing: housing training data
+    :param hyper_parameters: hyper parameters dictionary
+    :return: prepared/processed housing data
+    """
+
+    num_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy="median")),
+        ('attribs_adder', transformers.CombinedAttributesAdder()),
+        ('std_scaler', StandardScaler())
+    ])
+
+    numerical_columns = list(housing)
+    numerical_columns.remove('ocean_proximity')
+
+    full_pipeline = ColumnTransformer([
+        # Name,   transformer or pipeline of transformers, list of column labels or indices to apply the transformer to
+        ("numerical", num_pipeline, numerical_columns),
+        ("categories", OneHotEncoder(), ["ocean_proximity"]),
+    ])
+
+    return full_pipeline
+
+
+def linear_regression_wrapper(data_prepared: pd.DataFrame, data_labels: pd.DataFrame):
+    """
+    Simple wrapper for Sklearn linear regression
+
+    :param data_prepared: training data that's gone through a pipeline
+    :param data_labels: data labels
+    :return:
+    """
+    lin_reg = LinearRegression()
+    lin_reg.fit(data_prepared, data_labels)
+    return lin_reg
+
+
 # ----------------------------------------------------------------------------
 # Main Routine
 # Load data, split into training and test sets (ensuring no biasing in
@@ -135,43 +190,68 @@ strat_train_set, strat_test_set = split_data(housing_data)
 housing = strat_train_set.drop("median_house_value", axis=1)
 housing_labels = strat_train_set["median_house_value"].copy()
 
-# Create a pipeline
-# i.e. a set of transformers that are sequentially applied to the data
-#
-# We have a pre-processing pipeline that takes the full housing data
-# (numerical and categorised attributes)
-# and applies the appropriate transformations to each column.
-
-# TODO(Alex) Try combining imputer, attribs_adder and std_scaler
-# into my own class, that contains the methods:
-# fit() (returning self), transform(), and fit_transform().
-
-num_pipeline = Pipeline([
-    ('imputer', SimpleImputer(strategy="median")),
-    ('attribs_adder', transformers.CombinedAttributesAdder()),
-    ('std_scaler', StandardScaler())
-])
-
-numerical_columns = list(housing)
-numerical_columns.remove('ocean_proximity')
-
-# Would be useful to have a function that splits numerical and categorised data (I have that)
-full_pipeline = ColumnTransformer([
-    # Name,   transformer or pipeline of transformers, list of column labels or indices to apply the transformer to
-    ("numerical", num_pipeline, numerical_columns),
-    ("categories", OneHotEncoder(), ["ocean_proximity"]),
-])
-
+full_pipeline = pipeline_wrapper(housing)
 housing_prepared = full_pipeline.fit_transform(housing)
 
-print(housing_prepared)
+# Model evaluation
+lr_model = linear_regression_wrapper(housing_prepared, housing_labels)
+
+some_data = housing.iloc[:5]
+some_labels = housing_labels.iloc[:5]
+some_data_prepared = full_pipeline.transform(some_data)
+print("Predictions:", lr_model.predict(some_data_prepared))
+print("Labels:", list(some_labels))
+
+
+def display_scores(scores):
+    " Get the stats on the set of scores from a cross validation fit"
+    print("Scores:", scores)
+    print("Mean:", scores.mean())
+    print("Standard deviation:", scores.std())
+
+# Linear regression model
+housing_predictions = lr_model.predict(housing_prepared)
+lin_rmse = np.sqrt(mean_squared_error(housing_labels, housing_predictions))
+print("linear model RMSE:", lin_rmse)
+print("most districts’ median_hous ing_values range between $120,000 and $265,000, "
+      "so a typical prediction error of $68,628 is not very satisfying"
+      "(Note, my error is $68,911 for some reason)")
+
+# A linear model under-fits the data =>
+# Not enough features to provide information OR model is not representative
+
+lin_scores = cross_val_score(lr_model, housing_prepared, housing_labels,
+                             scoring="neg_mean_squared_error", cv=10)
+lin_rmse_scores = np.sqrt(-lin_scores)
+display_scores(lin_rmse_scores)
+
+# Decision Tree Regressor
+tree_reg = DecisionTreeRegressor()
+tree_reg.fit(housing_prepared, housing_labels)
+housing_predictions = tree_reg.predict(housing_prepared)
+tree_rmse = np.sqrt(mean_squared_error(housing_labels, housing_predictions))
+print("Decision tree RMSE: ", tree_rmse)
+print("Implies that the model has overfit the data")
+
+# Evaluates utility rather than cost function, hence the negative scores
+scores = cross_val_score(tree_reg, housing_prepared, housing_labels,
+                         scoring="neg_mean_squared_error", cv=10)
+# scoring function is actually the opposite of the MSE
+tree_rmse_scores = np.sqrt(-scores)
+print("tree_rmse_scores: ", tree_rmse_scores)
+
+# Notice that cross-validation allows you to get not only an estimate of the
+# performance of your model, but also a measure of how precise this
+# estimate is (i.e., its standard deviation).
+# cross-validation comes at the cost of training the model several times,
+# so it is not always possible.
+display_scores(tree_rmse_scores)
+
+# Work to page 74
 
 
 
 
-
-
-# Train the model
 
 
 
