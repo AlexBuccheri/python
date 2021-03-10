@@ -29,6 +29,17 @@ def get_atom_labels(file_name:str):
 
 
 
+# CHANGE TO MAKE
+# Parsing LINENGY should definitely return this format
+#     linear_energies = {0: [-5, -1.390000000],
+#                        1: [-0.510000000],
+#                        2: [0.330000000,0.330000000],
+#                        3: [1.000000000],
+#                        4: [1.000000000]}
+# Then max_nodes_per_default_l_channel is len(set(linear_energies[l_channel ]))
+#
+# Would also be useful to distibguish between valence and conduction states.
+
 def nodes_per_default_l_channel(file_name:str, filter_duplicate_species=True) -> dict:
     """
     Given some lo's per l-channel, quantify the number of nodes in that l-channel.
@@ -39,6 +50,7 @@ def nodes_per_default_l_channel(file_name:str, filter_duplicate_species=True) ->
     """
 
     #TODO This is parsing the file and should be separated
+    #TODO MAKE CHANGES ABOVE
     fid = open(file_name, "r")
     file = fid.readlines()
     fid.close()

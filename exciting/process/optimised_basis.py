@@ -4,7 +4,7 @@ See create_basis.py in zr_lmax6_lmax5 for more functions to adapt
 
 """
 import numpy as np
-from typing import List
+from typing import List, Dict
 
 
 class LOEnergies:
@@ -22,7 +22,7 @@ class LOEnergies:
 def filter_default_functions(lo_recommendations: List[np.ndarray],
                             linear_energies: dict,
                             default_lo_nodes: dict,
-                            energy_tolerance=0.1 ) -> List[LOEnergies]:
+                            energy_tolerance=0.1) -> List[LOEnergies]:
     """
 
     Every input is w.r.t. one species!
@@ -60,9 +60,10 @@ def filter_default_functions(lo_recommendations: List[np.ndarray],
 
     the n = 0 term would be excluded, and all others would be retained.
 
-    :param: lo_recommendations lorecommendations for all l-channels of a given species,
-                               Has length = 7 (hard-coded in exciting) and each element is
-                               a np array indexed according to 'n' nodes [0, 21].
+    :param: lo_recommendations lorecommendations for all l-channels of a given species.
+                               Elements indexed by l-value: 0 to 6.
+                               (l_max = 6 is hard-coded in exciting's lorecommendations).
+                               Each value is a np array indexed according to 'n' nodes [0, 21].
     :param: linear_energies    linear energies for all default l-channels of a given species
                                This information would typically come from LINENGY.OUT
                                This ASSUMES one linear energy per l-channel.
@@ -93,34 +94,51 @@ def filter_default_functions(lo_recommendations: List[np.ndarray],
     optimised_los = []
     for l_value, lo_energies in enumerate(lo_recommendations[:n_default_l_channels]):
         linear_energy = linear_energies[l_value]
-        lo_matches = np.amin(np.abs(lo_energies - linear_energy)) <= energy_tolerance
-
-        # First criterion. Exclude default basis functions from the optimised lo's
-        if lo_matches:
-            i = np.argmin(np.abs(lo_energies - linear_energy))
-            optimised_los.append(LOEnergies(l_value = l_value,
-                                            first_n_nodes = i + 1,
-                                            energies = lo_energies[i + 1:]
-                                            )
-                                 )
-
-        # Second criterion. If lowest lo energy recommend exceeds the energy of the
-        # largest default function of a given l-channel, only include radial functions
-        # with nodes > max_node(functions) in the l-channel of the default basis.
-        else:
-            #TODO Remove assert
-            # assert lo_energies[0] + energy_tolerance > linear_energy, \
-            #     "Expect energy parameter from lowest radial function in a given l-channel " \
-            #     "of lo recommendations to exceed the linear energy of the default basis " \
-            #     "function/s associated with the same l-channel"
-            max_node = default_lo_nodes[l_value]
-            optimised_los.append(LOEnergies(l_value = l_value,
-                                            first_n_nodes = max_node + 1,
-                                            energies = lo_energies[max_node + 1:]
-                                            )
-                                 )
+        max_node = default_lo_nodes[l_value]
+        optimised_los.append(filter_default_function(lo_energies, linear_energy, max_node, l_value))
 
     return optimised_los
+
+
+def filter_default_function(lo_energies:np.ndarray,
+                           linear_energy:float,
+                           max_node: int,
+                           l_value:int,
+                           energy_tolerance=0.1):
+    """
+
+    :param lo_energies:
+    :param linear_energy:
+    :param l_value:
+    :return:
+    """
+    assert lo_energies.size == 21, "n(ode) index should vary from 0 to 20"
+    assert l_value >=0, "Angular momentum cannot be less than 0"
+    assert energy_tolerance >= 0., "energy tolerance must >= 0 Ha"
+
+    # First criterion. Exclude default basis functions from the optimised lo's
+    lo_matches = np.amin(np.abs(lo_energies - linear_energy)) <= energy_tolerance
+    if lo_matches:
+        i = np.argmin(np.abs(lo_energies - linear_energy))
+        return LOEnergies(l_value=l_value,
+                          first_n_nodes=i + 1,
+                          energies=lo_energies[i + 1:]
+                         )
+
+    # Second criterion.
+    # If the linear_energy energy of los in a given l-channel doesn't match any energy recommendations
+    # OR
+    # The lowest lo energy recommend exceeds the energy of the largest default function of a given l-channel,
+    # only include radial functions with nodes > max_node(functions) in the l-channel of the default basis.
+    else:
+        assert max_node >= 0, "Function cannot have a negative number of nodes"
+        i = max_node + 1
+        assert lo_energies[i] > linear_energy + energy_tolerance, \
+            "First recommended energy parameter should exceed any already present in the default basis "
+        return LOEnergies(l_value=l_value,
+                          first_n_nodes=i,
+                          energies=lo_energies[i:]
+                          )
 
 
 def filter_high_energy_functions():
