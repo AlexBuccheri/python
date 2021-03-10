@@ -11,7 +11,7 @@ def get_default_basis():
     return
 
 
-def get_atom_labels(file_name:str):
+def get_atom_labels(file_name:str) -> list:
     """
     Get a list of atom labels (in the correct order)
     TODO Alex
@@ -28,6 +28,19 @@ def get_atom_labels(file_name:str):
     return atom_labels
 
 
+def get_unique_atom_labels(atom_labels:list) -> list:
+
+    #unique_atom_labels = [(0, atom_labels[0])]
+    unique_atom_labels = [atom_labels[0]]
+
+    for i, element in enumerate(atom_labels[1:]):
+        if element not in unique_atom_labels:
+            #unique_atom_labels.append((i, element))
+            unique_atom_labels.append(element)
+
+    return unique_atom_labels
+
+
 
 # CHANGE TO MAKE
 # Parsing LINENGY should definitely return this format
@@ -40,86 +53,86 @@ def get_atom_labels(file_name:str):
 #
 # Would also be useful to distibguish between valence and conduction states.
 
-def nodes_per_default_l_channel(file_name:str, filter_duplicate_species=True) -> dict:
+# MAYBE ONLY MAKES SENSE COUNTING NODES FOR ENERGIES ABOVE ZERO
+
+# Convert parameters per atom and l-channel into max_nodes
+
+# atom_basis has length = n_atoms in system
+# len(atom_basis['species']) = n_l_channels
+# atom_basis['species'][l_value] = number of unique energy parameters in that l-channel
+# max_node = atom_basis['species'][l_value] - 1
+
+
+def parse_lo_linear_energies(file_name:str, filter_duplicate_species=True) -> dict:
     """
-    Given some lo's per l-channel, quantify the number of nodes in that l-channel.
-    Directly inferred from the energy parameters
+
+    Return a dictionary of the form:
+
+    linear_energies = {0: [-5.12000000, -1.390000000],
+                       1: [-0.51000000, -0.510000000],
+                       2: [0.330000000,  0.330000000],
+                       3: [1.000000000,  1.000000000],
+                       4: [1.000000000,  1.000000000]}
+
+    If filter_duplicate_species is true, only one of each species is included in linear_energies
 
     Valid for default and optimised basis sets
     :return:
     """
 
-    #TODO This is parsing the file and should be separated
-    #TODO MAKE CHANGES ABOVE
     fid = open(file_name, "r")
     file = fid.readlines()
     fid.close()
 
+    atom_labels = get_atom_labels(file_name)
+    n_atoms = len(atom_labels)
+    unique_atom_labels = get_unique_atom_labels(atom_labels)
+
     # Get species and local-orbital line numbers
     output = grep("local-orbital functions", file_name, line_number='').splitlines()
     start_indices = [int(line.split(':')[0]) for line in output]
-    n_atoms = len(output)
-
-    atom_labels = get_atom_labels(file_name)
-
-    # ---------------------
-    unique_elements = (0, atom_labels[0])
-    for i, element in enumerate(atom_labels[1:]):
-        if element not in unique_elements:
-            unique_elements.append((i, element))
-
-    # --------------------
-
 
     # First species index not required
     output = grep("Species", file_name, line_number='').splitlines()
-    # -2 returns end index to last lo of the prior species
+    # -2 moves the end index to the last lo of the prior species
     end_indices = [int(line.split(':')[0]) - 2 for line in output[1:]]
     # Add up to end of file
     end_indices.append(len(file))
 
-    # Want nodes per l-channel
-
-    # Want for each atom, want max_node for each l-channel
-    # Doesn't help
-    # Really want this per species, not atom
-
+    # Parse file
+    linear_energies_atoms = {}
+    energy_parameter = []
     prior_l_value = 0
-    atom_basis = {}
 
     for iatom in range(0, n_atoms):
-        key = atom_labels[iatom]
-        start = start_indices[i]
-        stop = end_indices[i]
+        atom_label = atom_labels[iatom]
+        start = start_indices[iatom]
+        stop = end_indices[iatom]
+        linear_energies = {}
 
         for ilo in range(start, stop):
             line = file[ilo].split()
-            l_value = int(line[5])
-            energy_parameter = float(line[-1])
+            l_value = int(line[5].replace(",", ""))
 
             if l_value != prior_l_value:
-                parameters_per_atom[prior_l_value] = len(set(parameters_per_l_channel))
+                linear_energies[prior_l_value] = energy_parameter
                 prior_l_value = l_value
-                parameters_per_l_channel = []
+                energy_parameter = []
 
-            parameters_per_l_channel.append(energy_parameter)
-        atom_basis[key] = parameters_per_atom
+            energy_parameter.append(float(line[-1]))
+        linear_energies_atoms[atom_label] = linear_energies
 
     if filter_duplicate_species:
-        unique_atoms_basis = {}
-        for i, key in unique_elements:
-            unique_atoms_basis[key] = atom_basis[i]
+        linear_energies_species = {}
+        for atom_label in unique_atom_labels:
+            linear_energies_species[atom_label] = linear_energies_atoms[atom_label]
 
-    # MAYBE ONLY MAKES SENSE COUNTING NODES FOR ENERGIES ABOVE ZERO
+        return linear_energies_species
 
-    # Convert parameters per atom and l-channel into max_nodes
+    else:
+        return linear_energies_atoms
 
-    # atom_basis has length = n_atoms in system
-    # len(atom_basis['species']) = n_l_channels
-    # atom_basis['species'][l_value] = number of unique energy parameters in that l-channel
-    # max_node = atom_basis['species'][l_value] - 1
 
-    return atom_basis
 
 
 def label_default_basis():

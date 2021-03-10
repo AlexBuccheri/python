@@ -93,9 +93,12 @@ def filter_default_functions(lo_recommendations: List[np.ndarray],
 
     optimised_los = []
     for l_value, lo_energies in enumerate(lo_recommendations[:n_default_l_channels]):
-        linear_energy = linear_energies[l_value]
-        max_node = default_lo_nodes[l_value]
-        optimised_los.append(filter_default_function(lo_energies, linear_energy, max_node, l_value))
+        optimised_los.append(filter_default_function(lo_energies,
+                                                    linear_energies[l_value],
+                                                    default_lo_nodes[l_value],
+                                                    l_value,
+                                                    energy_tolerance)
+                             )
 
     return optimised_los
 
@@ -104,13 +107,14 @@ def filter_default_function(lo_energies:np.ndarray,
                            linear_energy:float,
                            max_node: int,
                            l_value:int,
-                           energy_tolerance=0.1):
+                           energy_tolerance=0.1) -> LOEnergies:
     """
 
-    :param lo_energies:
-    :param linear_energy:
-    :param l_value:
-    :return:
+    :param lo_energies:   np.ndarray containing energy parameter recommendations for l-channel l_value,
+                          for los with nodes ranging from n=0 to n=20.
+    :param linear_energy: Highest linear energy for l-channel 'l_value', in the default basis
+    :param l_value:       l-channel
+    :return: LOEnergies
     """
     assert lo_energies.size == 21, "n(ode) index should vary from 0 to 20"
     assert l_value >=0, "Angular momentum cannot be less than 0"
@@ -141,7 +145,7 @@ def filter_default_function(lo_energies:np.ndarray,
                           )
 
 
-def filter_high_energy_functions():
+def filter_high_energy_functions(lo_recommendations: List[np.ndarray], energy_cutoff: float):
     """
 
     Nodes are interchangable with trial energy parameters, as basis functions
@@ -150,10 +154,12 @@ def filter_high_energy_functions():
 
     :return:
     """
+    optimised_los = {}
+    for l_value, lo_energies in enumerate(lo_recommendations):
+        n_index = len(lo_energies[lo_energies < energy_cutoff]) - 1
+        optimised_los[l_value] = n_index
 
-    # This routine will be trivial
-
-    return
+    return optimised_los
 
 
 def generate_lo_l_string(l:int, energies, max_matching_order:int):
