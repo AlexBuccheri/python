@@ -8,7 +8,7 @@ from typing import List, Dict
 
 
 class LOEnergies:
-    def __init__(self, l_value: int, first_n_nodes: int, energies):
+    def __init__(self, l_value: int, first_n_nodes: int, energies, last_n_nodes=None):
         """
         :param l_value: Orbital momentum associated with the l-channel
         :param first_n_nodes:  Number of nodes associated with first function in optimised basis
@@ -16,6 +16,7 @@ class LOEnergies:
         """
         self.l_value = l_value
         self.first_n_nodes = first_n_nodes
+        self.last_n_nodes = last_n_nodes
         self.energies = energies
 
 
@@ -120,6 +121,8 @@ def filter_default_function(lo_energies:np.ndarray,
     assert l_value >=0, "Angular momentum cannot be less than 0"
     assert energy_tolerance >= 0., "energy tolerance must >= 0 Ha"
 
+    #TODO Would be better to just store indices
+
     # First criterion. Exclude default basis functions from the optimised lo's
     lo_matches = np.amin(np.abs(lo_energies - linear_energy)) <= energy_tolerance
     if lo_matches:
@@ -144,7 +147,6 @@ def filter_default_function(lo_energies:np.ndarray,
                           energies=lo_energies[i:]
                           )
 
-
 def filter_high_energy_functions(lo_recommendations: List[np.ndarray], energy_cutoff: float):
     """
 
@@ -160,6 +162,29 @@ def filter_high_energy_functions(lo_recommendations: List[np.ndarray], energy_cu
         optimised_los[l_value] = n_index
 
     return optimised_los
+
+
+def filter_high_energy_functions_from_optimised_basis(optimised_basis: List[LOEnergies]):
+
+    for l_value, los in enumerate(optimised_basis):
+        lo_energies = optimised_basis[l_value]
+        assert lo_energies.l_value == l_value
+
+        first_index = 3
+        last_index = 6
+        n_index = len([3, 4, 5, 6]) -1 = 3
+        last_index = first_index +
+
+        [0, 1, 2,      3, 4, 5, 6]
+
+        lo_energies.
+
+
+        # Would make more sense to hold all energies and just store the start/end indices
+        # n_index = len(lo_energies.energies[lo_energies.energies < energy_cutoff]) - 1
+        # lo_energies.last_n_nodes = n_index
+
+
 
 
 def generate_lo_l_string(l:int, energies, max_matching_order:int):
