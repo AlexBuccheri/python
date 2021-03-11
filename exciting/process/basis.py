@@ -6,6 +6,8 @@ from exciting_utils.py_grep import grep
 def get_default_basis():
     """
     Extract the default basis from a ground state file
+    THIS IS PARSING basis
+    Probably want to add TAGS to for easy insertion of optimised los
     :return:
     """
     return
@@ -29,6 +31,11 @@ def get_atom_labels(file_name:str) -> list:
 
 
 def get_unique_atom_labels(atom_labels:list) -> list:
+    """
+
+    :param atom_labels:
+    :return:
+    """
 
     #unique_atom_labels = [(0, atom_labels[0])]
     unique_atom_labels = [atom_labels[0]]
@@ -42,26 +49,12 @@ def get_unique_atom_labels(atom_labels:list) -> list:
 
 
 
-# CHANGE TO MAKE
-# Parsing LINENGY should definitely return this format
-#     linear_energies = {0: [-5, -1.390000000],
-#                        1: [-0.510000000],
-#                        2: [0.330000000,0.330000000],
-#                        3: [1.000000000],
-#                        4: [1.000000000]}
-# Then max_nodes_per_default_l_channel is len(set(linear_energies[l_channel ]))
-#
-# Would also be useful to distibguish between valence and conduction states.
 
-# MAYBE ONLY MAKES SENSE COUNTING NODES FOR ENERGIES ABOVE ZERO
-
-# Convert parameters per atom and l-channel into max_nodes
-
+# TODO Test parse_lo_linear_energies
 # atom_basis has length = n_atoms in system
 # len(atom_basis['species']) = n_l_channels
 # atom_basis['species'][l_value] = number of unique energy parameters in that l-channel
 # max_node = atom_basis['species'][l_value] - 1
-
 
 def parse_lo_linear_energies(file_name:str, filter_duplicate_species=True) -> dict:
     """
@@ -134,7 +127,7 @@ def parse_lo_linear_energies(file_name:str, filter_duplicate_species=True) -> di
 
 
 
-
+# These can both be done was jobs are running
 def label_default_basis():
     """
     Label the default basis
