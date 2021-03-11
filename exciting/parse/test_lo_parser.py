@@ -64,5 +64,3 @@ def test_parse_lo_linear_energies():
                                  }
 
     return
-
-

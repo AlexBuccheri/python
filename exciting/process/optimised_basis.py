@@ -275,3 +275,24 @@ def generate_lo_l_string(l:int, energies, max_matching_order:int):
             string += template.format(l=l, te=round(trial_energy, 2), mo1=mo1, mo2=mo2)
 
     return string
+
+
+
+def generate_optimised_basis_string(ground_state_xml: str,
+                                    optmised_basis_recommendations: List[LOEnergies],
+                                    max_matching_order: int) -> str:
+    """
+    Given some groundstate basis string (xml format), add optimised lo functions to it.
+
+    :param ground_state_xml:
+    :param optmised_basis_recommendations:
+    :param max_matching_order:
+    :return optimised basis string
+    """
+    lo_strings = {}
+    for los in optmised_basis_recommendations:
+        key = 'custom_l' + str(los.l_value)
+        lo_strings[key] = generate_lo_l_string(los.l_value, los.get_optimised_energies(), max_matching_order)
+
+    # Add extra lo's to the ground state basis
+    return ground_state_xml.format(**lo_strings)

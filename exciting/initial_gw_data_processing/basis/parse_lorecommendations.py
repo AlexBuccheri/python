@@ -45,7 +45,7 @@ from zr_basis import zr_basis
 # 6 calculations
 # Include Step 20 (ha?) i.e. -ve-0, >0-20, >20-40, >40-60, >60-80, >80-100
 
-energy_cutoffs = [20., 40., 60., 80.]
+energy_cutoffs = [100.]   #[20., 40., 60., 80., 100]
 max_matching_order = 1
 
 for energy_cutoff in energy_cutoffs:

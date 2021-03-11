@@ -1,0 +1,13 @@
+Andris has suggested that the trial energy parameter for high-l value los, at least in the groundstate,
+should 0.0-0.15. Generally-speaking, these high-l los correspond to conduction states and therefore using atomic energies
+for bound/valence states doesn't have any physical justification.
+
+Prior total energy for trial energy parameter = 1.00
+
+    -3747.45073647    Ha
+
+Changing the parameters from 1.00 to 0.15
+
+    -3747.45073647   Ha
+
+So the basis had no effect on the ground state total energy

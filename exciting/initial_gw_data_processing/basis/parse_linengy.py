@@ -136,23 +136,38 @@ def local_orbital_basis_string(lo_basis_functions: List[LoFunction], trial_energ
 
 
 
+
+
 # ---------------------
 # Main routine
 # ---------------------
-# Parse linengy.out
-fid = open(file='LINENGY.OUT', mode='r')
-lines = fid.readlines()
-fid.close()
+def main():
+    # Parse linengy.out
+    fid = open(file='LINENGY.OUT', mode='r')
+    lines = fid.readlines()
+    fid.close()
 
-atoms = basis_per_atom(lines)
-lo_block_strings = lo_basis_per_atom(atoms)
-lo_basis_functions = string_LoObject(lo_block_strings[0])
-string = local_orbital_basis_string(lo_basis_functions, 100.)
-print(string)
+    atoms = basis_per_atom(lines)
+    lo_block_strings = lo_basis_per_atom(atoms)
+    zr_los = lo_block_strings[0]
+    o1_los = lo_block_strings[1]
+    o2_los = lo_block_strings[2]
 
+    # Zr atom basis
+    lo_basis_functions = string_LoObject(zr_los)
+    string = local_orbital_basis_string(lo_basis_functions, 100.)
+    print("Zr atom l.o. basis")
+    print(string + '\n\n')
 
+    # O1 atom basis (both O are the same)
+    lo_basis_functions = string_LoObject(o1_los)
+    string = local_orbital_basis_string(lo_basis_functions, 100.)
+    print("O1 atom l.o. basis")
+    print(string + '\n\n')
 
-
+    # TODO Want to add the custom line into it
+    # At this point, it probably makes more sense
+    # to just print out, then I can copy-paste and fire the runs off
 
 # 6 calculations
 # Include Step 20 (ha?) i.e. -ve-0, >0-20, >20-40, >40-60, >60-80, >80-100

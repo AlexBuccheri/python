@@ -25,7 +25,7 @@ def get_atom_labels(file_name:str) -> list:
     species_lines = grep("Species", file_name).splitlines()
     for line in species_lines:
         symbol = line.split(',')[0][-4:].replace("(", "").replace(")", "")
-        atom_labels.append(symbol.strip())
+        atom_labels.append(symbol.strip().lower())
 
     return atom_labels
 
@@ -50,14 +50,11 @@ def get_unique_atom_labels(atom_labels:list) -> list:
 
 
 
-# TODO Test parse_lo_linear_energies
-# atom_basis has length = n_atoms in system
-# len(atom_basis['species']) = n_l_channels
-# atom_basis['species'][l_value] = number of unique energy parameters in that l-channel
-# max_node = atom_basis['species'][l_value] - 1
 
 def parse_lo_linear_energies(file_path:str, file_name='LINENGY.OUT') -> dict:
     """
+    TODO For sure the easier thing to do would be to add some of this stuff
+    to the file header OR move to structured output
 
     Return a dictionary of the form:
 
