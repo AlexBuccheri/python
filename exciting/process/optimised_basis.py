@@ -7,7 +7,7 @@ import numpy as np
 from typing import List, Dict, Optional
 from copy import deepcopy
 
-
+# TODO Change name to LOOptimisedEnergies
 class LOEnergies:
     def __init__(self, l_value: int, energies: np.ndarray, first_node=None, last_node=None):
         """
@@ -22,6 +22,7 @@ class LOEnergies:
         """
         assert energies.size == 21
         self.l_value = l_value
+        #TODO Change name to energy_recommendations
         self.energies = energies
         self.first_node = first_node if first_node is not None else 0
         self.last_node = last_node if last_node is not None else energies.size - 1
@@ -30,6 +31,7 @@ class LOEnergies:
         return self.energies[self.first_node: self.last_node+1]
 
 
+# TODO change name to DefaultLOEnergies
 class DefaultLOs():
 
     def get_max_nodes(self) -> dict:
@@ -61,7 +63,7 @@ class DefaultLOs():
         return self.nodes
 
 
-    def __init__(self, linear_energies:Optional[dict], nodes:Optional[dict]=None, energy_tol=0.1):
+    def __init__(self, linear_energies:dict, nodes:Optional[dict]=None, energy_tol=0.1):
         """
         Initialise class
         :param linear_energies: Dictionary of all linear energies for an atom's local orbitals
@@ -81,9 +83,9 @@ class DefaultLOs():
 
 
 
-def filter_default_functions(lo_recommendations: List[np.ndarray],
-                             default_los: Optional[DefaultLOs]=None,
-                             optimised_lo_cutoff: Optional[list]=None) -> List[LOEnergies]:
+def filter_lo_functions(lo_recommendations: List[np.ndarray],
+                        default_los: Optional[DefaultLOs]=None,
+                        optimised_lo_cutoff: Optional[list]=None) -> List[LOEnergies]:
     """
 
     Every input is w.r.t. one species.
@@ -122,11 +124,11 @@ def filter_default_functions(lo_recommendations: List[np.ndarray],
         optimised_los_lchannel = LOEnergies(l_value, lo_energies)
 
         if default_los is not None:
-            optimised_los_lchannel = filter_default_function(optimised_los_lchannel,
-                                                            max(default_los.linear_energies[l_value]),
-                                                            max(default_los.nodes[l_value]),
-                                                            default_los.energy_tol
-                                                            )
+            optimised_los_lchannel = filter_default_functions(optimised_los_lchannel,
+                                                              max(default_los.linear_energies[l_value]),
+                                                              default_los.nodes[l_value],
+                                                              default_los.energy_tol
+                                                              )
         if optimised_lo_cutoff is not None:
             optimised_los_lchannel = filter_high_energy_optimised_functions(optimised_los_lchannel,
                                                                             optimised_lo_cutoff[l_value])
@@ -137,10 +139,10 @@ def filter_default_functions(lo_recommendations: List[np.ndarray],
     return optimised_los
 
 
-def filter_default_function(optimised_los:LOEnergies,
-                            default_linear_energy: float,
-                            default_max_node: int,
-                            energy_tolerance: float) -> LOEnergies:
+def filter_default_functions(optimised_los:LOEnergies,
+                             default_max_linear_energy: float,
+                             default_max_node: int,
+                             energy_tolerance: float) -> LOEnergies:
     """
     Find an index for lo recommendations that screens all contributions already present in the default basis.
 
@@ -199,7 +201,7 @@ The energy parameter of low-l-value functions (found in the default basis)
         This is needs resolving.
 
     :param optimised_los: LOEnergies initialised with l-channel and lo recommendation energies.
-    :param default_linear_energy: Highest linear energy for l-channel 'l_value', in the default basis.
+    :param default_max_linear_energy: Highest linear energy for l-channel 'l_value', in the default basis.
     :param default_max_node: lo function with the most nodes for an l-channel of the default basis.
     :return: LOEnergies with first_node set
     """
@@ -207,16 +209,20 @@ The energy parameter of low-l-value functions (found in the default basis)
     assert optimised_los.l_value >=0, "Angular momentum cannot be less than 0"
     assert energy_tolerance >= 0., "energy tolerance must >= 0 Ha"
 
-    lo_matches = np.amin(np.abs(optimised_los.energies - default_linear_energy)) <= energy_tolerance
+    lo_matches = np.amin(np.abs(optimised_los.energies - default_max_linear_energy)) <= energy_tolerance
     if lo_matches:
-        i = np.argmin(np.abs(optimised_los.energies - default_linear_energy))
+        i = np.argmin(np.abs(optimised_los.energies - default_max_linear_energy))
         optimised_los.first_node = i + 1
 
     else:
         assert default_max_node >= 0, "Function cannot have a negative number of nodes"
         i = default_max_node + 1
-        assert optimised_los.energies[i] > default_linear_energy + energy_tolerance, \
-            "First recommended energy parameter should exceed any already present in the default basis "
+        if optimised_los.energies[i] <= default_max_linear_energy + energy_tolerance:
+            print("First recommended energy parameter should exceed the energies of all default los")
+            print("First optimised lo energy:", optimised_los.energies[i])
+            print("Highest default lo energy, tolerance (Ha):", default_max_linear_energy, energy_tolerance)
+            quit()
+
         optimised_los.first_node = i
 
     return optimised_los

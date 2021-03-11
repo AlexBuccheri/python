@@ -12,9 +12,6 @@ def parse_lorecommendations(file_name:str, species:list)-> dict:
     """
     Parse lorecommendations
 
-    If the number of species is not passed, the routine will
-    extract it from the file and return all.
-
     Note: species symbols not given in the file. Just an index.
           'n' is number of nodes, NOT the principal QN
           The energy parameters are slightly inconsistent with those returned by LINENGY.OUT
@@ -31,13 +28,24 @@ def parse_lorecommendations(file_name:str, species:list)-> dict:
         l, n(odes), energy_parameter
         and has n_nodes = len(l_channel) entries.
 
+    basis_per_species = {'species_label1': lo_l,
+                         'species_label2': lo_l
+                        }
+
+    where lo_l is a list of the form [lo_0_energies, lo_1_energies, lo_2_energies,
+                                      lo_3_energies, lo_4_energies, lo_5_energies, lo_6_energies]
+    and
+
+    lo_l_energies = [-956.668857441502, -379.210225370091, -14.2958579803164, -1.39085408705473,
+                     3.41674973498303,  11.8576335922056,  23.5553488286426,  38.2225139492090,  55.7183934928437,
+                     75.9631434089484,  98.9062300331434,  124.506902544624,  152.736321370444,  183.572269369556,
+                     216.996197372528,  252.993631242244,  291.552350804867,  332.661952981567,  376.313557393327,
+                     422.499336330017,  471.212424048639]
+
     :param file_name: file containing lorecommendations
     :param species:  list of species characters
     :return: basis_per_species dictionary
     """
-
-    #if n_species == None:
-    #    n_species = int(grep('species', fname=file_name).split()[-1])
 
     fid = open(file=file_name, mode='r')
     lines = fid.readlines()

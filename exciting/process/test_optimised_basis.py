@@ -1,7 +1,8 @@
 import numpy as np
 from typing import Optional
 
-from optimised_basis import LOEnergies, filter_default_function, filter_high_energy_optimised_functions, DefaultLOs
+from optimised_basis import LOEnergies, filter_default_functions, filter_high_energy_optimised_functions, \
+    DefaultLOs, filter_lo_functions
 
 
 def test_filter_low_node_function_l0():
@@ -34,10 +35,10 @@ def test_filter_low_node_function_l0():
     l_value = 0
     delta_energy_tol = 0.1
 
-    optimised_basis = filter_default_function(LOEnergies(l_value, lorecommendations_l0),
-                                             max(linear_energies[l_value]),
-                                             max_nodes_default_basis,
-                                             delta_energy_tol)
+    optimised_basis = filter_default_functions(LOEnergies(l_value, lorecommendations_l0),
+                                               max(linear_energies[l_value]),
+                                               max_nodes_default_basis,
+                                               delta_energy_tol)
 
     # Although does this correspond to a valence or conduction state? Not very meaningful
     assert optimised_basis.first_node == 4, "first radial function for optimised basis has 4 nodes"
@@ -102,10 +103,10 @@ def test_filtering_default_and_highenergy_functions():
     delta_energy_tol = 0.1
     high_energy_cutoff = 20.
 
-    optimised_basis = filter_default_function(LOEnergies(l_value, lorecommendations_l0),
-                                             max(linear_energies[l_value]),
-                                             max_nodes_default_basis,
-                                             delta_energy_tol)
+    optimised_basis = filter_default_functions(LOEnergies(l_value, lorecommendations_l0),
+                                               max(linear_energies[l_value]),
+                                               max_nodes_default_basis,
+                                               delta_energy_tol)
     optimised_basis = filter_high_energy_optimised_functions(optimised_basis, high_energy_cutoff)
 
     np.testing.assert_array_equal(optimised_basis.get_optimised_energies(),
@@ -115,10 +116,10 @@ def test_filtering_default_and_highenergy_functions():
     # Test reversing the order
     del optimised_basis
     optimised_basis = filter_high_energy_optimised_functions(LOEnergies(l_value, lorecommendations_l0), high_energy_cutoff)
-    optimised_basis = filter_default_function(optimised_basis,
-                                             linear_energies[l_value],
-                                             max_nodes_default_basis,
-                                             delta_energy_tol)
+    optimised_basis = filter_default_functions(optimised_basis,
+                                               linear_energies[l_value],
+                                               max_nodes_default_basis,
+                                               delta_energy_tol)
 
     np.testing.assert_array_equal(optimised_basis.get_optimised_energies(),
                                   np.array([3.41674973,  11.85763359]),
@@ -161,10 +162,10 @@ def test_filter_low_node_function_l2():
         "Nodes associated with most rapidly-varying lo == number of energy parameters in a given l-channel - 1"
 
     # Test filter_default_function
-    optimised_basis = filter_default_function(LOEnergies(l_value, lorecommendations_l2),
-                                             max(default_lo_energies.linear_energies[l_value]),
-                                             default_lo_energies.nodes[l_value],
-                                             default_lo_energies.energy_tol)
+    optimised_basis = filter_default_functions(LOEnergies(l_value, lorecommendations_l2),
+                                               max(default_lo_energies.linear_energies[l_value]),
+                                               default_lo_energies.nodes[l_value],
+                                               default_lo_energies.energy_tol)
 
     assert optimised_basis.first_node == default_lo_energies.nodes[l_value] + 1, \
         "first radial function for optimised basis has 1 node more than that of the max in the default basis"
@@ -179,96 +180,81 @@ def test_filter_low_node_function_l2():
     return
 
 
-# def test_filter_low_node_function_l4():
-#     """
-#     l = 4
-#     All energies exceed 1 Ha (the typical maximum value for an lo in the default basis)
-#     so expect all states to be conduction states.
-#     As no energies in lorecommendations_l4 match the energy parameter 1.00 (see linear_energies[4])
-#     of the lo function in the default basis the lowest recommendation should be determined by
-#     the function with the largest number of nodes in the default basis. Then go one higher with the recommendation
-#     This is somewhat meaningless to me
-#     Maybe 4.77449195 should indeed actually be 1.000, and Andris returns something erroneously in lorecommendations?
-#     """
-#
-#     lorecommendations_l4 = np.array([4.77449195, 11.17705627, 20.04560097, 31.43639778,
-#                                      45.38373733, 61.8787738, 80.91492554, 102.49376441,
-#                                      126.60673075, 153.24771388, 182.40983259, 214.08650332,
-#                                      248.27299967, 284.9649611, 324.15906139, 365.85254928,
-#                                      410.04302461, 456.72834158, 505.90639589, 557.57511102,
-#                                      611.73245043])
-#
-#     # Representative of what one would extract from LINENGY.OUT, for a given atom
-#     #TODO refactor this format (see basis.py)
-#     linear_energies = {0: -1.390000000,
-#                        1: -0.510000000,
-#                        2: 0.330000000,
-#                        3: 1.000000000,
-#                        4: 1.000000000}
-#
-#     l_value = 4
-#     tol = 0.1
-#
-#     # Only one energy parameter for the l=4 channel => only one function
-#     # function number of nodes start counting at 0 =>
-#     #TODO refactor getting this (see basis.py)
-#     max_nodes_default_basis = 0
-#
-#     optimised_basis = filter_default_function(lorecommendations_l4,
-#                                              linear_energies[l_value],
-#                                              max_nodes_default_basis,
-#                                              l_value,
-#                                              energy_tolerance=tol)
-#
-#     assert optimised_basis.l_value == l_value, "l_value consistent"
-#     n = optimised_basis.first_n_nodes
-#
-#     assert optimised_basis.first_n_nodes == 1, \
-#         "only one energy parameter defining this l-channel of the default basis, hence " \
-#         "one basis function with 0 nodes => first recommendation should have 1 node"
-#
-#     assert n == max_nodes_default_basis + 1, \
-#         "first radial function for optimised basis has 1 node more than that of the max in the default basis"
-#
-#     np.testing.assert_approx_equal(optimised_basis.energies[0], 11.17705627,
-#                                    err_msg="first energy parameter in optimised basis")
-#
-#     assert lorecommendations_l4[n] == optimised_basis.energies[0], \
-#         "Energy at index defined by n (nodes) in lorecommendations should correspond to the first " \
-#         "energy recommendation in optimised_basis_energies"
-#
-#     return
+def test_filter_low_node_function_l4():
+    """
+    l = 4
 
+    All recommended energies exceed 1 Ha (the typical maximum value for an lo in the default basis)
+    so expect all states to be conduction states.
 
-# TODO Handle deliberately failing test
-# def test_filter_low_node_functions():
+    As no energies in lorecommendations_l4 match the energy parameter 1.00 (see linear_energies[4])
+    of the lo function in the default basis, the lowest recommendation should be determined by
+    the function with the largest number of nodes in the default basis.
+    Then go one higher with the recommendation (This is somewhat meaningless to me).
+
+    Maybe 4.77449195 should indeed actually be 1.000, lorecommendations energies agree less above 0 Ha?
+    """
+
+    lorecommendations_l4 = np.array([4.77449195, 11.17705627, 20.04560097, 31.43639778,
+                                     45.38373733, 61.8787738, 80.91492554, 102.49376441,
+                                     126.60673075, 153.24771388, 182.40983259, 214.08650332,
+                                     248.27299967, 284.9649611, 324.15906139, 365.85254928,
+                                     410.04302461, 456.72834158, 505.90639589, 557.57511102,
+                                     611.73245043])
+
+    # Representative of what one would extract from LINENGY.OUT, for a given atom
+    linear_energies = {0: [-1.390000000],
+                       1: [-0.510000000],
+                       2: [0.330000000],
+                       3: [1.000000000],
+                       4: [1.000000000]}
+
+    l_value = 4
+
+    default_lo_energies = DefaultLOs(linear_energies, energy_tol=0.1)
+
+    optimised_basis = filter_default_functions(LOEnergies(l_value, lorecommendations_l4),
+                                               max(linear_energies[l_value]),
+                                               default_lo_energies.nodes[l_value],
+                                               default_lo_energies.energy_tol)
+
+    assert optimised_basis.first_node == 1, \
+        "only one energy parameter in linear_energies[4] of the default basis, hence " \
+        "one default basis function with 0 nodes => first recommendation for optimised basis " \
+        "should have 1 node"
+
+    lowest_optimised_basis_energy = optimised_basis.get_optimised_energies()[0]
+
+    np.testing.assert_approx_equal(lowest_optimised_basis_energy, 11.17705627,
+                                   err_msg="first energy parameter in optimised basis")
+
+    assert lorecommendations_l4[optimised_basis.first_node] == lowest_optimised_basis_energy, \
+        "Energy at index defined by n (nodes) in lorecommendations should correspond to the first " \
+        "energy recommendation in optimised_basis_energies"
+
+    return
+
+# Need some way to progagate errors
+# def test_filter_low_node_functions_l5():
 #     """
 #     Different API that accepts multiple l-channels
 #     :return:
 #     """
-#
-#     # Could be any numbers
-#     lorecommendations_l4 = np.array([4.77449195, 11.17705627, 20.04560097, 31.43639778,
-#                                      45.38373733, 61.8787738, 80.91492554, 102.49376441,
-#                                      126.60673075, 153.24771388, 182.40983259, 214.08650332,
-#                                      248.27299967, 284.9649611, 324.15906139, 365.85254928,
-#                                      410.04302461, 456.72834158, 505.90639589, 557.57511102,
-#                                      611.73245043])
-#
-#     linear_energies = {0: -1.390000000,
-#                        1: -0.510000000,
-#                        2: 0.330000000,
-#                        3: 1.000000000,
-#                        4: 1.000000000}
-#
-#     junk_default_lo_nodes = {0:  -1,
-#                              1:  -1,
-#                              2:  -1,
-#                              3:  -1}
-#
 #     l_value = 5
-#     tol = 0.1
+#     l_max = 6
 #
-#     optimised_basis = filter_default_functions(lorecommendations_l4, linear_energies, junk_default_lo_nodes)
+#     arbitrary_lorecommendations = np.zeros(shape=(21))
+#     lorecommendations = [arbitrary_lorecommendations] * (l_max + 1)
+#
+#     linear_energies = {0: [-1.390000000],
+#                        1: [-0.510000000],
+#                        2: [0.330000000],
+#                        3: [1.000000000],
+#                        4: [1.000000000]}
+#
+#
+#     default_lo_energies = DefaultLOs(linear_energies, energy_tol=0.1)
+#
+#     optimised_basis = filter_lo_functions(lorecommendations, default_lo_energies)
 #
 #     return

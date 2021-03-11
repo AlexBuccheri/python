@@ -56,30 +56,35 @@ def get_unique_atom_labels(atom_labels:list) -> list:
 # atom_basis['species'][l_value] = number of unique energy parameters in that l-channel
 # max_node = atom_basis['species'][l_value] - 1
 
-def parse_lo_linear_energies(file_name:str, filter_duplicate_species=True) -> dict:
+def parse_lo_linear_energies(file_path:str, file_name='LINENGY.OUT') -> dict:
     """
 
     Return a dictionary of the form:
 
-    linear_energies = {0: [-5.12000000, -1.390000000],
-                       1: [-0.51000000, -0.510000000],
-                       2: [0.330000000,  0.330000000],
-                       3: [1.000000000,  1.000000000],
-                       4: [1.000000000,  1.000000000]}
+    linear_energies = {'atom_label1': linear_energies_1,
+                       'atom_label2': linear_energies_2
+                       }
+    where linear_energies_i is also a dictionary of the form
 
-    If filter_duplicate_species is true, only one of each species is included in linear_energies
+    linear_energies_i = {0: [-5.12000000, -1.390000000],
+                         1: [-0.51000000, -0.510000000],
+                         2: [0.330000000,  0.330000000],
+                         3: [1.000000000,  1.000000000],
+                         4: [1.000000000,  1.000000000]}
 
+    Only one of each species is included in linear_energies.
     Valid for default and optimised basis sets
-    :return:
+
+    :return: linear_energies
     """
 
+    file_name = file_path + '/' + file_name
     fid = open(file_name, "r")
     file = fid.readlines()
     fid.close()
 
     atom_labels = get_atom_labels(file_name)
     n_atoms = len(atom_labels)
-    unique_atom_labels = get_unique_atom_labels(atom_labels)
 
     # Get species and local-orbital line numbers
     output = grep("local-orbital functions", file_name, line_number='').splitlines()
@@ -94,14 +99,15 @@ def parse_lo_linear_energies(file_name:str, filter_duplicate_species=True) -> di
 
     # Parse file
     linear_energies_atoms = {}
-    energy_parameter = []
-    prior_l_value = 0
 
     for iatom in range(0, n_atoms):
         atom_label = atom_labels[iatom]
         start = start_indices[iatom]
         stop = end_indices[iatom]
+
         linear_energies = {}
+        energy_parameter = []
+        prior_l_value = 0
 
         for ilo in range(start, stop):
             line = file[ilo].split()
@@ -113,17 +119,24 @@ def parse_lo_linear_energies(file_name:str, filter_duplicate_species=True) -> di
                 energy_parameter = []
 
             energy_parameter.append(float(line[-1]))
+
+        # Add last l-channel of the atomic block
+        linear_energies[prior_l_value] = energy_parameter
         linear_energies_atoms[atom_label] = linear_energies
 
-    if filter_duplicate_species:
-        linear_energies_species = {}
-        for atom_label in unique_atom_labels:
-            linear_energies_species[atom_label] = linear_energies_atoms[atom_label]
+    return linear_energies_atoms
 
-        return linear_energies_species
-
-    else:
-        return linear_energies_atoms
+    # NOTE. This is not required as dictionary will overwrite elements with the same key
+    # if filter_duplicate_species:
+    #     unique_atom_labels = get_unique_atom_labels(atom_labels)
+    #     linear_energies_species = {}
+    #     for atom_label in unique_atom_labels:
+    #         linear_energies_species[atom_label] = linear_energies_atoms[atom_label]
+    #
+    #     return linear_energies_species
+    #
+    # else:
+    #     return linear_energies_atoms
 
 
 
