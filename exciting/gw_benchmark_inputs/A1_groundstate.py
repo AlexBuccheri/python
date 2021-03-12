@@ -1,3 +1,8 @@
+"""
+These settings correspond to sufficiently converged ground state calculations.
+What will differ between subsequent ground state runs are the basis files.
+"""
+
 converged_ground_state_input = \
 """
 <input>
