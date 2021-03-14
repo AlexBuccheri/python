@@ -265,7 +265,8 @@ def generate_lo_l_string(l:int, energies, max_matching_order:int):
     """
     template = """
        <lo l="{l}">
-        <wf matchingOrder="{mo1}" trialEnergy="{te}" searchE="false"/> <wf matchingOrder="{mo2}" trialEnergy="{te}" searchE="false"/>
+        <wf matchingOrder="{mo1}" trialEnergy="{te}" searchE="false"/> 
+        <wf matchingOrder="{mo2}" trialEnergy="{te}" searchE="false"/>
        </lo>
         """
     string = ''
