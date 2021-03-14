@@ -27,7 +27,7 @@ converged_ground_state_input = \
    </structure>
 
    <groundstate
-      do="skip"
+      do="fromfile"
       rgkmax="7.0"
       ngridk="6 6 6"
       xctype="GGA_PBE_SOL"
