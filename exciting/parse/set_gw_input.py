@@ -5,18 +5,20 @@ from gw_benchmark_inputs.A1_groundstate import converged_ground_state_input
 from gw_benchmark_inputs.A1_gw import gw_string_template
 
 class GWInput:
-    def __init__(self, taskname:str, nempty:int, ngridq:list, skipgnd:bool):
+    def __init__(self, taskname:str, nempty:int, ngridq:list, skipgnd:bool, n_omega:int):
         """
         Set GW input class
         :param taskname: GW method
         :param nempty: Number of unoccupied states
         :param ngridq: k-grid
         :param skipgnd: Skip ground state calculation
+        :param n_omega: Number of imaginary frequency grid points
         """
         self.taskname = taskname
         self.nempty = nempty
         self.ngridq = ngridq
         self.skipgnd = skipgnd
+        self.nomeg = n_omega
 
     def dict_for_format(self):
         """
