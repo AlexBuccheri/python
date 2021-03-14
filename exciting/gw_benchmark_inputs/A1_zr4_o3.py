@@ -22,13 +22,28 @@ def write_file(file_name, string):
     fid.close()
     return
 
-def write_input_file_with_gw_settings(gw_root, gs_input, gw_input):
+def write_input_file_with_gw_settings(root_path:str, gs_input:str, gw_input:GWInput) -> str:
+    """
+    Generate GW path, create a GW input file and write it
+
+    :param root_path:
+    :param gs_input:
+    :param gw_input:
+    :return:
+    """
+    q_str = ''
+    for q in gw_input.ngridq:
+        q_str += str(q)
+    gw_root = root_path + "/gw_q" + q_str + "_omeg" + str(gw_input.nomeg) + "_nempty"+str(gw_input.nempty)
+
+    Path(gw_root).mkdir(parents=True, exist_ok=True)
+
     gw_input_string = set_gw_input_string(A1_gs_input,  gw_input)
     write_file(gw_root + "/input.xml", gw_input_string)
-    return
+    return gw_root
 
 def write_optimised_lo_basis(species:str, l_max:int, energy_cutoff:float,
-                             lorecommendations, default_basis_string, default_los):
+                             lorecommendations, default_basis_string, default_los, job_dir):
     # Cut-off same for both species and all l-channels
     optimised_lo_cutoff = [energy_cutoff] * (l_max + 1)
     optimised_lo = filter_lo_functions(lorecommendations, default_los, optimised_lo_cutoff)
@@ -38,27 +53,25 @@ def write_optimised_lo_basis(species:str, l_max:int, energy_cutoff:float,
     return
 
 
-# Produce one of these files per top-level directory, such that all the settings are preserved
+
 def set_up_g0w0(root_path:str):
 
     # Material
     species = ['zr', 'o']
     l_max = {'zr': 4, 'o': 3}
 
-    # GW root
-    gw_root = root_path + "/gw_q222_omeg32_nempty500"
-    Path(gw_root).mkdir(parents=True, exist_ok=True)
-
-    # exciting input file
-    write_input_file_with_gw_settings(gw_root, A1_gs_input,
-                                     GWInput(taskname="g0w0", nempty=500, ngridq=[2, 2, 2], skipgnd=False))
+    # GW root and exciting input file
+    gw_root = write_input_file_with_gw_settings(root_path,
+                                               A1_gs_input,
+                                               GWInput(taskname="g0w0", nempty=500, ngridq=[2, 2, 2], skipgnd=False, n_omega=32)
+                                               )
 
     # Default basis settings
     default_linear_energies = parse_lo_linear_energies(root_path + "/groundstate")
-    default_los = {'zr': DefaultLOs(default_linear_energies['zr'], energy_tol=0.1),
-                   'o': DefaultLOs(default_linear_energies['o'],  energy_tol=0.1)}
+    default_los = {'zr': DefaultLOs(default_linear_energies['zr'], energy_tol=0.8),
+                   'o': DefaultLOs(default_linear_energies['o'],  energy_tol=0.8)}
 
-    # Default basis strings with tags
+    # Default basis strings with .format tags
     default_basis_string = {'zr': parse_basis_as_string(root_path + "/groundstate/Zr.xml"),
                             'o': parse_basis_as_string(root_path + "/groundstate/O.xml")}
 
@@ -67,7 +80,6 @@ def set_up_g0w0(root_path:str):
 
     # Optimised LO energy cutoffs
     energy_cutoffs = [60, 80, 100, 120, 140, 160]
-
 
     # Slurm script settings
     env_vars = OrderedDict([('EXE', '/users/sol/abuccheri/exciting/bin/excitingmpismp'),
@@ -82,7 +94,9 @@ def set_up_g0w0(root_path:str):
                                                   cpus_per_task=18,
                                                   hint='nomultithread')
 
-    species_basis_string = [s.capitalize() + str(l_max[s]) + '_' for s in species]
+    species_basis_string = ''
+    for s in species:
+        species_basis_string += s.capitalize() + str(l_max[s]) + '_'
 
     for energy_cutoff in energy_cutoffs:
         # Copy groundstate directory to GW directory
@@ -98,10 +112,10 @@ def set_up_g0w0(root_path:str):
         write_file(job_dir + '/run.sh', slurm.set_slurm_script(slurm_directives, env_vars, module_envs))
 
         # Write optimised basis
-        write_optimised_lo_basis('zr', l_max['zr'], energy_cutoff, lorecommendations['zr'], default_basis_string['zr'], default_los['zr'])
-        write_optimised_lo_basis('o', l_max['o'], energy_cutoff, lorecommendations['o'], default_basis_string['o'], default_los['o'])
+        write_optimised_lo_basis('zr', l_max['zr'], energy_cutoff, lorecommendations['zr'], default_basis_string['zr'], default_los['zr'], job_dir)
+        write_optimised_lo_basis('o', l_max['o'], energy_cutoff, lorecommendations['o'], default_basis_string['o'], default_los['o'], job_dir)
 
     return
 
 
-set_up_g0w0("/users/sol/abuccheri/second_test")
+set_up_g0w0("/users/sol/abuccheri/gw_benchmarks/A1/zr_lmax4_o_lmax3_rgkmax7")
