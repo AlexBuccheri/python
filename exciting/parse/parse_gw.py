@@ -24,7 +24,8 @@ def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT', nempty=None, nkpts=N
     file_path:
     file_name:
     nempty: Number of empty states
-    nkpts: Number of irreducible q-points
+    nkpts: Number of irreducible q-points, I assume
+
     :return: dictionary of form {ik: k-point, results},
     where results[istate].keys = ['E_KS', 'E_HF', 'E_GW', 'sigma_x',' Re_sigma_c', 'Im_sigma_c', 'V_xc', 'delta_HF', 'delta_GW', 'Znk']
     """

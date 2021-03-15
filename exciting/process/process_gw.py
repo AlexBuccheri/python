@@ -3,10 +3,6 @@
 
 """
 
-#units = ['ev', 'mev', 'ha']
-#assert unit in units, "input unit not valid"
-
-
 # For a given basis i.e. (l-max, l-max) energy cutoff == basis functions
 def process_gw_gamma_point(gw_data, qp_data):
     """
@@ -21,8 +17,7 @@ def process_gw_gamma_point(gw_data, qp_data):
     i_VBM = gw_data['i_VBM']
     i_CBm = gw_data['i_CBm']
 
-    # Gamma_point always first index in EVALQP.DAT
-    assert qp_data[0]['k_point'] == [0.0, 0.0, 0.0]
+    assert qp_data[0]['k_point'] == [0.0, 0.0, 0.0], "Gamma_point always first index in EVALQP.DAT"
     qp_gamma = qp_data[0]['results']
 
     result = {}
