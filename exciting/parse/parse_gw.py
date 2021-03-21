@@ -3,11 +3,27 @@ Parse various GW output files
 """
 import subprocess
 import warnings
+import numpy as np
+from pathlib import Path
 
 from exciting_utils.py_grep import grep
 
 
-def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT', nempty=None, nkpts=None):
+def parse_kpoints(file_path:str, file_name='KPOINTS.OUT') -> dict:
+    """
+    TODO(Alex) Move this routine
+    Parse KPOINTS.OUT
+
+    Looks like the grid uses symmetry reduction
+    :return: number of empty states per k-point
+    """
+    data = np.loadtxt(file_path + '/' + file_name, skiprows = 1)
+    n_empty = data[:, 5].astype(int)
+    return {'n_empty':n_empty}
+
+
+
+def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT'):
     """
     Parse GW output file EVALQP.DAT
 
@@ -23,21 +39,24 @@ def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT', nempty=None, nkpts=N
 
     file_path:
     file_name:
-    nempty: Number of empty states
     nkpts: Number of irreducible q-points, I assume
 
     :return: dictionary of form {ik: k-point, results},
     where results[istate].keys = ['E_KS', 'E_HF', 'E_GW', 'sigma_x',' Re_sigma_c', 'Im_sigma_c', 'V_xc', 'delta_HF', 'delta_GW', 'Znk']
     """
+    if not Path(file_path + '/' + file_name).is_file():
+        print("File does not exist:", file_path)
+        quit("Routine 'parse_gw_evalqp' quit")
 
-    if nempty is None:
-        string = grep('nempty', file_path + '/input.xml')
-        nempty = float(string.split("\"")[1])
+    # Value in input can exceed the total number of empty states.
+    # The value used by exciting in GW is the smallest 'n_empty' value in KPOINTS.OUT,
+    # as each k-point can differ due to the plane-wave cut-off
+    n_empty = parse_kpoints(file_path)['n_empty']
 
-    if nkpts is None:
-        #TODO Add me
-        print("I assume this is the number of irredicuble q-points but need to confirm, hence must pass.")
-        quit()
+    #  Note, not kpoints in the KPOINTS file
+    #  I assume irreducuble number of k pr q? Not sure.
+    nkpts_details = grep("k-point", file_path + '/' + file_name).splitlines()
+    nkpts = int(nkpts_details[-1].split()[2].replace(':', ''))
 
     fid = open(file_path + "/" + file_name, "r")
     file_string = fid.readlines()
@@ -53,7 +72,7 @@ def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT', nempty=None, nkpts=N
         # iterate past k-point and skip header
         i+=2
         results = {}
-        for istate in range(0, nempty):
+        for istate in range(0, np.min(n_empty)):
             line = file_string[i].split()[1:]
             # 1-Indexing consistent with fortran
             results[istate + 1] = {keys[i]: float(line[i]) for i in range(0, len(keys))}

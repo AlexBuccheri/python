@@ -63,7 +63,7 @@ def set_up_g0w0(root_path:str):
     # GW root and exciting input file
     gw_root = write_input_file_with_gw_settings(root_path,
                                                A1_gs_input,
-                                               GWInput(taskname="g0w0", nempty=450, ngridq=[2, 2, 2], skipgnd=False, n_omega=32)
+                                               GWInput(taskname="g0w0", nempty=800, ngridq=[2, 2, 2], skipgnd=False, n_omega=32)
                                                )
 
     # Default basis settings
@@ -79,7 +79,7 @@ def set_up_g0w0(root_path:str):
     lorecommendations = parse_lorecommendations(root_path + '/lorecommendations.dat', species)
 
     # Optimised LO energy cutoffs
-    energy_cutoffs = [60, 80, 100, 120, 140, 160]
+    energy_cutoffs = [60, 80, 100, 120, 140, 160, 180, 200]
 
     # Slurm script settings
     env_vars = OrderedDict([('EXE', '/users/sol/abuccheri/exciting/bin/excitingmpismp'),
