@@ -85,7 +85,7 @@ class DefaultLOs():
 
 def filter_lo_functions(lo_recommendations: List[np.ndarray],
                         default_los: Optional[DefaultLOs]=None,
-                        optimised_lo_cutoff: Optional[list]=None) -> List[LOEnergies]:
+                        optimised_lo_cutoff: Optional[dict]=None) -> List[LOEnergies]:
     """
 
     Every input is w.r.t. one species.
@@ -101,7 +101,8 @@ def filter_lo_functions(lo_recommendations: List[np.ndarray],
     :param: default_los    linear energies for all default l-channels of a given species
                                This information would typically come from LINENGY.OUT
                                This ASSUMES one linear energy per l-channel.
-    :param: optimised_lo_cutoff
+    :param: optimised_lo_cutoff dict containing LO energy cut-off per l-channel:
+                                of the form  {0: 100., 1: 100., 2: 200., 3: 80.}
 
 
     :return: List of LOEnergies, with length = n_default_l_channels.
@@ -125,13 +126,13 @@ def filter_lo_functions(lo_recommendations: List[np.ndarray],
 
         if default_los is not None:
             optimised_los_lchannel = filter_default_functions(optimised_los_lchannel,
-                                                              max(default_los.linear_energies[l_value]),
-                                                              default_los.nodes[l_value],
-                                                              default_los.energy_tol
+                                                             max(default_los.linear_energies[l_value]),
+                                                             default_los.nodes[l_value],
+                                                             default_los.energy_tol
                                                               )
         if optimised_lo_cutoff is not None:
             optimised_los_lchannel = filter_high_energy_optimised_functions(optimised_los_lchannel,
-                                                                            optimised_lo_cutoff[l_value])
+                                                                           optimised_lo_cutoff[l_value])
 
         optimised_los.append(deepcopy(optimised_los_lchannel))
         del optimised_los_lchannel

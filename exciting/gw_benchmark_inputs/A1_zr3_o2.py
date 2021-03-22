@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 from collections import OrderedDict
 from distutils.dir_util import copy_tree
+import numpy as np
 
 from parse.lorecommendations_parser import parse_lorecommendations
 from parse.parse_linengy import parse_lo_linear_energies
@@ -42,15 +43,33 @@ def write_input_file_with_gw_settings(root_path:str, gs_input:str, gw_input:GWIn
     write_file(gw_root + "/input.xml", gw_input_string)
     return gw_root
 
-def write_optimised_lo_basis(species:str, l_max:int, energy_cutoff:float,
+def write_optimised_lo_basis(species:str, l_max:int, energy_cutoff:dict,
                              lorecommendations, default_basis_string, default_los, job_dir):
-    # Cut-off same for both species and all l-channels
-    optimised_lo_cutoff = [energy_cutoff] * (l_max + 1)
-    optimised_lo = filter_lo_functions(lorecommendations, default_los, optimised_lo_cutoff)
+    """
+    To use the same cut-off for both species and all l-channels
+      optimised_lo_cutoff = [energy_cutoff] * (l_max + 1)
+
+    """
+    optimised_lo = filter_lo_functions(lorecommendations, default_los, energy_cutoff)
     basis_string = generate_optimised_basis_string(default_basis_string, optimised_lo, max_matching_order=1)
     basis_file = species.capitalize() + '.xml'
     write_file(job_dir + '/' + basis_file, basis_string)
     return
+
+def restructure_energy_cutoffs(energy_cutoffs: dict) -> list:
+    """
+    Get in a more useful structure to iterate over
+
+    """
+    restructured_energies = []
+
+    for inum in range(0, 4):
+        data = {}
+        for species, l_channels in  energy_cutoffs.items():
+            data[species] = {l:energies[inum] for l, energies in l_channels.items()}
+        restructured_energies.append(data)
+
+    return restructured_energies
 
 
 
@@ -79,7 +98,17 @@ def set_up_g0w0(root_path:str):
     lorecommendations = parse_lorecommendations(root_path + '/lorecommendations.dat', species)
 
     # Optimised LO energy cutoffs
-    energy_cutoffs = [60, 80, 100, 120, 140, 160, 180, 200]
+    # Following Andris's suggestions that the Zr l=3 channel needs many more functions,
+    # and the remaining channels not as many
+    energy_cutoffs =  {'zr': {0: np.linspace(60, 120, num=4),
+                              1: np.linspace(60, 120, num=4),
+                              2: np.linspace(90, 300, num=4),
+                              3: np.linspace(60, 120, num=4)},
+
+                       'o':  {0: np.linspace(60, 120, num=4),
+                              1: np.linspace(60, 120, num=4),
+                              1: np.linspace(60, 120, num=4)}
+                       }
 
     # Slurm script settings
     env_vars = OrderedDict([('EXE', '/users/sol/abuccheri/exciting/bin/excitingmpismp'),
@@ -98,7 +127,10 @@ def set_up_g0w0(root_path:str):
     for s in species:
         species_basis_string += s.capitalize() + str(l_max[s]) + '_'
 
-    for energy_cutoff in energy_cutoffs:
+    # Better for looping over
+    restructured_energies = restructure_energy_cutoffs(energy_cutoffs)
+
+    for energy_cutoff in restructured_energies:
         # Copy groundstate directory to GW directory
         job_dir = gw_root + '/max_energy_' + str(energy_cutoff)
         print('Creating directory, with input.xml, run.sh and optimised basis:', job_dir)
@@ -112,8 +144,8 @@ def set_up_g0w0(root_path:str):
         write_file(job_dir + '/run.sh', slurm.set_slurm_script(slurm_directives, env_vars, module_envs))
 
         # Write optimised basis
-        write_optimised_lo_basis('zr', l_max['zr'], energy_cutoff, lorecommendations['zr'], default_basis_string['zr'], default_los['zr'], job_dir)
-        write_optimised_lo_basis('o', l_max['o'], energy_cutoff, lorecommendations['o'], default_basis_string['o'], default_los['o'], job_dir)
+        write_optimised_lo_basis('zr', l_max['zr'], energy_cutoff['zr'], lorecommendations['zr'], default_basis_string['zr'], default_los['zr'], job_dir)
+        write_optimised_lo_basis('o', l_max['o'], energy_cutoff['o'], lorecommendations['o'], default_basis_string['o'], default_los['o'], job_dir)
 
     return
 
