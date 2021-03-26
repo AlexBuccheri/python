@@ -13,7 +13,7 @@ from parse.parse_linengy import parse_lo_linear_energies
 from parse.parse_basis_xml import parse_basis_as_string
 from parse.set_gw_input import GWInput, set_gw_input_string
 from process.optimised_basis import DefaultLOs, filter_lo_functions, generate_optimised_basis_string
-from gw_benchmark_inputs.A1_groundstate import converged_ground_state_input as A1_gs_input
+from gw_benchmark_inputs.set2.A1_groundstate import converged_ground_state_input as A1_gs_input
 from job_schedulers import slurm
 
 
@@ -107,7 +107,7 @@ def set_up_g0w0(root_path:str):
 
                        'o':  {0: np.linspace(60, 120, num=4),
                               1: np.linspace(60, 120, num=4),
-                              1: np.linspace(60, 120, num=4)}
+                              2: np.linspace(60, 120, num=4)}
                        }
 
     # Slurm script settings
@@ -132,7 +132,9 @@ def set_up_g0w0(root_path:str):
 
     for energy_cutoff in restructured_energies:
         # Copy groundstate directory to GW directory
-        job_dir = gw_root + '/max_energy_' + str(energy_cutoff)
+        max_energy_per_species = [max(energy_per_l_channel.values()) for energy_per_l_channel in energy_cutoff.values()]
+
+        job_dir = gw_root + '/max_energy_' + str(int(max(max_energy_per_species)))
         print('Creating directory, with input.xml, run.sh and optimised basis:', job_dir)
         copy_tree(root_path +'/groundstate', job_dir)
 
@@ -140,7 +142,7 @@ def set_up_g0w0(root_path:str):
         shutil.copy(gw_root + "/input.xml", job_dir + "/input.xml")
 
         # New Slurm script
-        slurm_directives['job-name'] = "gw_A1_lmax_" + species_basis_string + str(energy_cutoff) +'loEcutoff'
+        slurm_directives['job-name'] = "gw_A1_lmax_" + species_basis_string + str(int(max(max_energy_per_species))) +'loEcutoff'
         write_file(job_dir + '/run.sh', slurm.set_slurm_script(slurm_directives, env_vars, module_envs))
 
         # Write optimised basis
@@ -150,4 +152,4 @@ def set_up_g0w0(root_path:str):
     return
 
 
-set_up_g0w0("/users/sol/abuccheri/gw_benchmarks/A1/zr_lmax3_o_lmax2_rgkmax7")
+set_up_g0w0("/users/sol/abuccheri/gw_benchmarks/A1_var_cutoff/zr_lmax3_o_lmax2_rgkmax7")

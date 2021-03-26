@@ -1,8 +1,7 @@
 """
 Set GW input for A2 system
 """
-from gw_benchmark_inputs.A1_groundstate import converged_ground_state_input
-from gw_benchmark_inputs.A1_gw import gw_string_template
+from gw_benchmark_inputs.set3.A1_gw import gw_string_template
 
 class GWInput:
     def __init__(self, taskname:str, nempty:int, ngridq:list, skipgnd:bool, n_omega:int):

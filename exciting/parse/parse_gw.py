@@ -53,6 +53,9 @@ def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT'):
     # as each k-point can differ due to the plane-wave cut-off
     n_empty = parse_kpoints(file_path)['n_empty']
 
+    # TODO Note, if n_empty in input is not max number, this will be used for number of entries
+    # in EVALQP.DAT, not the lowest value from KPOINTS file
+
     #  Note, not kpoints in the KPOINTS file
     #  I assume irreducuble number of k pr q? Not sure.
     nkpts_details = grep("k-point", file_path + '/' + file_name).splitlines()

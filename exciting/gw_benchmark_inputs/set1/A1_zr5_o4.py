@@ -12,7 +12,7 @@ from parse.parse_linengy import parse_lo_linear_energies
 from parse.parse_basis_xml import parse_basis_as_string
 from parse.set_gw_input import GWInput, set_gw_input_string
 from process.optimised_basis import DefaultLOs, filter_lo_functions, generate_optimised_basis_string
-from gw_benchmark_inputs.A1_groundstate import converged_ground_state_input as A1_gs_input
+from gw_benchmark_inputs.set1.A1_groundstate import converged_ground_state_input as A1_gs_input
 from job_schedulers import slurm
 
 
@@ -71,16 +71,18 @@ def restructure_energy_cutoffs(energy_cutoffs: dict) -> list:
     return restructured_energies
 
 
+
+
 def set_up_g0w0(root_path:str):
 
     # Material
     species = ['zr', 'o']
-    l_max = {'zr': 4, 'o': 3}
+    l_max = {'zr': 5, 'o': 4}
 
     # GW root and exciting input file
     gw_root = write_input_file_with_gw_settings(root_path,
                                                A1_gs_input,
-                                               GWInput(taskname="g0w0", nempty=1000, ngridq=[2, 2, 2], skipgnd=False, n_omega=32)
+                                               GWInput(taskname="g0w0", nempty=1300, ngridq=[2, 2, 2], skipgnd=False, n_omega=32)
                                                )
 
     # Default basis settings
@@ -96,14 +98,18 @@ def set_up_g0w0(root_path:str):
     lorecommendations = parse_lorecommendations(root_path + '/lorecommendations.dat', species)
 
     # Optimised LO energy cutoffs
-    energy_cutoffs =  {'zr': {0: np.linspace(60, 120, num=4),
-                              1: np.linspace(60, 120, num=4),
-                              2: np.linspace(90, 300, num=4),
-                              3: np.linspace(60, 120, num=4)},
+    energy_cutoffs =  {'zr': {0: [60, 80, 100, 120, 140, 160, 180, 200],
+                              1: [60, 80, 100, 120, 140, 160, 180, 200],
+                              2: [60, 80, 100, 120, 140, 160, 180, 200],
+                              3: [60, 80, 100, 120, 140, 160, 180, 200],
+                              4: [60, 80, 100, 120, 140, 160, 180, 200],
+                              5: [60, 80, 100, 120, 140, 160, 180, 200]},
 
-                       'o':  {0: np.linspace(60, 120, num=4),
-                              1: np.linspace(60, 120, num=4),
-                              1: np.linspace(60, 120, num=4)}
+                       'o':  {0: [60, 80, 100, 120, 140, 160, 180, 200],
+                              1: [60, 80, 100, 120, 140, 160, 180, 200],
+                              2: [60, 80, 100, 120, 140, 160, 180, 200],
+                              3: [60, 80, 100, 120, 140, 160, 180, 200],
+                              4: [60, 80, 100, 120, 140, 160, 180, 200]}
                        }
 
     # Slurm script settings
@@ -111,10 +117,10 @@ def set_up_g0w0(root_path:str):
                             ('OUT', 'terminal.out')
                             ])
     module_envs = ['intel/2019']
-    slurm_directives = slurm.set_slurm_directives(time=[0, 6, 0, 0],
+    slurm_directives = slurm.set_slurm_directives(time=[0, 23, 0, 0],
                                                   partition='all',
                                                   exclusive=True,
-                                                  nodes=1,
+                                                  nodes=4,
                                                   ntasks_per_node=2,
                                                   cpus_per_task=18,
                                                   hint='nomultithread')
@@ -125,7 +131,9 @@ def set_up_g0w0(root_path:str):
 
     for energy_cutoff in restructure_energy_cutoffs(energy_cutoffs):
         # Copy groundstate directory to GW directory
-        job_dir = gw_root + '/max_energy_' + str(energy_cutoff)
+        max_energy_per_species = [max(energy_per_l_channel.values()) for energy_per_l_channel in energy_cutoff.values()]
+
+        job_dir = gw_root + '/max_energy_' + str(int(max(max_energy_per_species)))
         print('Creating directory, with input.xml, run.sh and optimised basis:', job_dir)
         copy_tree(root_path +'/groundstate', job_dir)
 
@@ -133,7 +141,7 @@ def set_up_g0w0(root_path:str):
         shutil.copy(gw_root + "/input.xml", job_dir + "/input.xml")
 
         # New Slurm script
-        slurm_directives['job-name'] = "gw_A1_lmax_" + species_basis_string + str(energy_cutoff) +'loEcutoff'
+        slurm_directives['job-name'] = "gw_A1_lmax_" + species_basis_string + str(int(max(max_energy_per_species))) +'loEcutoff'
         write_file(job_dir + '/run.sh', slurm.set_slurm_script(slurm_directives, env_vars, module_envs))
 
         # Write optimised basis
@@ -143,4 +151,4 @@ def set_up_g0w0(root_path:str):
     return
 
 
-set_up_g0w0("/users/sol/abuccheri/gw_benchmarks/A1/zr_lmax4_o_lmax3_rgkmax7")
+set_up_g0w0("/users/sol/abuccheri/gw_benchmarks/A1/zr_lmax5_o_lmax4_rgkmax7")
