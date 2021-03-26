@@ -6,6 +6,8 @@ See create_basis.py in zr_lmax6_lmax5 for more functions to adapt
 import numpy as np
 from typing import List, Dict, Optional
 from copy import deepcopy
+import re
+
 
 # TODO Change name to LOOptimisedEnergies
 class LOEnergies:
@@ -298,3 +300,183 @@ def generate_optimised_basis_string(ground_state_xml: str,
 
     # Add extra lo's to the ground state basis
     return ground_state_xml.format(**lo_strings)
+
+
+def parse_species_string(l_channels:list, basis_string:str):
+    """
+    Parse LO functions from a species.ml string.
+
+    Every  <lo l="l-channel">  ... </lo> is counted as a unique LO in with
+    orbital momentum "l-channel".
+
+    Returns a dictionary of LO functions, of the form:
+                     {0: [lo_0, lo_1, ..., lo_i],
+                      1: [lo_0, lo_1, ..., lo_i],
+                      l: [lo_0, lo_1, ..., lo_i]
+                      }
+    where
+          lo_i = [radial_0, radial_1] and
+          radial_i = {'matching_order', 'trial_energy', 'searchE'}
+
+    :params l_channels: List of l-channels in the basis i.e. [0, 1, 3]
+                        i.e. it allows l-channels to be ignored by omission.
+    :param basis_string:  Expects a string from species.xml
+
+    :return basis_los: Dictionary described above.
+    """
+    basis_string = basis_string.splitlines()
+    basis_los= {l:[] for l in l_channels}
+    lo_block = False
+
+    for line in basis_string:
+
+        # Start of lo block description
+        if "<lo" in line:
+            lo = []
+            l = int(re.findall('"([^"]*)"', line)[0])
+
+            # LO description on same line as LO tag
+            if "<wf" in line:
+                radial_params = re.findall('"([^"]*)"', line)[1:]
+                n_radial_functions =  len(radial_params) / 3.
+                assert n_radial_functions.is_integer(), 'Each radial function should be defined by 3 parameters'
+
+                i = 0
+                for ir in range(0, int(n_radial_functions)):
+                    radial_function = \
+                        {'matching_order': int(radial_params[i]),
+                         'trial_energy': float(radial_params[i + 1]),
+                         'searchE': radial_params[i + 2] == "true"}
+                    i += 3
+                    lo.append(radial_function)
+
+        # LO description on separate line to the LO tag
+        if ("<wf" in line) and ("<lo" not in line):
+            radial_params = re.findall('"([^"]*)"', line)
+            n_radial_functions = len(radial_params) / 3.
+            assert n_radial_functions.is_integer(), 'Each radial function should be defined by 3 parameters'
+
+            i = 0
+            for ir in range(0, int(n_radial_functions)):
+                radial_function = \
+                    {'matching_order': int(radial_params[i]),
+                     'trial_energy': float(radial_params[i + 1]),
+                     'searchE': radial_params[i + 2] == "true"}
+                lo.append(radial_function)
+                i += 3
+
+        if "</lo" in line:
+            basis_los[l].append(lo)
+            lo = []
+
+    return basis_los
+
+
+def create_lo_label(basis_los: dict) -> list:
+    """
+    Create labels for the LO basis defined in a species xml file.
+
+    :param basis_los: Dictionary of LOs, constructed by parsing a species.xml string
+    :return: basis_labels of the form ['6s ', '3d '], for example
+    """
+    channel_label = {0: 's', 1: 'p', 2: 'd', 3: 'f'}
+    basis_labels = []
+
+    for l, los in basis_los.items():
+        basis_labels.append(str(len(los)) + channel_label[l] + ' ')
+
+    return basis_labels
+
+
+def latex_lo_basis_labels(basis_los: dict, lorecommendations: List[np.ndarray]):
+    """
+    Having parsed a basis dictionary for a given species, generate latex expressions
+    for each LO basis function.
+
+    Label the principal quantum number (pqn) according to where the energy parameter
+    is in the lorecommendations. Note that n in lorecommendations corresponds to
+    the number of nodes, therefore pqn = n_nodes + 1
+
+    :param basis_los: Dictionary of LO functions, of the form:
+                     {l: los}, los = [ lo_0, lo_1, ..., lo_i],
+                     lo_i = [radial_0, radial_1] and
+                     radial_i = {'matching_order', 'trial_energy', 'searchE'}
+
+    :param lorecommendations: List[np.ndarray]  = [species_l0, species_l1, species_l2, ...]
+    where  species_li = energy parameters for a l-channel i, from lorecommendations.
+
+    :return: Prints to stdout
+    """
+    # Orbital channel labels
+    channel_labels = {0: 's', 1: 'p', 2: 'd', 3: 'f'}
+    # Radial functions
+    matching_order_symbols = {0: "u", 1:"\\dot{u}", 2:"\\ddot{u}"}
+    # Coefficients for linear sum of radial functions
+    coefficient = {0: 'a', 1: 'b'}
+    # High because LO recommendations may not match that closely to trial parameters
+    tol = 1.
+
+    for l, los in basis_los.items():
+        lo_recommendations_l_channel = lorecommendations[l]
+        l_label = channel_labels[l]
+        print(' ------------------')
+        print(" l = " +str(l))
+        print(' ------------------')
+
+        for lo in los:
+            string = ''
+            for ir, radial_fun in enumerate(lo):
+                mo, energy, = radial_fun['matching_order'], radial_fun['trial_energy']
+                n_nodes = np.where(np.abs(lo_recommendations_l_channel - energy) < tol)[0]
+                assert n_nodes.size, "Matched more than one energy in LO recommendation of this l-channel"
+                pqn_str = str(n_nodes[0] + 1)
+                string += coefficient[ir] + matching_order_symbols[mo] + '(r;\\epsilon_{' + pqn_str + l_label + '}) + '
+            string = string[:-3]
+            print(string)
+
+    return
+
+
+def table_of_lo_energies(basis_los: dict, lorecommendations: List[np.ndarray]):
+    """
+    For a given species, output tabulated energy parameter data in the form:
+        eps_nl   trial_energy (Ha)
+         ε3s        −4.5
+         ε4s         0.0
+         ε5s        29.1
+         ε6s        49.6
+         ε7s        74.5
+
+    :param basis_los: Dictionary of LO functions, of the form:
+                     {l: los}, los = [ lo_0, lo_1, ..., lo_i],
+                     lo_i = [radial_0, radial_1] and
+                     radial_i = {'matching_order', 'trial_energy', 'searchE'}
+
+    :param lorecommendations: List[np.ndarray]  = [species_l0, species_l1, species_l2, ...]
+    where  species_li = energy parameters for a l-channel i, from lorecommendations.
+
+    :return: Prints to stdout
+    """
+
+    # Orbital channel labels
+    channel_labels = {0: 's', 1: 'p', 2: 'd', 3: 'f'}
+
+    # High because LO recommendations may not match that closely to trial parameters
+    tol = 1.
+
+    print(' # eps_nl     # Trial energy (Ha)')
+    for l, los in basis_los.items():
+        lo_recommendations_l_channel = lorecommendations[l]
+        l_label = channel_labels[l]
+
+        for lo in los:
+            trial_energies = [radial_function['trial_energy'] for radial_function in lo]
+            trial_energy = list(set(trial_energies))
+            assert len(trial_energy) == 1, "Should be one trial energy for a set of radial functions"
+
+            n_nodes = np.where(np.abs(lo_recommendations_l_channel - trial_energy[0]) < tol)[0]
+            assert n_nodes.size, "Matched more than one energy in LO recommendation for this l-channel"
+            pqn_str = str(n_nodes[0] + 1)
+            print('\\epsilon_{' + pqn_str + l_label + '}', trial_energy[0])
+
+    return
