@@ -12,8 +12,9 @@ from parse.parse_linengy import parse_lo_linear_energies
 from parse.parse_basis_xml import parse_basis_as_string
 from parse.set_gw_input import GWInput, set_gw_input_string
 from process.optimised_basis import DefaultLOs, filter_lo_functions, generate_optimised_basis_string
-from gw_benchmark_inputs.set3.A1_groundstate import converged_ground_state_input as A1_gs_input
 from job_schedulers import slurm
+
+from gw_benchmark_inputs.set4.A1_groundstate import converged_ground_state_input as A1_gs_input
 
 
 def write_file(file_name, string):
@@ -100,25 +101,22 @@ def set_up_g0w0(root_path:str):
     # LO recommendation energies
     lorecommendations = parse_lorecommendations(root_path + '/lorecommendations.dat', species)
 
-    # Optimised LO energy cutoffs. For first three calculations, keep Zr l=2 fixed and increase all other channels ALOT.
-    # See what effect that has. Then increase zr l=2 more to check that it is also converged.
-    # Final calculation. Keep all channels the same as the run, but increase lmax=2 to check it's converged
-    n_energies_per_channel = 8
-    #                             i0    i1   i2   i3   i4   i5   i6   i7      Struggling to run i3, but i1 looks converged, hence why I've added i4
-    energy_cutoffs =  {'zr': {0: [150, 200, 250, 250, 200, 120, 120, 120],
-                              1: [150, 200, 250, 250, 200, 120, 120, 120],
-                              2: [300, 300, 300, 350, 350, 350, 400, 450],
-                              3: [150, 200, 250, 250, 200, 120, 120, 120],
-                              4: [150, 200, 250, 250, 200, 120, 120, 120]},
+    # Optimised LO energy cutoffs.zr l=2 channel requires way more LOs to converge.
+    # HOWEVER, with a reduced MT radius, the max cut-off should be less than last time
+    # Increased rgkmax to 8
+    energy_cutoffs = {'zr': {0: [75, 100, 120, 120, 120, 120, 120],
+                             1: [75, 100, 120, 120, 120, 120, 120],
+                             2: [75, 100, 100, 150, 200, 250, 300],
+                             3: [75, 100, 120, 120, 120, 120, 120],
+                             4: [75, 100, 120, 120, 120, 120, 120]},
 
-                       'o':  {0: [150, 200, 250, 250, 200, 120, 120, 120],
-                              1: [150, 200, 250, 250, 200, 120, 120, 120],
-                              2: [150, 200, 250, 250, 200, 120, 120, 120],
-                              3: [150, 200, 250, 250, 200, 120, 120, 120]}
-                       }
+                      'o': {0: [75, 100, 120, 120, 120, 120, 120],
+                            1: [75, 100, 120, 120, 120, 120, 120],
+                            2: [75, 100, 120, 120, 120, 120, 120],
+                            3: [75, 100, 120, 120, 120, 120, 120]}
+                      }
 
-    # Note, i6 misses a function at 401 Ha and whilst i7 runs, it returns a metallic solution
-    # Re-running i7 with
+    n_energies_per_channel = len(energy_cutoffs['zr'][0])
 
     # Slurm script settings
     env_vars = OrderedDict([('EXE', '/users/sol/abuccheri/exciting/bin/excitingmpismp'),

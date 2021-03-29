@@ -12,8 +12,9 @@ from parse.parse_linengy import parse_lo_linear_energies
 from parse.parse_basis_xml import parse_basis_as_string
 from parse.set_gw_input import GWInput, set_gw_input_string
 from process.optimised_basis import DefaultLOs, filter_lo_functions, generate_optimised_basis_string
-from gw_benchmark_inputs.set3.A1_groundstate import converged_ground_state_input as A1_gs_input
 from job_schedulers import slurm
+
+from gw_benchmark_inputs.set3.A1_groundstate import converged_ground_state_input as A1_gs_input
 
 
 def write_file(file_name, string):
@@ -80,9 +81,7 @@ def set_up_g0w0(root_path:str):
     l_max = {'zr': 4, 'o': 3}
 
     # GW root and exciting input file
-    # nempty needs to be > 1000 to account for total number of empty states
-    # as a consequence of these large LO basis sets.
-    # Note, i0 and i1 were ok
+    # nempty set to some EXCESSIVELY large value, such that exciting takes all states.
     gw_root = write_input_file_with_gw_settings(root_path,
                                                A1_gs_input,
                                                GWInput(taskname="g0w0", nempty=2000, ngridq=[2, 2, 2], skipgnd=False, n_omega=32)
@@ -119,6 +118,7 @@ def set_up_g0w0(root_path:str):
 
     # Note, i6 misses a function at 401 Ha and whilst i7 runs, it returns a metallic solution
     # Re-running i7 with
+
 
     # Slurm script settings
     env_vars = OrderedDict([('EXE', '/users/sol/abuccheri/exciting/bin/excitingmpismp'),
@@ -163,4 +163,4 @@ def set_up_g0w0(root_path:str):
     return
 
 
-set_up_g0w0("/users/sol/abuccheri/gw_benchmarks/A1_set3/zr_lmax4_o_lmax3_rgkmax7")
+set_up_g0w0("/users/sol/abuccheri/gw_benchmarks/A1_more_APW/zr_lmax4_o_lmax3_rgkmax8")
