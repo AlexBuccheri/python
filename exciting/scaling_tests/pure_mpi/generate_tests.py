@@ -12,8 +12,9 @@ Larger Calculations to Run:
 ```
 """
 import numpy as np
-from collections import OrderedDict
 import re
+from collections import OrderedDict
+from pathlib import Path
 
 from job_schedulers import slurm
 from scaling_tests.pure_mpi import inputs_q222

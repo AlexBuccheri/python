@@ -10,8 +10,8 @@ Ref directory for basis functions:
 /users/sol/abuccheri/gw_benchmarks/A1/zr_lmax3_o_lmax2_rgkmax7/gw_q222_omeg32_nempty800/max_energy_60
 """
 
-input_xml ="""
-<input>
+input_xml =\
+"""<input>
 
    <title>A1-ZrO2-Cubic-Primitive-PBEsol</title>
 
@@ -78,8 +78,8 @@ input_xml ="""
 
 
 # 60 Ha cut-off in LOs
-zr_basis_xml = """
-<?xml version="1.0" encoding="UTF-8"?>
+zr_basis_xml = \
+"""<?xml version="1.0" encoding="UTF-8"?>
 <spdb xsi:noNamespaceSchemaLocation="../../xml/species.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <sp chemicalSymbol="Zr" name="zirconium" z="-40.0000" mass="166291.1791">
     <muffinTin rmin="0.100000E-05" radius="2.0000" rinf="26.3269" radialmeshPoints="600"/>
@@ -254,8 +254,8 @@ zr_basis_xml = """
 """
 
 # 60 Ha cut-off in LOs
-o_basis_xml = """
-<?xml version="1.0" encoding="UTF-8"?>
+o_basis_xml = \
+"""<?xml version="1.0" encoding="UTF-8"?>
 <spdb xsi:noNamespaceSchemaLocation="../../xml/species.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <sp chemicalSymbol="O" name="oxygen" z="-8.00000" mass="29165.12203">
     <muffinTin rmin="0.100000E-05" radius="1.4500" rinf="17.0873" radialmeshPoints="600"/>
