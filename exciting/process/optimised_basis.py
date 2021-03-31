@@ -372,6 +372,56 @@ def parse_species_string(l_channels:list, basis_string:str):
     return basis_los
 
 
+def restructure_energy_cutoffs(energy_cutoffs: dict) -> list:
+    """
+    Get energy cut-offs in a more useful structure to iterate over
+
+    :param energy_cutoffs: dict of the form
+
+        {'zr': {0: np.linspace(60, 120, num=4),
+                1: np.linspace(60, 120, num=4),
+                2: np.linspace(90, 300, num=4),
+                3: np.linspace(60, 120, num=4)},
+         'o':  {0: np.linspace(60, 120, num=4),
+                1: np.linspace(60, 120, num=4),
+                2: np.linspace(60, 120, num=4)}
+         }
+
+    which is convenient to manually define. Note, num = N must be the same N for all energy cut-offs
+    else this routine will throw an error.
+
+    :return restructured_energies: list of the form
+
+    [ {species: {0: energy_0,  {species: {0: energy_1,    ...   {species: {0: energy_n,  ]
+                 1: energy_0,             1: energy_1,                     1: energy_n,
+                 2: energy_0,             2: energy_1,                     2: energy_n,
+                 l: energy_0},            l: energy_1},                    l: energy_n}
+
+    where len(restructured_energies) = n_energies_per_channel
+    """
+
+    # Assumes energy_cutoffs is small enough that one can manually inspect, if the assertion fails
+    n_energies = []
+    for species, l_channels in energy_cutoffs.items():
+        for energies in l_channels.values():
+            n_energies.append(len(energies))
+
+    unique_n_energies = set(n_energies)
+    assert len(unique_n_energies) == 1, "Number of energy cutoffs not the same for all (species, l-channels) " \
+                                        "Routine 'restructure_energy_cutoffs' will not work"
+    n_energies_per_channel = list(unique_n_energies)[0]
+
+    restructured_energies = []
+    for inum in range(0, n_energies_per_channel):
+        data = {}
+        for species, l_channels in  energy_cutoffs.items():
+            data[species] = {l:energies[inum] for l, energies in l_channels.items()}
+        restructured_energies.append(data)
+
+    return restructured_energies
+
+
+
 def create_lo_label(basis_los: dict) -> list:
     """
     Create labels for the LO basis defined in a species xml file.
@@ -379,7 +429,7 @@ def create_lo_label(basis_los: dict) -> list:
     :param basis_los: Dictionary of LOs, constructed by parsing a species.xml string
     :return: basis_labels of the form ['6s ', '3d '], for example
     """
-    channel_label = {0: 's', 1: 'p', 2: 'd', 3: 'f'}
+    channel_label = {0: 's', 1: 'p', 2: 'd', 3: 'f', 4: 'g', 5: 'h', 6: 'i'}
     basis_labels = []
 
     for l, los in basis_los.items():
@@ -408,7 +458,7 @@ def latex_lo_basis_labels(basis_los: dict, lorecommendations: List[np.ndarray]):
     :return: Prints to stdout
     """
     # Orbital channel labels
-    channel_labels = {0: 's', 1: 'p', 2: 'd', 3: 'f'}
+    channel_labels = {0: 's', 1: 'p', 2: 'd', 3: 'f', 4: 'g', 5: 'h', 6: 'i'}
     # Radial functions
     matching_order_symbols = {0: "u", 1:"\\dot{u}", 2:"\\ddot{u}"}
     # Coefficients for linear sum of radial functions
