@@ -91,8 +91,8 @@ def set_up_g0w0(root_path:str):
 
     # Default basis settings
     default_linear_energies = parse_lo_linear_energies(root_path + "/groundstate")
-    default_los = {'zr': DefaultLOs(default_linear_energies['zr'], energy_tol=0.8),
-                   'o': DefaultLOs(default_linear_energies['o'],  energy_tol=0.8)}
+    default_los = {'zr': DefaultLOs(default_linear_energies['zr'], energy_tol=1.5),
+                   'o': DefaultLOs(default_linear_energies['o'],  energy_tol=1.5)}
 
     # Default basis strings with .format tags
     default_basis_string = {'zr': parse_basis_as_string(root_path + "/groundstate/Zr.xml"),
@@ -161,4 +161,4 @@ def set_up_g0w0(root_path:str):
     return
 
 
-set_up_g0w0("/users/sol/abuccheri/gw_benchmarks/A1_set3/zr_lmax4_o_lmax3_rgkmax7")
+set_up_g0w0("/users/sol/abuccheri/gw_benchmarks/A1_more_APW/zr_lmax4_o_lmax3_rgkmax8")

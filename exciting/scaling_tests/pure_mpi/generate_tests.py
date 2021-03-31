@@ -65,8 +65,7 @@ def set_up_pure_mpi_scaling_tests(scaling_root):
     cpus_per_task = 1
 
     # Nodes to use in scaling tests
-    #nodes = np.arange(1, 11)
-    nodes = [1, 2]
+    nodes = np.arange(1, 11)
 
     # These nodes differ in memory or processor to the rest of Dune 3
     # hence exclude them
@@ -84,7 +83,7 @@ def set_up_pure_mpi_scaling_tests(scaling_root):
              7: [1, 0, 0, 0],
              8: [1, 0, 0, 0],
              9: [1, 0, 0, 0],
-             10: [1, 0, 0, 0]}
+            10: [1, 0, 0, 0]}
 
     for node_count in nodes:
         job_dir = scaling_root + '/n_nodes_' + str(node_count)
