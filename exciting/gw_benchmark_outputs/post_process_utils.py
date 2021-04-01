@@ -5,6 +5,7 @@ used for processing gw benchmark outputs
 from collections import OrderedDict
 from typing import List
 import numpy as np
+import re
 
 from process.optimised_basis import parse_species_string, create_lo_label
 from parse.parse_gw import parse_gw_info, parse_gw_evalqp
@@ -174,7 +175,7 @@ def get_basis_labels(root:str, settings:dict, verbose=False) -> dict:
     return basis_labels
 
 
-def combine_species_basis_labels(basis_labels: dict) -> dict:
+def combine_species_basis_labels(basis_labels: dict, species_per_line=False) -> dict:
     """
     Combine basis labels of all species, per energy cut-off entry/
 
@@ -186,8 +187,12 @@ def combine_species_basis_labels(basis_labels: dict) -> dict:
     where lo_basis_label_strings[energy_index] = 'Zr:(7s 7p 8d 7f). O:(6s 6p 6d)'
 
     :param basis_labels: dictionary of form: basis_labels['(lmax_1, l_max2)'][species] = lo_basis_label_strings
+    :param species_per_line: bool, Put each species basis LOs on a new line. 
     :return: dictionary of form: basis_labels['(lmax_1, l_max2)'] = lo_basis_label_strings
     """
+
+    new_line = '\n' if species_per_line else ''
+
     basis_per_lmaxpair = OrderedDict()
     for lmaxs, labels_by_species in basis_labels.items():
         basis_per_lmaxpair[lmaxs] = []
@@ -199,16 +204,57 @@ def combine_species_basis_labels(basis_labels: dict) -> dict:
         # First species key
         for species, lo_labels in first_entry.items():
             for lo_label in lo_labels:
-                combined_label = species.capitalize() + ':(' + lo_label.rstrip() + '). '
+                combined_label = species.capitalize() + ':(' + lo_label.rstrip() + '). ' + new_line
                 # Because we don't know what the size of basis_per_lmaxpair should be
                 basis_per_lmaxpair[lmaxs].append(combined_label)
 
         # All other species keys
         for species, lo_labels in remaining_entries.items():
             for i, lo_label in enumerate(lo_labels):
-                basis_per_lmaxpair[lmaxs][i] += species.capitalize() + ':(' +  lo_label.rstrip() +'). '
+                basis_per_lmaxpair[lmaxs][i] += species.capitalize() + ':(' +  lo_label.rstrip() +'). ' + new_line
 
     return basis_per_lmaxpair
 
-def number_los_per():
-    return
+
+def n_local_orbitals(basis_labels: dict) -> dict:
+    """
+    Compute the number of LOs per species
+    TODO Alex. All this label stuff should be a class
+
+    For example, for basis_labels =
+    OrderedDict([('(4,3)', OrderedDict([ ('zr', ['7s 7p 8d 7f 6g ',
+                                                 '8s 8p 11d 8f 7g ',
+                                                 '9s 9p 13d 9f 8g ',
+                                                 '9s 9p 15d 10f 9g ']),
+                                         ('o', ['6s 6p 6d 5f ',
+                                                '7s 7p 6d 6f ',
+                                                '7s 8p 7d 7f ',
+                                                '8s 8p 8d 7f '])
+                                      ])
+                )])
+
+    the routine would return
+    n_basis_orbitals = OrderedDict([('(4,3)', OrderedDict([
+                                      ('zr', [35, 42, 48, 52]),  # where the digits of 7s 7p 8d 7f 6g sum to 35, etc.
+                                      ('o', [23, 26, 29, 31])])
+                                  )])
+
+    :param basis_labels:
+    :return: n_basis_orbitals
+    """
+    n_basis_orbitals = OrderedDict()
+
+    for l_maxs_str, labels_by_species in basis_labels.items():
+        n_basis_orbitals[l_maxs_str] = OrderedDict()
+
+        # Label of LOs in each [species, l-channel]
+        for species, lo_labels in labels_by_species.items():
+            n_basis_orbitals[l_maxs_str][species] = []
+
+            # Per LO energy cutoff
+            for basis_label in lo_labels:
+                #print(species, basis_label)
+                n_los = sum([int(s) for s in re.findall(r'\d+', basis_label)])
+                n_basis_orbitals[l_maxs_str][species].append(n_los)
+
+    return n_basis_orbitals
