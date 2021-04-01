@@ -48,6 +48,8 @@ class Plot:
         :param y: y data
         :param label: optional label for legend
         """
+        self.legend_label = label
+
         if label is None:
             self.ax.plot(x, y)
         else:
@@ -55,10 +57,12 @@ class Plot:
         return
 
     def show(self, file_name=None):
-        if file_name is not None:
+        if self.legend_label is not None:
             self.ax.legend(loc=self.legend_loc, title=self.legend_title)
+
+        if file_name is not None:
             plt.savefig(file_name, dpi=300)
         else:
-            self.ax.legend(loc=self.legend_loc, title=self.legend_title)
             plt.show()
+
         return
