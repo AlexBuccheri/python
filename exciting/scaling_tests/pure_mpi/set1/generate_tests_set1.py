@@ -17,7 +17,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 from job_schedulers import slurm
-from scaling_tests.pure_mpi import inputs_q222
+from scaling_tests.pure_mpi.set1 import inputs_q222_set1
 
 
 def write_file(file_name, string):
@@ -27,7 +27,7 @@ def write_file(file_name, string):
     return
 
 
-def set_up_pure_mpi_scaling_tests(scaling_root):
+def set_up_pure_mpi_scaling_tests(scaling_root:str):
     """
     Pure MPI scaling tests for GW, from 1 to 10 nodes, using all cores per node
     and no threading.
@@ -35,11 +35,14 @@ def set_up_pure_mpi_scaling_tests(scaling_root):
     GW settings of q = [2, 2, 2] and img f = 45 mean that at 10 nodes, each core (360)
     has one q-point and frequency point. Scaling is expected to be ~ linear for all
     calculations.
+
+    TURNS OUT that GW is only MPI-parallelised over q-points, so this doesn't give anything
+    useful.
     """
 
-    input_xml = inputs_q222.input_xml
-    zr_basis_xml = inputs_q222.zr_basis_xml
-    o_basis_xml = inputs_q222.o_basis_xml
+    input_xml = inputs_q222_set1.input_xml
+    zr_basis_xml = inputs_q222_set1.zr_basis_xml
+    o_basis_xml = inputs_q222_set1.o_basis_xml
 
     # Check GW input script settings
     match = re.search('nempty="(.+?)"', input_xml)
@@ -109,4 +112,4 @@ def set_up_pure_mpi_scaling_tests(scaling_root):
     return
 
 
-set_up_pure_mpi_scaling_tests("/users/sol/abuccheri/gw_benchmarks/scaling/pure_mpi")
+set_up_pure_mpi_scaling_tests("/users/sol/abuccheri/gw_benchmarks/scaling/pure_mpi/set1")
