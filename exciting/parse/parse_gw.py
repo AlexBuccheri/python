@@ -98,15 +98,20 @@ def parse_gw_timings(file_path: str, file_name='GW_INFO.OUT'):
     """
     file_path += '/' + file_name
 
-    # Get line number  GW timing info
-    line_number = int(grep("GW timing info", file_path, line_number='').split(':')[0])
+    # Get line number GW timing info
+    start_line = int(grep("GW timing info", file_path, line_number='').split(':')[0])
+    #end_line = int(grep("Total", file_path, line_number='').splitlines()[-1].split(':')[0])
     fid = open(file_path, "r")
-    timing_lines = fid.readlines()[line_number+2:]
+    timing_lines = fid.readlines()[start_line+2:]
     fid.close()
 
     timings = {}
     for line in timing_lines:
         data = line.split()
+
+        # Skip blank lines (data[0] will throw an error)
+        if not data:
+            continue
 
         # Remove '-' prefixes
         if data[0] == '-':
