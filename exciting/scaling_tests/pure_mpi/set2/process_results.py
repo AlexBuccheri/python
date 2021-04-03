@@ -23,7 +23,7 @@ def timing_units(units:str) -> tuple:
 def process_mpi_results(scaling_root: str):
 
     time_unit = 'hours'
-    save_plot = False
+    save_plot = True
     units = timing_units(time_unit)
 
     # Nodes to use in scaling tests
