@@ -11,7 +11,8 @@ class Plot:
     TODO Be able to pass (line, marker) - [type, size, colour]
     """
 
-    def __init__(self, x, y, x_label='', y_label='', xticklabels=None, yticklabels=None, legend_loc='upper right', legend_title=None):
+    def __init__(self, x, y, x_label='', y_label='', xticklabels=None, yticklabels=None, legend_loc='upper right',
+                 legend_title=None, label_size=14, font_size=14, linewidth=1):
         self.x = x
         self.y = y
         self.x_label = x_label
@@ -20,6 +21,9 @@ class Plot:
         self.yticklabels = yticklabels
         self.legend_loc = legend_loc
         self.legend_title = legend_title
+        self.label_size = label_size
+        self.font_size = font_size
+        self.line_width = linewidth
         self.initialise_plot()
 
     def initialise_plot(self):
@@ -28,8 +32,8 @@ class Plot:
         :return:
         """
         self.fig , self.ax = plt.subplots()
-        self.ax.set_xlabel(self.x_label)
-        self.ax.set_ylabel(self.y_label)
+        self.ax.set_xlabel(self.x_label, fontsize=self.font_size)
+        self.ax.set_ylabel(self.y_label, fontsize=self.font_size)
 
         if self.xticklabels is not None:
             self.ax.set_xticks(self.x)
@@ -39,6 +43,8 @@ class Plot:
             self.ax.set_yticks(self.y)
             self.ax.set_yticklabels(self.yticklabels)
 
+        self.ax.tick_params(axis='both', which='major', labelsize=self.label_size)
+
         return
 
     def plot_data(self, x, y, label=None):
@@ -47,22 +53,26 @@ class Plot:
         :param x: x data
         :param y: y data
         :param label: optional label for legend
+        # TODO Probably a better way to pass options as dictionary,
+        # as with save
         """
         self.legend_label = label
 
         if label is None:
-            self.ax.plot(x, y)
+            self.ax.plot(x, y, linewidth = self.line_width)
         else:
-            self.ax.plot(x, y, label=str(label))
+            self.ax.plot(x, y, linewidth = self.line_width, label=str(label))
         return
 
-    def show(self, file_name=None):
+    def save(self, save_options:dict):
         if self.legend_label is not None:
             self.ax.legend(loc=self.legend_loc, title=self.legend_title)
 
-        if file_name is not None:
-            plt.savefig(file_name, dpi=300)
-        else:
-            plt.show()
+        file_name = save_options.pop('file_name')
+        plt.savefig(file_name, **save_options)
 
-        return
+    def show(self):
+        if self.legend_label is not None:
+            self.ax.legend(loc=self.legend_loc, title=self.legend_title)
+        plt.show()
+
