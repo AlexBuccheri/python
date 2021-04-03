@@ -82,6 +82,10 @@ def gw_basis_convergence(root:str):
     # Plot delta_E_qp
     # -----------------
     if plot_delta_E_qp:
+
+        # --------------------------------------------------------------
+        # Plot 1
+        # --------------------------------------------------------------
         x = np.arange(0, len(l_max_values))
         x_labels = ["(" + ",".join(str(l) for l in l_pair.values()) + ")" for l_pair in l_max_values]
 
@@ -102,29 +106,41 @@ def gw_basis_convergence(root:str):
 
         gw_plot.show()
 
+        # --------------------------------------------------------------
         # Second plot. Same as above but label every point with the basis
+        # --------------------------------------------------------------
         fig, ax = plt.subplots()
+        fig.set_size_inches(14, 10)
+        plt.rcParams.update({'font.size': 16})
 
+        ax.set_xlabel('l_max (Zr, O)', fontsize=16)
+        ax.set_ylabel('Quasiparticle Gap - KS Gap at Gamma (meV)', fontsize=16)
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(x_labels)
+        ax.tick_params(axis='both', which='major', labelsize=16)
+
+        # Overlay lines for each LO energy cutoff
         for i, energy in enumerate(max_energy_exts):
-            ax.plot(x, delta_E_qp[i, :] * ha_to_mev)
+            ax.plot(x, delta_E_qp[i, :] * ha_to_mev, marker='o', markersize=8)
 
-        #(shape=(len(max_energy_exts), len(l_max_values)))
+        basis_labels = get_basis_labels(root, settings)
 
-        for j, l_max in enumerate(['(3,2)', '(4,3)', '(5,6)', '(6,5)']):
+        # Set basis label for each marker
+        for j, l_max in enumerate(['(3,2)', '(4,3)', '(5,4)', '(6,5)']):
             for i, energy in enumerate(max_energy_exts):
-                ax.annotate(str(i) + ' ' + str(l_max), (x[j],  delta_E_qp[i, j] * ha_to_mev))
+                label = ''
+                for species in ['zr', 'o']:
+                    label += species.capitalize() + ': ' + basis_labels[l_max][species][i].rstrip()+'.\n'
+                ax.annotate(label.rstrip(), (x[j],  delta_E_qp[i, j] * ha_to_mev))
+
+        if save_plots:
+            plt.savefig('qp_convergence_set2_basis_labels.jpeg', dpi=300, facecolor='w', edgecolor='w',
+                        orientation='landscape', transparent=True, bbox_inches='tight', pad_inches=1.)
 
         plt.show()
 
-        # basis_labels = get_basis_labels(root, settings)
-        # keys = [key for key in basis_labels.keys()]
-        # for key in keys:
-        #     print(len(basis_labels[key]), len(max_energy_exts))
-        #     print(basis_labels[key])
-        #     # assert len(basis_labels[key]) == len(max_energy_exts)
-        #
-        # print(basis_labels)
-        quit()
+
 
     # ----------------------------------------------------------------------
     # Plot VBT and CBB real self-eneries w.r.t. basis and energy parameter
