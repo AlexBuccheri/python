@@ -69,17 +69,14 @@ def gw_basis_convergence(root:str):
     data = parse_gw_results(root, settings)
     delta_E_qp = data['delta_E_qp']
 
-    # No need to use these here: One line in the plot below has a fixed energy cutoff BUT
-    # the x-axis varies w.r.t. the max l-channel, hence the basis size changes per data point.
-    # Use in set 3 plots.
-    #basis_labels = get_basis_labels(root, settings)
-    #basis_labels = combine_species_basis_labels(basis_labels)
-
     # Print some data
     process_basis_numbers(l_max_values, delta_E_qp, max_energy_exts, max_energy = 300)
 
+    # Generate plots
+    save_plots = False
     plot_delta_E_qp = True
     plot_sigma = False
+
 
     # -----------------
     # Plot delta_E_qp
@@ -89,12 +86,45 @@ def gw_basis_convergence(root:str):
         x_labels = ["(" + ",".join(str(l) for l in l_pair.values()) + ")" for l_pair in l_max_values]
 
         gw_plot = Plot(x, [], x_label='l_max (Zr, O)', y_label='Quasiparticle Gap - KS Gap at Gamma (meV)',
-                              xticklabels=x_labels, legend_title='Max LO Energy Param (Ha)')
+                       xticklabels=x_labels, legend_title='Max LO Energy (Ha)', linewidth=3)
 
         for i, energy in enumerate(max_energy_exts):
             gw_plot.plot_data(x, delta_E_qp[i, :] * ha_to_mev, label=str(energy))
 
+        if save_plots:
+            save_options = {'file_name':'qp_convergence_lmax_and_los.jpeg',
+                            'dpi':300,
+                            'facecolor':'w',
+                            'edgecolor':'w',
+                            'orientation':'landscape',
+                            'bbox_inches':'tight'}
+            gw_plot.save(save_options)
+
         gw_plot.show()
+
+        # Second plot. Same as above but label every point with the basis
+        fig, ax = plt.subplots()
+
+        for i, energy in enumerate(max_energy_exts):
+            ax.plot(x, delta_E_qp[i, :] * ha_to_mev)
+
+        #(shape=(len(max_energy_exts), len(l_max_values)))
+
+        for j, l_max in enumerate(['(3,2)', '(4,3)', '(5,6)', '(6,5)']):
+            for i, energy in enumerate(max_energy_exts):
+                ax.annotate(str(i) + ' ' + str(l_max), (x[j],  delta_E_qp[i, j] * ha_to_mev))
+
+        plt.show()
+
+        # basis_labels = get_basis_labels(root, settings)
+        # keys = [key for key in basis_labels.keys()]
+        # for key in keys:
+        #     print(len(basis_labels[key]), len(max_energy_exts))
+        #     print(basis_labels[key])
+        #     # assert len(basis_labels[key]) == len(max_energy_exts)
+        #
+        # print(basis_labels)
+        quit()
 
     # ----------------------------------------------------------------------
     # Plot VBT and CBB real self-eneries w.r.t. basis and energy parameter
@@ -102,7 +132,7 @@ def gw_basis_convergence(root:str):
     if plot_sigma:
         re_self_energy_VBM = data['re_self_energy_VBM']
         r_sigma_VBM_plot = Plot(x, [], x_label='l_max (Zr, O)', y_label='Re{Self Energy} at VBM (meV) ',
-                                       xticklabels=x_labels, legend_title='Max LO Energy Param (Ha)')
+                                xticklabels=x_labels, legend_title='Max LO Energy Param (Ha)', linewidth=3)
 
         for i, energy in enumerate(max_energy_exts):
             r_sigma_VBM_plot.plot_data(x, re_self_energy_VBM[i, :] * ha_to_mev, label=str(energy))
@@ -110,7 +140,7 @@ def gw_basis_convergence(root:str):
 
         re_self_energy_CBm = data['re_self_energy_CBm']
         r_sigma_CBm_plot = Plot(x, [], x_label='l_max (Zr, O)', y_label='Re{Self Energy} at CBm (meV) ',
-                                       xticklabels=x_labels, legend_title='Max LO Energy Param (Ha)')
+                                xticklabels=x_labels, legend_title='Max LO Energy Param (Ha)', linewidth=3)
 
         for i, energy in enumerate(max_energy_exts):
             r_sigma_CBm_plot.plot_data(x, re_self_energy_CBm[i, :] * ha_to_mev, label=str(energy))
