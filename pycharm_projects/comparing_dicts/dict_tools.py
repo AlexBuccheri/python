@@ -26,18 +26,30 @@ def get_hashable_entries(nested:dict):
             yield (key, value)
 
 
-def check_key_consistency(a:dict, b:dict) -> bool:
-    keys_a = [key for key in a.keys()]
-    keys_b = [key for key in b.keys()]
+def check_key_consistency(a:list, b:list) -> bool:
+    keys_a = [dictionary.keys() for dictionary in a]
+    keys_b = [dictionary.keys() for dictionary in b]
     assert keys_a == keys_b, "Keys in reference and output data are not consistent "
 
 
 def compare_result_with_reference(parsed_result:dict, parsed_reference:dict, tolerance:dict, debug_mode=False):
     """
-    # TODO Used OrderedDicts
     # TODO Fill missing tolerances with defaults
 
     Provides some way of comparing nested data from two dictionaries.
+    It takes all hashable entries and puts them sequentially into a list, of the form:
+
+        [{key1:value1}, {key2:value2}, {key3:value3}, ...]
+
+    Note, this is not serialising the data. In flattening the dictionary, we lose some key information.
+    This is acceptable if the reference and result data have the same structure.
+    As such, some pre-check that the keys of the nested dictionaries are consistent before comparing flattened data
+    is required.
+
+    TODO Add check that the keys of the nested dictionaries are consistent
+    Only likely to occur if structure of output or parser changes, and the reference data has not bee updated.
+    Can just be run in debug mode.
+
     If an assertion fails, the code crashes.
 
     Not sure if there's a way of making this work for two differing nested structures.
@@ -51,12 +63,30 @@ def compare_result_with_reference(parsed_result:dict, parsed_reference:dict, tol
     :param bool debug_mode: Perform debug mode checks
     """
 
-    result = {key: value for key, value in get_hashable_entries(parsed_result)}
-    reference = {key: value for key, value in get_hashable_entries(parsed_reference)}
+    # Note, this approach will overwrite values if any key is found twice in the nested dictionary
+    #result = {key: value for key, value in get_hashable_entries(parsed_result)}
+    #reference = {key: value for key, value in get_hashable_entries(parsed_reference)}
+
+    result = [{key: value} for key, value in get_hashable_entries(parsed_result)]
+    reference = [{key: value} for key, value in get_hashable_entries(parsed_reference)]
 
     if debug_mode:
         check_key_consistency(reference, result)
 
-    for key in result.keys():
-        assert_equal(result[key], reference[key], tolerance[key], message=key)
+    def key_from_single_entry(a:dict):
+        return [x for x in a.keys()][0]
+
+    def value_from_single_entry(a:dict):
+        return [x for x in a.values()][0]
+
+    for i in range(0, len(result)):
+
+        result_key = key_from_single_entry(result[i])
+        reference_key = key_from_single_entry(reference[i])
+        assert result_key == reference_key
+
+        result_value = value_from_single_entry(result[i])
+        reference_value = value_from_single_entry(reference[i])
+
+        assert_equal(result_value, reference_value, tolerance[reference_key], message=reference_key)
 

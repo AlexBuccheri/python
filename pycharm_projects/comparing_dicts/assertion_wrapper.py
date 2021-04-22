@@ -8,6 +8,8 @@ _default_tolerance = {int: 0, float: 1.e-8}
 def assert_equal(data, reference, abs_tol=None, message=''):
     """
     Assertion wrapper
+
+    TODO Test and extend for complex floats + arrays
     """
     assert type(data) == type(reference), "Reference and output data must be of same type"
 
