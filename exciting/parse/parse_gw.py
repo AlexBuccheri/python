@@ -22,6 +22,21 @@ def parse_kpoints(file_path:str, file_name='KPOINTS.OUT') -> dict:
     return {'n_empty':n_empty}
 
 
+def get_nempty_from_evalqp(file_path: str, file_name='EVALQP.DAT') -> int:
+    """
+    exciting GW uses same number of nempty per k-point
+
+    If nempty is specified as max in input, it should use the lowest
+    available of all k-points (noting that nempty differs per k-point
+    because the PW cut-off varies per k-point)
+
+    :param file_path: file path
+    :param file_name: file name to parse
+    :return: nempty, number of empty states per k-point
+    """
+    lines = grep('k-point', file_path + '/' + file_name, n_lines_before=2)
+    return int(lines.splitlines()[2].split()[0])
+
 
 def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT'):
     """
@@ -51,7 +66,10 @@ def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT'):
     # Value in input can exceed the total number of empty states.
     # The value used by exciting in GW is the smallest 'n_empty' value in KPOINTS.OUT,
     # as each k-point can differ due to the plane-wave cut-off
-    n_empty = parse_kpoints(file_path)['n_empty']
+    # TODO(Alex) This doesn't always. As in, it may not be the minimum work as in
+    # n_empty = parse_kpoints(file_path)['n_empty']
+
+    n_empty = get_nempty_from_evalqp(file_path)
 
     # TODO Note, if n_empty in input is not max number, this will be used for number of entries
     # in EVALQP.DAT, not the lowest value from KPOINTS file
@@ -73,9 +91,9 @@ def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT'):
         k_point = [float(k) for k in file_string[i].split()[3:6]]
 
         # iterate past k-point and skip header
-        i+=2
+        i += 2
         results = {}
-        for istate in range(0, np.min(n_empty)):
+        for istate in range(0, n_empty):
             line = file_string[i].split()[1:]
             # 1-Indexing consistent with fortran
             results[istate + 1] = {keys[i]: float(line[i]) for i in range(0, len(keys))}

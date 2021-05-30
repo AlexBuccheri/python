@@ -30,7 +30,7 @@ def process_mpi_results(scaling_root: str):
     # waiting for 1 node to finish
     # /users/sol/abuccheri/gw_benchmarks/scaling/pure_mpi/set2/n_nodes_1
     mpi_processes_per_node = 36
-    nodes = np.arange(2, 10+1)
+    nodes = np.arange(1, 10+1)
     processes = nodes * mpi_processes_per_node
 
     # Report most expensive parts of the calculation

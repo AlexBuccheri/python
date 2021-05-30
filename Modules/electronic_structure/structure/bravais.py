@@ -11,7 +11,7 @@
 # -----------------------------------------------------
 
 import numpy as np
-
+import typing
 
 class LatticeOpt:
     def __init__(self, bravais_type, a=None, b=None, c=None, alpha=None, beta=None, gamma=None, units='angstrom'):
@@ -378,3 +378,61 @@ def face_centred_cubic(a):
                                [1, 0, 1],
                                [1, 1, 0]])
     return cell
+
+
+
+
+def get_lattice_vectors(bravais: str) -> typing.Callable:
+    """
+    Get lattice vector function, given th bravais lattice type
+
+    :param bravais: brvais lattice type
+    :return: lattice vector function
+    """
+
+    bravais = bravais.lower()
+
+    if bravais == 'triclinic':
+        return simple_triclinic()
+
+    elif bravais in ['monoclinic', 'simple_monoclinic']:
+        return simple_monoclinic()
+
+    elif bravais == 'base_centred_monoclinic':
+        return base_centred_monoclinic()
+
+    elif bravais in ['orthorhombic', 'simple_orthorhombic']:
+        return simple_orthorhombic()
+
+    elif bravais == 'body_centred_orthorhombic':
+        return body_centred_orthorhombic()
+
+    elif bravais == 'base_centred_orthorhombic':
+        return base_centred_orthorhombic()
+
+    elif bravais == 'face_centred_orthorhombic':
+        return face_centred_orthorhombic()
+
+    elif bravais in ['tetragonal', 'simple_tetragonal']:
+        return simple_tetragonal()
+
+    elif bravais == 'body_centred_tetragonal':
+        return body_centred_tetragonal()
+
+    elif bravais == 'rhombohedral':
+        return rhombohedral()
+
+    elif bravais == 'hexagonal':
+        return hexagonal()
+
+    elif bravais in ['face_centred_cubic', 'fcc']:
+        return face_centred_cubic()
+
+    elif bravais in ['body_centred_cubic', 'bcc']:
+        return body_centred_cubic()
+
+    elif bravais in ['simple_cubic', 'cubic']:
+        return simple_cubic()
+
+    else:
+        error("Choice of bravais is erroneous: ", bravais)

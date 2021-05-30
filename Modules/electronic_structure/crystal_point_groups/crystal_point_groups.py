@@ -469,6 +469,9 @@ def wyckoff_positions(point_group: PointGroup, point):
     y = point[1]
     z = point[2]
 
+    print(point_group, type(point_group))
+    print()
+
     switch = {
         PointGroup.C_1: wyckoff_positions_c_1,
         PointGroup.C_i: wyckoff_positions_c_i,
@@ -503,5 +506,8 @@ def wyckoff_positions(point_group: PointGroup, point):
         PointGroup.T_d: wyckoff_positions_t_d,
         PointGroup.O_h: wyckoff_positions_o_h,
         }
+
+    print(switch[point_group])
+
     return switch.get(point_group)(x,y,z)
 

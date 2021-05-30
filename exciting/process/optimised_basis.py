@@ -39,11 +39,11 @@ class DefaultLOs():
     def get_max_nodes(self) -> dict:
         """
         TODO MAYBE ONLY MAKES SENSE COUNTING NODES FOR ENERGIES ABOVE ZERO?
-        Would also be useful to distibguish between valence and conduction states.
+        Would also be useful to distinguish between valence and conduction states.
 
         Get the number of nodes associated with the lo function with max nodes, per l-channel.
 
-        Nodes appear to be interchangable with the energy parameters, as basis functions
+        Nodes appear to be interchangeable with the energy parameters, as basis functions
         are solutions of isolated atoms. So each radial function corresponds
         to an eigenstate of the atom with princial QN, l, n nodes and an energy.
 
@@ -64,7 +64,6 @@ class DefaultLOs():
             self.nodes[l_value] = len(set(energies)) - 1
         return self.nodes
 
-
     def __init__(self, linear_energies:dict, nodes:Optional[dict]=None, energy_tol=0.1):
         """
         Initialise class
@@ -83,11 +82,9 @@ class DefaultLOs():
             "N l-channels in default linear_energies should equal N l-channels in default max nodes"
 
 
-
-
 def filter_lo_functions(lo_recommendations: List[np.ndarray],
-                        default_los: Optional[DefaultLOs]=None,
-                        optimised_lo_cutoff: Optional[dict]=None) -> List[LOEnergies]:
+                        default_los: Optional[DefaultLOs] = None,
+                        optimised_lo_cutoff: Optional[dict] = None) -> List[LOEnergies]:
     """
 
     Every input is w.r.t. one species.
@@ -117,6 +114,9 @@ def filter_lo_functions(lo_recommendations: List[np.ndarray],
 
     assert len(lo_recommendations) == 7, "Expect 7 l-channels for lorecommendations, " \
                                          "per species, as it is hard-coded in exciting"
+
+    assert len(lo_recommendations[0]) == 22, "Expect 22 entries per l-channel lorecommendations, " \
+                                             "as it is hard-coded in exciting"
 
     # Don't evaluate lo recommendations for l-channels that are not in the default basis
     n_default_l_channels = len(default_los.linear_energies)
@@ -312,7 +312,10 @@ def parse_species_string(l_channels:list, basis_string:str):
     Returns a dictionary of LO functions, of the form:
                      {0: [lo_0, lo_1, ..., lo_i],
                       1: [lo_0, lo_1, ..., lo_i],
-                      l: [lo_0, lo_1, ..., lo_i]
+                      .
+                      .
+                      .
+                      l_max: [lo_0, lo_1, ..., lo_i]
                       }
     where
           lo_i = [radial_0, radial_1] and
@@ -325,7 +328,7 @@ def parse_species_string(l_channels:list, basis_string:str):
     :return basis_los: Dictionary described above.
     """
     basis_string = basis_string.splitlines()
-    basis_los= {l:[] for l in l_channels}
+    basis_los = {l: [] for l in l_channels}
     lo_block = False
 
     for line in basis_string:

@@ -114,7 +114,7 @@ def parse_gw_results(root:str, settings:dict) -> dict:
             }
 
 
-def get_basis_labels(root:str, settings:dict, verbose=False) -> dict:
+def get_basis_labels(root: str, settings: dict, verbose=False) -> dict:
     """
     For each calculation, with the directory hierarchy:
         zr_lmax4_o_lmax3_rgkmax7
@@ -122,7 +122,7 @@ def get_basis_labels(root:str, settings:dict, verbose=False) -> dict:
                 max_energy_ext
 
     parse the species basis files (xml) and generate a label for each.
-    Return a dictionary like:
+    Return a dictionary with keys like:
       basis_labels['(4, 3)']['zr'] = lo_basis_label_strings
 
     :param root: str, root directory for calculations.
@@ -148,7 +148,7 @@ def get_basis_labels(root:str, settings:dict, verbose=False) -> dict:
 
     basis_labels = OrderedDict()
 
-    # Lmax in LO basis, {Zr:4, O:3}
+    # Lmax in LO basis, for example {Zr:4, O:3}
     for i, l_maxs in enumerate(l_max_values):
         basis_root = root + '/' + directory_to_string(l_maxs) + 'rgkmax' + str(rgkmax)
         gw_root = basis_root + "/gw_q" + q_str + "_omeg" + str(n_img_freq) + "_nempty" + str(n_empty_ext[i])
@@ -162,7 +162,8 @@ def get_basis_labels(root:str, settings:dict, verbose=False) -> dict:
 
             for ienergy, energy in enumerate(max_energy_exts):
                 file_path = gw_root + '/max_energy_' + str(energy)
-                if verbose: print('Reading basis from ', file_path)
+                if verbose:
+                    print('Reading basis from ', file_path)
 
                 fid = open(file_path + '/' + species.capitalize() + '.xml', 'r')
                 basis_string = fid.read()

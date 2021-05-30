@@ -203,7 +203,7 @@ def moleculr_from_indices(species, positions, atomic_indices):
 
 def identify_si_o_o_units(species, positions, plane_index) -> list:
     """
-    :brief Identify silicons and neighbouring oxygens that are not in the ring
+    Identify silicons and neighbouring oxygens that are not in the ring
 
     :param species: list of species
     :param positions: list of positions

@@ -14,7 +14,7 @@ from parse.set_gw_input import GWInput, set_gw_input_string
 from process.optimised_basis import DefaultLOs, filter_lo_functions, generate_optimised_basis_string
 from job_schedulers import slurm
 
-from gw_benchmark_inputs.set4.A1_groundstate import converged_ground_state_input as A1_gs_input
+from gw_benchmark_inputs.set4.bad_inputs.A1_groundstate import converged_ground_state_input as A1_gs_input
 
 
 def write_file(file_name, string):

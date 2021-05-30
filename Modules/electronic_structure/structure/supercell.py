@@ -25,24 +25,32 @@ def get_supercell_vectors_alt(lattice, max_integers):
 # Test for some non-orthogonal vectors 
 
 def get_supercell_vector(lattice, max_integers):
-    """ Expect lattice vectors colunwise 
-        Do (a, b, c) P where a, b and c are unit cell vectors 
-        and P is the affine transformation matrix:
+    """ Expect lattice vectors colunwise
+
+        Do (\mathbf{a}, \mathbf{b}, \mathbf{c}) \mathbf{P}
+        where \f$\mathbf{a}\f$, \f$\mathbf{b}\f$ and \f$\mathbf{c}\f$
+        are unit cell vectors and P is the affine transformation matrix:
 
        [[a1, b1, c1]      [[n, 0, 0]        [[n.a1, m.b1, l.c1]    
         [a2, b2, c2]       [0, m, 0]   =     [n.a2, m.b2, l.c2]        
         [a3, b3, c3]]      [0, 0, l]]        [n.a3, m.b3, l.c3]]
-    
+
+      Note:
+        This is equivalent to
+           for i in range(0,3):
+              super_cell[:, i] = lattice[:,i] * max_integers[i],
+
       Return supercell vectors stored columnwise
     """
     assert len(max_integers) == 3 
     P = np.zeros(shape=(3,3))
-    P.diagonal(max_integers)
-    return lattice * P
+    np.fill_diagonal(P, max_integers)
+    return np.matmul(lattice, P)
                              
 
         
 def supercell_limits(n, centred_on_zero = False):
+    assert len(n) == 3, "Expect three integers"
     limits = []
     if centred_on_zero:
         for i in range(0,3):
@@ -132,7 +140,7 @@ def list_global_atom_indices_per_cells(unit_cell, translations):
     return cells
 
 # Lattice vectors define the dimensions & shape of the box
-def molecule_in_supercell(lattice):
-    supercell = []
-    return supercell
+# def molecule_in_supercell(lattice):
+#     supercell = []
+#     return supercell
 

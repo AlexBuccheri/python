@@ -12,13 +12,22 @@ import numpy as np
 
 class SlurmJob:
     #walltime=[hours,minutes,seconds] - turn this into a dictionary 
-    def __init__(self,exe,nodes=1,job_name='test_run',queue='cpu_test',walltime='None',parallel='None',output='terminal',\
-                 cores_used=None):
+    def __init__(self,
+                 exe,
+                 nodes=1,
+                 job_name='test_run',
+                 queue='cpu_test',
+                 walltime=None,
+                 parallel=None,
+                 output='terminal',
+                 cores_used=None,
+                 env=None):
         self.nodes=nodes
         self.ppn=28
         self.cpus_per_task = 1 
         self.job_name=job_name
         if cores_used == None:
+            #TODO(Alex) This may not be correct
             self.np = self.nodes*self.ppn* self.cpus_per_task
         else:
             self.np = cores_used 
@@ -26,7 +35,7 @@ class SlurmJob:
         SlurmJob.check_queuename(queue)
         self.queue=queue
         
-        if walltime=='None':
+        if walltime==None:
            self.walltime=self.average_walltime() 
         else:
             SlurmJob.check_walltime(walltime)
@@ -35,6 +44,7 @@ class SlurmJob:
         self.exe=exe
         self.output=output+'.out'
         self.parallel=parallel
+        self.env = env
 
 
     def check_walltime(walltime):
@@ -80,9 +90,14 @@ def generate_slurm_script(slurmjob):
                 '#SBATCH --nodes='+str(slurmjob.nodes)+    '\n'+ \
                 '#SBATCH --ntasks-per-node='+str(slurmjob.ppn)+             '\n'+ \
                 '#SBATCH --cpus-per-task='+str(slurmjob.cpus_per_task) +    '\n'+ \
-                '#SBATCH --time='+time_str[:-1]+'\n' \
+                '#SBATCH --time='+time_str[:-1]+'\n\n' \
 
-    slurm_string += '#Set variables      \n'+ \
+    if slurmjob.env is not None:
+        for setting in slurmjob.env:
+            assert type(setting) == str
+            slurm_string += setting + '\n'
+ 
+    slurm_string += \
                 'export OMP_NUM_THREADS=1'+'\n'+ \
                 'EXE='+slurmjob.exe       +'\n'+ \
                 'OUT='+slurmjob.output    +'\n'+ \

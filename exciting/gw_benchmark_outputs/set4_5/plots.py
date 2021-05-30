@@ -3,12 +3,10 @@ Plots
 """
 # External libraries
 from collections import OrderedDict
-import numpy as np
 import matplotlib.pyplot as plt
 
 # My modules
 from units_and_constants.unit_conversions import ha_to_mev
-from ex_plot.plot import Plot
 from gw_benchmark_outputs.post_process_utils import parse_gw_results, get_basis_labels, combine_species_basis_labels, \
     n_local_orbitals
 
@@ -18,10 +16,14 @@ def process_basis_numbers(delta_E_qp, max_energy_exts:list):
     Print change in QP gap for each max energy parameter (i.e. max LO)
     """
     assert delta_E_qp.size == len(max_energy_exts), 'Should be same number of QP energies as there are basis energy cutoffs'
+
     print("For basis (Zr,O) = (4,3)")
     for ie, energy in enumerate(max_energy_exts[1:], start=1):
         change_in_delta_E_qp = (delta_E_qp[ie] - delta_E_qp[ie-1])
-        print("Change in Delta E_QP from max energy param ", max_energy_exts[ie-1], "to ", energy, ":", change_in_delta_E_qp, "(meV)")
+        print("Change in Delta E_QP from max energy param: ")
+        print(max_energy_exts[ie-1].replace("\n", " "), "to ")
+        print(energy.replace("\n", " "), ":")
+        print(change_in_delta_E_qp, "(meV)")
     return
 
 
@@ -44,9 +46,10 @@ def sum_los_per_species(n_los_species_resolved: dict) ->list:
     return n_los
 
 
+
 def gw_basis_convergence(root:str):
     """
-    Plot the quasipartilce-KS gap w.r.t bs LO basis, for l-max = (4, 3(
+    Plot the quasi particle - KS gap w.r.t bs LO basis, for l-max = (4, 3)
     """
     D = OrderedDict
 
@@ -55,76 +58,41 @@ def gw_basis_convergence(root:str):
     plot_sigma = False
     save_plots = False
 
-    # Set 2
-    max_energy_exts_set2 = [90, 160, 230, 300]
-    settings_set2 =  {'rgkmax': 7,
-                      'l_max_values': [D([('zr', 4), ('o', 3)])],
-                      'n_img_freq': 32,
-                      'q_grid': [2, 2, 2],
-                      'n_empty_ext': [1000],
-                      'max_energy_cutoffs': max_energy_exts_set2}
+    max_energy_exts_set4_5 = ['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7', 'i8', 'i9']
 
-    data_set2 = parse_gw_results(root + "/A1_var_cutoff", settings_set2)
-    delta_E_qp_set2 = data_set2['delta_E_qp'][:, lmax_43] * ha_to_mev
-    basis_labels = get_basis_labels(root + "/A1_var_cutoff", settings_set2)
-    basis_labels_set2 = combine_species_basis_labels(basis_labels,  species_per_line=True)['(4,3)']
-    n_los_set2 = n_local_orbitals(basis_labels)['(4,3)']
-
-    # Set 3
-    # i3 wouldn't work and i7. GW VBT and CBB get fucked up, hence omitted
-    #                              i0    i1   i2   i4   i5   i6
-    # energy_cutoffs = {'zr': {0: [150, 200, 250, 200, 120, 120],
-    #                          1: [150, 200, 250, 200, 120, 120],
-    #                          2: [300, 300, 300, 350, 350, 400],
-    #                          3: [150, 200, 250, 200, 120, 120],
-    #                          4: [150, 200, 250, 200, 120, 120]},
-    #
-    #                    'o': {0: [150, 200, 250, 200, 120, 120],
-    #                          1: [150, 200, 250, 200, 120, 120],
-    #                          2: [150, 200, 250, 200, 120, 120],
-    #                          3: [150, 200, 250, 200, 120, 120]}
-    #                   }
-
-    #max_energy_exts_set3 = ['i0', 'i1', 'i2', 'i4', 'i5', 'i6', 'i7']
-    max_energy_exts_set3 = ['i5', 'i6', 'i7']
-
-    settings_set3 = {'rgkmax': 7,
+    settings_set4_5 = {'rgkmax': 8,
                      'l_max_values': [D([('zr', 4), ('o', 3)])],
                      'n_img_freq': 32,
                      'q_grid': [2, 2, 2],
-                     'n_empty_ext': [1000], # Note in some cases, I actually used 2000 in input
-                     'max_energy_cutoffs':max_energy_exts_set3 }
+                     'n_empty_ext': [2000],
+                     'max_energy_cutoffs': max_energy_exts_set4_5
+                     }
 
-    data_set3 = parse_gw_results(root + "/A1_set3", settings_set3)
-    delta_E_qp_set3 = data_set3['delta_E_qp'][:, lmax_43] * ha_to_mev
-    basis_labels = get_basis_labels(root + "/A1_set3", settings_set3)
-    n_los_set3 = n_local_orbitals(basis_labels)['(4,3)']
-    basis_labels_set3 = combine_species_basis_labels(basis_labels,  species_per_line=True)['(4,3)']
-
+    data_set4 = parse_gw_results(root, settings_set4_5)
+    delta_E_qp_set4 = data_set4['delta_E_qp'][:, lmax_43] * ha_to_mev
+    basis_labels = get_basis_labels(root, settings_set4_5, verbose=True)
+    basis_labels_set4 = combine_species_basis_labels(basis_labels,  species_per_line=True)['(4,3)']
+    n_los_set4 = n_local_orbitals(basis_labels)['(4,3)']
 
     # Give some changes in QP gap w.r.t. calculations
-    process_basis_numbers(delta_E_qp_set2, max_energy_exts_set2)
-    process_basis_numbers(delta_E_qp_set3, max_energy_exts_set3)
+    print(delta_E_qp_set4)
+    process_basis_numbers(delta_E_qp_set4, basis_labels_set4)
 
     # Total number of LOs per calculation (i.e. sum Zr and O basis sizes together)
-    n_los_set2 = sum_los_per_species(n_los_set2)
-    n_los_set3 = sum_los_per_species(n_los_set3)
+    n_los_set4= sum_los_per_species(n_los_set4)
 
     # --------------------------------------
     # QP vs LO basis size, for l-max = (4,3)
     # --------------------------------------
     if plot_delta_E_qp:
 
-        # Set 2 and 3
         fig, ax = plt.subplots()
         ax.set_xlabel('N LOs')
         ax.set_ylabel('Quasiparticle Gap - KS Gap at Gamma (meV)')
 
-        ax.plot(n_los_set2, delta_E_qp_set2, color='blue', marker='o', linestyle='solid', linewidth=3, markersize=8)
-        for i, txt in enumerate(basis_labels_set2):
-           ax.annotate(txt, (n_los_set2[i], delta_E_qp_set2[i]))
-
-        ax.plot(n_los_set3, delta_E_qp_set3, 'ro', markersize=8)
+        ax.plot(n_los_set4, delta_E_qp_set4, color='blue', marker='o', linestyle='solid', linewidth=3, markersize=8)
+        for i, txt in enumerate(basis_labels_set4):
+           ax.annotate(txt, (n_los_set4[i], delta_E_qp_set4[i]))
 
         if save_plots:
             plt.savefig('qp_convergence_lmax43.ps', dpi=300, facecolor='w', edgecolor='w',
@@ -132,21 +100,21 @@ def gw_basis_convergence(root:str):
         plt.show()
 
         # Set 3 by itself, where one is primarily looking at the l=2 channel of Zr.
-        for i in range(0, delta_E_qp_set3.size):
-            print(max_energy_exts_set3[i], delta_E_qp_set3[i])
-
-        fig, ax = plt.subplots()
-        fig.set_size_inches(12, 10)
-        plt.rcParams.update({'font.size': 11})   # Affects fonts of the labels only
-        ax.tick_params(axis='both', which='major', labelsize=14)
-
-        ax.set_xlim(80, 125)
-        ax.set_ylim(1580, 1660)
-        ax.set_xlabel('N LOs', fontsize=16)
-        ax.set_ylabel('Quasiparticle Gap - KS Gap at Gamma (meV)', fontsize=16)
-        ax.plot(n_los_set3, delta_E_qp_set3, 'ro', markersize=10)
-        for i, txt in enumerate(basis_labels_set3):
-            ax.annotate(txt, (n_los_set3[i], delta_E_qp_set3[i]))
+        # for i in range(0, delta_E_qp_set3.size):
+        #     print(max_energy_exts_set3[i], delta_E_qp_set3[i])
+        #
+        # fig, ax = plt.subplots()
+        # fig.set_size_inches(12, 10)
+        # plt.rcParams.update({'font.size': 11})   # Affects fonts of the labels only
+        # ax.tick_params(axis='both', which='major', labelsize=14)
+        #
+        # ax.set_xlim(80, 125)
+        # ax.set_ylim(1580, 1660)
+        # ax.set_xlabel('N LOs', fontsize=16)
+        # ax.set_ylabel('Quasiparticle Gap - KS Gap at Gamma (meV)', fontsize=16)
+        # ax.plot(n_los_set3, delta_E_qp_set3, 'ro', markersize=10)
+        # for i, txt in enumerate(basis_labels_set3):
+        #     ax.annotate(txt, (n_los_set3[i], delta_E_qp_set3[i]))
 
         # Note, can use plt. or fig. to save and show
         if save_plots:
@@ -163,7 +131,7 @@ def gw_basis_convergence(root:str):
     if plot_sigma:
 
         # What we expect: VBT converges with the oxygen LOs, and is well-converged
-        re_self_energy_VBM = data_set3['re_self_energy_VBM'][:, lmax_43] * ha_to_mev
+        re_self_energy_VBM = data_set4['re_self_energy_VBM'][:, lmax_43] * ha_to_mev
         fig, ax = plt.subplots()
 
         fig.set_size_inches(12, 10)
@@ -173,9 +141,9 @@ def gw_basis_convergence(root:str):
         ax.set_xlim(82, 120)
         ax.set_xlabel('N LOs', fontsize=16)
         ax.set_ylabel('Re{Self Energy} at VBM (meV)', fontsize=16)
-        ax.plot(n_los_set3, re_self_energy_VBM, 'ro', markersize=10)
-        for i, txt in enumerate(basis_labels_set3):
-            ax.annotate(txt, (n_los_set3[i], re_self_energy_VBM[i]))
+        ax.plot(n_los_set4, re_self_energy_VBM, 'ro', markersize=10)
+        for i, txt in enumerate(basis_labels_set4):
+            ax.annotate(txt, (n_los_set4[i], re_self_energy_VBM[i]))
 
         if save_plots:
             plt.savefig('VBM_convergence_set3_lmax43.jpeg', dpi=300, facecolor='w', edgecolor='w',
@@ -184,7 +152,7 @@ def gw_basis_convergence(root:str):
         plt.show()
 
         # CBm is strongly dependent on the number of Zr LOs, and is still not converged.
-        re_self_energy_CBm = data_set3['re_self_energy_CBm'][:, lmax_43] * ha_to_mev
+        re_self_energy_CBm = data_set4['re_self_energy_CBm'][:, lmax_43] * ha_to_mev
         fig, ax = plt.subplots()
 
         fig.set_size_inches(12, 10)
@@ -194,9 +162,9 @@ def gw_basis_convergence(root:str):
         ax.set_xlim(82, 120)
         ax.set_xlabel('N LOs', fontsize=16)
         ax.set_ylabel('Re{Self Energy} at CBm (meV)', fontsize=16)
-        ax.plot(n_los_set3, re_self_energy_CBm, 'ro', markersize=10)
-        for i, txt in enumerate(basis_labels_set3):
-            ax.annotate(txt, (n_los_set3[i], re_self_energy_CBm[i]))
+        ax.plot(n_los_set4, re_self_energy_CBm, 'ro', markersize=10)
+        for i, txt in enumerate(basis_labels_set4):
+            ax.annotate(txt, (n_los_set4[i], re_self_energy_CBm[i]))
 
         if save_plots:
             plt.savefig('CBm_convergence_set3_lmax43.jpeg', dpi=300, facecolor='w', edgecolor='w',
@@ -206,7 +174,7 @@ def gw_basis_convergence(root:str):
 
     return
 
-gw_basis_convergence("/users/sol/abuccheri/gw_benchmarks/")
+gw_basis_convergence("/users/sol/abuccheri/gw_benchmarks/A1_more_APW/set4_5")
 
 
 

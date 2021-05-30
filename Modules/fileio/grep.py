@@ -11,7 +11,7 @@ grep_options = {'n_lines_before': '-B',
                 'n_lines_after': '-A'}
 
 
-def extract(string, fname, **kwargs):
+def extract(string: str, fname: str, **kwargs):
 
     opts = ''
     for key, value in kwargs.items():

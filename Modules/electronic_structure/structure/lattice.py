@@ -72,6 +72,21 @@ def translation_integers_for_radial_cutoff(lattice, cutoff: float) :
     from a non-cubic supercell.
 
     TODO(Alex) Give a mathematical description of how this works
+    For cubic lattice vectors that form an orthogonal set, the distance from the
+    origin to any face (equivdistant) defines the radius of the largest sphere that can
+    fit inside. Hence, for a radial threshold centred at the origin of the box, one can define the
+    required lengths of the box as
+
+    For a nonorthogonal set of lattice vectors, one should also consider
+    a x b =
+    such that the integers used to define the super cell result in a cell
+    The smallest integer that then faciliates the radial cutoff is defined as
+    n_2 = max( cutoff * a x b / (a x b \cdot c), |c|), which is equivalent to
+    n_2 = max( cutoff * a x b / V, |c|) where the triple product defines the volume V
+    of a parallelpiped cell. One is therefore taking a ratio of volumes, which is dimensionally
+    consistent.
+
+    This is rather difficult to test. (See tests). One could verify visually
 
     This assumes the the sphere is centred at the origin of the cell and
     that the integers returned will be used like:
@@ -136,3 +151,24 @@ def get_extremal_integers(n, m, l):
                                   [-n,  m, -l],
                                   [-n, -m,  l]])
     return extremal_integers.transpose()
+
+
+def lattice_sum(lattice: np.ndarray, n, cutoff):
+    """
+    Sum over translation vectors, using a radial criterion
+    :param lattice:
+    :param n:
+    :param cutoff:
+    :return:
+    """
+    assert lattice.shape == (3,3), "lattice.shape /= (3,3)"
+    assert len(n) == 3, "len(n) /= 3"
+    cutoff_squared = cutoff * cutoff
+    translations = []
+    for k in range(-n[2], n[2]):
+        for j in range(-n[1], n[1]):
+            for i in range(-n[0], n[0]):
+                r = np.matmul(lattice, np.array([i, j, k]))
+                if np.dot(r, r) <= cutoff_squared:
+                    translations.append(r)
+    return translations

@@ -34,7 +34,6 @@ def test_results_approx_equal_ref():
 
     compare_result_with_reference(parsed_result, parsed_reference, tolerance, debug_mode=True)
 
-
 @pytest.mark.xfail()
 def test_with_failing_lattice_constant():
     """
@@ -97,7 +96,7 @@ def test_equivalent_keys_at_different_nested_levels():
     tolerance = {'n_species': 0,                # Must always be constant
                  'max_scf':   1,                # Can vary by ±1
                  'lattice_constants': 1.e-8,    # Numerical tolerance
-                 'total_energy': 1.e-7          # Diff of 2.e-8 in total_energy of scf2
+                 'total_energy': 1.e-10          # Diff of 2.e-8 in total_energy of scf2
                  }
 
     assert noise < tolerance['lattice_constants'], 'noise must be less than the tolerance of the lattice constants'
