@@ -76,7 +76,6 @@ def set_up_g0w0(root_path: str):
         # Use an index not max energy, as the max energy does not change in 3/4 runs
         job_dir = gw_root + '/max_energy_i' + str(ie)
         print('Creating directory, with input.xml, run.sh and optimised basis:', job_dir)
-        print(root_path)
         copy_tree(root_path + '/groundstate', job_dir)
 
         # Copy input.xml with GW settings

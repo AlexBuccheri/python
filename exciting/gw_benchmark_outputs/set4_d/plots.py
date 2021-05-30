@@ -19,7 +19,7 @@ def process_basis_numbers(delta_E_qp, max_energy_exts: list):
     """
     assert delta_E_qp.size == len(max_energy_exts), 'Should be same number of QP energies as there are basis energy cutoffs'
 
-    print("For basis (Zr,O) = (4,3)")
+    print("For basis (Zr,O) = (3,2)")
     for ie, energy in enumerate(max_energy_exts[1:], start=1):
         change_in_delta_E_qp = (delta_E_qp[ie] - delta_E_qp[ie-1])
         print("Change in Delta E_QP from max energy param: ")
