@@ -31,7 +31,7 @@ converged_ground_state_input = \
       rgkmax="8.0"
       ngridk="6 6 6"
       xctype="GGA_PBE_SOL"
-      epsengy="1.e-8"
+      epsengy="1.e-7"
       gmaxvr="20.0"
       >
    </groundstate>
