@@ -3,7 +3,6 @@ Post-processing utilities that are common between various plot scripts
 used for processing gw benchmark outputs
 """
 from collections import OrderedDict
-from typing import List
 import numpy as np
 import re
 
@@ -11,8 +10,10 @@ from process.optimised_basis import parse_species_string, create_lo_label
 from parse.parse_gw import parse_gw_info, parse_gw_evalqp
 from process.process_gw import process_gw_gamma_point
 
+from gw_benchmark_inputs.input_utils import restructure_energy_cutoffs
 
-def directory_to_string(l_max:OrderedDict) -> str:
+
+def directory_to_string(l_max: OrderedDict) -> str:
     """
     Top level basis convergence directory string of the
     form:
@@ -27,7 +28,8 @@ def directory_to_string(l_max:OrderedDict) -> str:
 
     return path
 
-def l_max_dict_to_string(l_max:OrderedDict) -> str:
+
+def l_max_dict_to_string(l_max: OrderedDict) -> str:
     """
     :param l_max:
     :return: str of the form (4,3)
@@ -63,7 +65,7 @@ def max_energy_ext_per_directory(energy_cutoffs):
     return max_energy_exts
 
 
-def parse_gw_results(root:str, settings:dict) -> dict:
+def parse_gw_results(root: str, settings: dict) -> dict:
     """
 
     QP direct-gap (relative to the KS gap)
