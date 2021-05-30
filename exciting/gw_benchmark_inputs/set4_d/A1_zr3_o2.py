@@ -44,7 +44,8 @@ def set_up_g0w0(root_path: str):
 
     # Optimised LO energy cutoffs.zr l=2 channel requires way more LOs to converge.
     # HOWEVER, with a reduced MT radius, the max cut-off should be less than last time
-    # Increased rgkmax to 8      0    1    2    3    4    5    6    7    8    9   10    11   12   13   14   15   16   17   18
+    # Increased rgkmax to 8
+    #   Directory index:         0    1    2    3    4    5    6    7    8    9   10    11   12   13   14   15   16   17   18
     energy_cutoffs = {'zr': {0: [75, 100, 100, 100, 100, 150, 160, 180, 200, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
                              1: [75, 100, 100, 100, 100, 150, 160, 180, 200, 180, 180, 180, 200, 250, 300, 350, 400, 460, 520],
                              2: [75, 100, 120, 150, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200],
@@ -73,11 +74,10 @@ def set_up_g0w0(root_path: str):
                                                   hint='nomultithread')
 
     species_basis_string = "".join(s.capitalize() + str(l_max[s]) + '_' for s in species)
-    n_energies_per_channel = len(energy_cutoffs['zr'][0])
 
-    for ie, energy_cutoff in enumerate(restructure_energy_cutoffs(n_energies_per_channel, energy_cutoffs)):
+    for ie, energy_cutoff in enumerate(restructure_energy_cutoffs(len(energy_cutoffs['zr'][0]), energy_cutoffs)):
 
-        # Copy groundstate directory to GW directory
+        # Copy ground state directory to GW directory
         # Use an index not max energy, as the max energy does not change in 3/4 runs
         job_dir = gw_root + '/max_energy_i' + str(ie)
         print('Creating directory, with input.xml, run.sh and optimised basis:', job_dir)
