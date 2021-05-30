@@ -96,7 +96,7 @@ def filter_lo_functions(lo_recommendations: List[np.ndarray],
     :param: lo_recommendations lorecommendations for all l-channels of a given species.
                                Elements indexed by l-value: 0 to 6.
                                (l_max = 6 is hard-coded in exciting's lorecommendations).
-                               Each value is a np array indexed according to 'n' nodes [0, 21].
+                               Each value is a np array indexed according to 'n' nodes [0, 20].
     :param: default_los    linear energies for all default l-channels of a given species
                                This information would typically come from LINENGY.OUT
                                This ASSUMES one linear energy per l-channel.
@@ -115,7 +115,7 @@ def filter_lo_functions(lo_recommendations: List[np.ndarray],
     assert len(lo_recommendations) == 7, "Expect 7 l-channels for lorecommendations, " \
                                          "per species, as it is hard-coded in exciting"
 
-    assert len(lo_recommendations[0]) == 22, "Expect 22 entries per l-channel lorecommendations, " \
+    assert len(lo_recommendations[0]) == 21, "Expect 21 entries per l-channel lorecommendations, " \
                                              "as it is hard-coded in exciting"
 
     # Don't evaluate lo recommendations for l-channels that are not in the default basis

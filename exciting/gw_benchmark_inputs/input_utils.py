@@ -65,7 +65,7 @@ def write_optimised_lo_basis(species: str,
     assert len(lorecommendations) == 7, "Expect 7 l-channels for lorecommendations, " \
                                         "per species, as it is hard-coded in exciting"
 
-    assert len(lorecommendations[0]) == 22, "Expect 22 entries per l-channel lorecommendations, " \
+    assert len(lorecommendations[0]) == 21, "Expect 21 entries per l-channel lorecommendations, " \
                                             "as it is hard-coded in exciting"
 
     assert l_max == len(default_los.linear_energies) - 1, \
