@@ -78,24 +78,69 @@ def write_optimised_lo_basis(species: str,
     write_file(job_dir + '/' + basis_file, basis_string)
 
 
-
-def restructure_energy_cutoffs(n_energies:int, energy_cutoffs: dict) -> list:
+def restructure_energy_cutoffs(n_energies: int, energy_cutoffs: dict) -> List[dict]:
     """
-    Get in a more useful structure to iterate over
+    Get energy_cutoffs in a more useful structure to iterate over.
 
-    TODO Automate to find n_energies
+    Move the inner-most index, the cutoff, to the outermost, such that the data structure can be iterated
+    over according to the cut-off index.
 
+    :param int n_energies: Number of cut-offs per l-channel. This assumes each l-channel per species, has the same
+    number of terms. TODO Automate to find n_energies
+    :param dict energy_cutoffs: For a given [species][l-value], a list of LO energy cut-offs
+
+    :return list[dict] restructured_cutoffs: restructured energy cut-offs, accessed like
+    restructured_cutoffs[i-cutoff]['zr'][l]
+
+    For example,
+
+    Go from:
+        energy_cutoffs = {'zr': {0: [75, 100, 100],
+                                 1: [75, 100, 100],
+                                 2: [75, 100, 120],
+                                 3: [75, 100, 100],
+                                 4: [75, 100, 100]},
+
+                           'o': {0: [75, 100, 100],
+                                 1: [75, 100, 100],
+                                 2: [75, 100, 100],
+                                 3: [75, 100, 100]}
+                          }
+    to:
+      restructured_cutoffs =
+          [{'zr': {0: 75,    'o':{0: 75,
+                   1: 75,         1: 75,
+                   2: 75,         2: 75,
+                   3: 75,         3: 75
+                   4: 75          }
+                   },
+           },
+          {'zr':  {0: 100,    'o':{0: 100,
+                   1: 100,         1: 100,
+                   2: 100,         2: 100,
+                   3: 100,         3: 100
+                   4: 100          }
+                   },
+           },
+          {'zr':  {0: 100,    'o':{0: 100,
+                   1: 100,         1: 100,
+                   2: 100,         2: 100,
+                   3: 100,         3: 100
+                   4: 100         }
+                   },
+           }]
+
+    such that one can get a cut-off like restructured_cutoffs[i-cutoff]['zr'][l]
     """
     restructured_energies = []
 
     for inum in range(0, n_energies):
         data = {}
-        for species, l_channels in  energy_cutoffs.items():
-            data[species] = {l:energies[inum] for l, energies in l_channels.items()}
+        for species, l_channels in energy_cutoffs.items():
+            data[species] = {l: energies[inum] for l, energies in l_channels.items()}
         restructured_energies.append(data)
 
     return restructured_energies
-
 
 
 # # TODO Write this. Need to unpack in the same way I did in other instances.
@@ -105,4 +150,3 @@ def restructure_energy_cutoffs(n_energies:int, energy_cutoffs: dict) -> list:
 #     species = [element for element in energy_cutoffs.keys()]
 #     for element in species:
 #     return
-
