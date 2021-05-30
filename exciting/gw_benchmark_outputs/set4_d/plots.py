@@ -13,7 +13,7 @@ from gw_benchmark_outputs.post_process_utils import parse_gw_results, get_basis_
     n_local_orbitals
 
 
-def process_basis_numbers(delta_E_qp, max_energy_exts:list):
+def process_basis_numbers(delta_E_qp, max_energy_exts: list):
     """
     Print change in QP gap for each max energy parameter (i.e. max LO)
     """
@@ -48,22 +48,32 @@ def sum_los_per_species(n_los_species_resolved: dict) ->list:
     return n_los
 
 
-def gw_basis_convergence(root:str):
+def gw_basis_convergence(root: str):
     """
     Plot the quasi particle - KS gap w.r.t bs LO basis, for l-max = (4, 3)
     """
     D = OrderedDict
 
-    lmax_43 = 0
+    info = """ Highest d-states are removed from the core and put into the valence.
+    i10 is ~ converged for all O and all but the p-channel of Zr.
+    As such, i12 - 18 attempt to converge the p-channel.
+    Quasi-particle gaps shows a linear decrease as N LOs in the p-channel are increased.
+    This was witnessed in the d-channel prior to removing semi-core d-states, hence set_pd will remove 
+    semi-core p-states.
+    i 18 falls off a cliff, hence excluded.
+    """
+    print(info)
+
+    lmax_32 = 0
     plot_delta_E_qp = True
     plot_sigma = False
     save_plots = False
 
     # The drop in energy for i18 is enormous
-    max_energy_exts_set4 = ['i0', 'i1', 'i8', 'i12', 'i13', 'i14', 'i15', 'i16', 'i17', 'i18']
+    max_energy_exts_set4 = ['i0', 'i1', 'i8', 'i12', 'i13', 'i14', 'i15', 'i16', 'i17']
 
     settings_set4 = {'rgkmax': 8,
-                     'l_max_values': [D([('zr', 4), ('o', 3)])],
+                     'l_max_values': [D([('zr', 3), ('o', 2)])],
                      'n_img_freq': 32,
                      'q_grid': [2, 2, 2],
                      'n_empty_ext': [2000],
@@ -71,32 +81,11 @@ def gw_basis_convergence(root:str):
                      }
 
 
-
-    #    2 -> 3, QP gap jumps back up... ok, by a small amount
-    # Ok, need to converge all the other l channels of Zr: 160 (i6), 180 (i7), 200 (i8)
-    # Then check O is ok.
-
-    # Increased rgkmax to 8        0    1    2    3    4    5    6    7    8    9   10    11   12   13   14   15
-    # energy_cutoffs = {'zr': {0: [75, 100, 100, 100, 100, 150, 160, 180, 200, 180, 180, 180, 180, 180, 180, 180],
-    #                          1: [75, 100, 100, 100, 100, 150, 160, 180, 200, 180, 180, 180, 200, 250, 300, 350],
-    #                          2: [75, 100, 120, 150, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200],
-    #                          3: [75, 100, 100, 100, 100, 150, 160, 180, 200, 180, 180, 180, 180, 180, 180, 180],
-    #                          4: [75, 100, 100, 100, 100, 150, 160, 180, 200, 180, 180, 180, 180, 180, 180, 180]},
-    #
-    #                    'o': {0: [75, 100, 100, 100, 100, 100, 100, 100, 100, 120, 140, 160, 140, 140, 140, 140],
-    #                          1: [75, 100, 100, 100, 100, 100, 100, 100, 100, 120, 140, 160, 140, 140, 140, 140],
-    #                          2: [75, 100, 100, 100, 100, 100, 100, 100, 100, 120, 140, 160, 140, 140, 140, 140],
-    #                          3: [75, 100, 100, 100, 100, 100, 100, 100, 100, 120, 140, 160, 140, 140, 140, 140]}
-    #                   }
-    # 12 - 15 really are trying to converge the l=1 channel of Zr, adding one LO at a time (see LO recommendations)
-    # Then should add one LO into every l=0,2,3,4 of Zr and check how much it changes.
-
-
     data_set4 = parse_gw_results(root, settings_set4)
-    delta_E_qp_set4 = data_set4['delta_E_qp'][:, lmax_43] * ha_to_mev
+    delta_E_qp_set4 = data_set4['delta_E_qp'][:, lmax_32] * ha_to_mev
     basis_labels = get_basis_labels(root, settings_set4)
-    basis_labels_set4 = combine_species_basis_labels(basis_labels,  species_per_line=True)['(4,3)']
-    n_los_set4 = n_local_orbitals(basis_labels)['(4,3)']
+    basis_labels_set4 = combine_species_basis_labels(basis_labels,  species_per_line=True)['(3,2)']
+    n_los_set4 = n_local_orbitals(basis_labels)['(3,2)']
 
     # Give some changes in QP gap w.r.t. calculations
     print(delta_E_qp_set4)
@@ -155,7 +144,7 @@ def gw_basis_convergence(root:str):
     if plot_sigma:
 
         # What we expect: VBT converges with the oxygen LOs, and is well-converged
-        re_self_energy_VBM = data_set4['re_self_energy_VBM'][:, lmax_43] * ha_to_mev
+        re_self_energy_VBM = data_set4['re_self_energy_VBM'][:, lmax_32] * ha_to_mev
         fig, ax = plt.subplots()
 
         fig.set_size_inches(12, 10)
@@ -176,7 +165,7 @@ def gw_basis_convergence(root:str):
         plt.show()
 
         # CBm is strongly dependent on the number of Zr LOs, and is still not converged.
-        re_self_energy_CBm = data_set4['re_self_energy_CBm'][:, lmax_43] * ha_to_mev
+        re_self_energy_CBm = data_set4['re_self_energy_CBm'][:, lmax_32] * ha_to_mev
         fig, ax = plt.subplots()
 
         fig.set_size_inches(12, 10)
@@ -198,7 +187,7 @@ def gw_basis_convergence(root:str):
 
     return
 
-gw_basis_convergence("/users/sol/abuccheri/gw_benchmarks/A1_more_APW")
+gw_basis_convergence("/users/sol/abuccheri/gw_benchmarks/A1_more_APW/set4_d")
 
 
 
