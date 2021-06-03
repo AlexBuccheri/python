@@ -62,7 +62,7 @@ def gw_basis_convergence(root: str):
     plot_sigma = False
     save_plots = False
 
-    max_energy_exts_set4_spd = ['i0', 'i1', 'i2', 'i3', 'i4']
+    max_energy_exts_set4_spd = ['i0', 'i1', 'i2', 'i3']  # 'i2' 'i4'
 
     settings_set4_spd = {'rgkmax': 8,
                          'l_max_values': [D([('zr', 3), ('o', 2)])],

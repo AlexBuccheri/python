@@ -5,6 +5,10 @@ used for processing gw benchmark outputs
 from collections import OrderedDict
 import numpy as np
 import re
+import os
+from typing import List
+
+from exciting_utils import py_grep
 
 from process.optimised_basis import parse_species_string, create_lo_label
 from parse.parse_gw import parse_gw_info, parse_gw_evalqp
@@ -65,6 +69,7 @@ def max_energy_ext_per_directory(energy_cutoffs):
     return max_energy_exts
 
 
+# TODO Split this routine up and call the one below
 def parse_gw_results(root: str, settings: dict) -> dict:
     """
 
@@ -109,6 +114,39 @@ def parse_gw_results(root: str, settings: dict) -> dict:
             delta_E_qp[ienergy, i] = results['E_qp'] - results['E_ks']
             re_self_energy_VBM[ienergy, i] = results['re_sigma_VBM']
             re_self_energy_CBm[ienergy, i] = results['re_sigma_CBm']
+
+    return {'delta_E_qp': delta_E_qp,
+            're_self_energy_VBM': re_self_energy_VBM,
+            're_self_energy_CBm': re_self_energy_CBm
+            }
+
+
+def parse_gw_results_two(gw_root: str, directories: list) -> dict:
+    """
+
+    QP direct-gap (relative to the KS gap)
+    and self-energies of the band edges at Gamma.
+
+    Almost easier to just path full directive strings.
+
+    :return: dictionary containing the above.
+    """
+
+    # Data to parse and return
+    delta_E_qp = np.empty(shape=(len(directories)))
+    re_self_energy_VBM = np.empty(shape=delta_E_qp.shape)
+    re_self_energy_CBm = np.empty(shape=delta_E_qp.shape)
+
+    # Directory extension
+    for ienergy, directory in enumerate(directories):
+        file_path = gw_root + '/' + directory
+        gw_data = parse_gw_info(file_path)
+        qp_data = parse_gw_evalqp(file_path)
+        print('Reading data from ', file_path)
+        results = process_gw_gamma_point(gw_data, qp_data)
+        delta_E_qp[ienergy] = results['E_qp'] - results['E_ks']
+        re_self_energy_VBM[ienergy] = results['re_sigma_VBM']
+        re_self_energy_CBm[ienergy] = results['re_sigma_CBm']
 
     return {'delta_E_qp': delta_E_qp,
             're_self_energy_VBM': re_self_energy_VBM,
@@ -178,6 +216,91 @@ def get_basis_labels(root: str, settings: dict, verbose=False) -> dict:
     return basis_labels
 
 
+def get_species(root: str, lower_case=True) -> list:
+    """
+    Get species from the atoms.xml file
+
+    :param str root:
+    :return list species:
+    """
+    atom_strings = py_grep.grep('species=', root + '/atoms.xml').splitlines()
+
+    species = []
+    for atom_strings in atom_strings:
+        file_name = atom_strings.split("\"")[-2]  # i.e. Zr.xml
+        species.append(os.path.splitext(file_name)[0])
+
+    if lower_case:
+        species = [x.lower() for x in species]
+
+    return species
+
+
+def get_l_values_from_species(species_file: str) -> List[int]:
+    """
+
+    Grep extracts strings of the form:
+    <custom l="3" type="lapw" trialEnergy="1.00" searchE="true"/>
+
+    :param file_name:
+    :return:
+    """
+    match = py_grep.grep('custom', species_file)
+
+    l_values = []
+    for line in match.splitlines():
+        l = int(line.split("\"")[1])
+        l_values.append(l)
+
+    return l_values
+
+
+def get_basis_labels_AHH(root: str, directories: list, verbose=False) -> dict:
+    """
+
+
+    parse the species basis files (xml) and generate a label for each.
+    Return a dictionary with keys like:
+      basis_labels['(4, 3)']['zr'] = lo_basis_label_strings
+
+    :param str root: root directory for calculations.
+    :
+
+    :param verbose: bool, print names of parsed files.
+
+    :return list basis_labels: A list containing a dictionary of the form:
+       basis_labels[directory_index] = {'species_A': basis_str,
+                                        'species_B': basis_str}
+
+    """
+    basis_labels = []
+
+    for sub_dir in directories:
+        file_path = root + '/' + sub_dir
+        if verbose:
+            print('Reading basis from ', file_path)
+
+        species = get_species(file_path)
+        basis_per_species = {}
+
+        for element in species:
+            file_name = file_path + '/' + element.capitalize() + '.xml'
+
+            l_values = get_l_values_from_species(file_name)
+            fid = open(file_name, 'r')
+            basis_string = fid.read()
+            fid.close()
+
+            basis_los = parse_species_string(l_values, basis_string)
+            basis_str = "".join(string for string in create_lo_label(basis_los))
+            basis_per_species[element] = basis_str
+
+        basis_labels.append(basis_per_species.copy())
+
+    return basis_labels
+
+
+
 def combine_species_basis_labels(basis_labels: dict, species_per_line=False) -> dict:
     """
     Combine basis labels of all species, per energy cut-off entry/
@@ -187,7 +310,7 @@ def combine_species_basis_labels(basis_labels: dict, species_per_line=False) -> 
     to this form:
          basis_labels['(lmax_1, l_max2)'] = lo_basis_label_strings
 
-    where lo_basis_label_strings[energy_index] = 'Zr:(7s 7p 8d 7f). O:(6s 6p 6d)'
+    where lo_basis_label_strings[energy_index] = 'Zr:(7s 7p 8d 7f)\n. O:(6s 6p 6d)\n'
 
     :param basis_labels: dictionary of form: basis_labels['(lmax_1, l_max2)'][species] = lo_basis_label_strings
     :param species_per_line: bool, Put each species basis LOs on a new line. 
@@ -261,3 +384,38 @@ def n_local_orbitals(basis_labels: dict) -> dict:
                 n_basis_orbitals[l_maxs_str][species].append(n_los)
 
     return n_basis_orbitals
+
+
+def process_basis_numbers(delta_E_qp, max_energy_exts:list):
+    """
+    Print change in QP gap for each max energy parameter (i.e. max LO)
+    """
+    assert delta_E_qp.size == len(max_energy_exts), 'Should be same number of QP energies as there are basis energy cutoffs'
+
+    print("For basis (Zr,O) = (3,2)")
+    for ie, energy in enumerate(max_energy_exts[1:], start=1):
+        change_in_delta_E_qp = (delta_E_qp[ie] - delta_E_qp[ie-1])
+        print("Change in Delta E_QP from max energy param: ")
+        print(max_energy_exts[ie-1].replace("\n", " "), "to ")
+        print(energy.replace("\n", " "), ":")
+        print(change_in_delta_E_qp, "(meV)")
+    return
+
+
+def sum_los_per_species(n_los_species_resolved: dict) ->list:
+    """
+    Sum N LOs for each species, per calculation.
+
+    :return: List, n_los, containing the number of LOs per calculation.
+    """
+    species = [key for key in n_los_species_resolved.keys()]
+    n_energy_cutoffs = len(n_los_species_resolved[species[0]])
+
+    n_los = []
+    for i in range(0, n_energy_cutoffs):
+        n = 0
+        for element in species:
+            n += n_los_species_resolved[element][i]
+        n_los.append(n)
+
+    return n_los

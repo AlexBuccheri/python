@@ -302,7 +302,7 @@ def generate_optimised_basis_string(ground_state_xml: str,
     return ground_state_xml.format(**lo_strings)
 
 
-def parse_species_string(l_channels:list, basis_string:str):
+def parse_species_string(l_channels: list, basis_string: str):
     """
     Parse LO functions from a species.ml string.
 

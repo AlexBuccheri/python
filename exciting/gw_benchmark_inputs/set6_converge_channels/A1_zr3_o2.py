@@ -20,7 +20,6 @@ from gw_benchmark_inputs.set6_converge_channels.A1_groundstate import converged_
 
 
 def set_up_g0w0(root_path: str, energy_cutoffs: dict):
-
     # Material
     species = ['zr', 'o']
     l_max = {'zr': 3, 'o': 2}
@@ -32,13 +31,14 @@ def set_up_g0w0(root_path: str, energy_cutoffs: dict):
                                                 )
 
     # Default basis settings
-    default_linear_energies = parse_lo_linear_energies(root_path + "/groundstate")
+    # NOTE in this case ground state is one level up
+    default_linear_energies = parse_lo_linear_energies(root_path + "/../groundstate")
     default_los = {'zr': DefaultLOs(default_linear_energies['zr'], energy_tol=1.5),
                    'o': DefaultLOs(default_linear_energies['o'], energy_tol=1.5)}
 
     # Default basis strings with .format tags
-    default_basis_string = {'zr': parse_basis_as_string(root_path + "/groundstate/Zr.xml"),
-                            'o': parse_basis_as_string(root_path + "/groundstate/O.xml")}
+    default_basis_string = {'zr': parse_basis_as_string(root_path + "/../groundstate/Zr.xml"),
+                            'o': parse_basis_as_string(root_path + "/../groundstate/O.xml")}
 
     # LO recommendation energies
     lorecommendations = parse_lorecommendations(root_path + '/lorecommendations.dat', species)
@@ -58,13 +58,13 @@ def set_up_g0w0(root_path: str, energy_cutoffs: dict):
 
     species_basis_string = "".join(s.capitalize() + str(l_max[s]) + '_' for s in species)
 
+    # TODO Would be better to label with extra LOs added
     for ie, energy_cutoff in enumerate(restructure_energy_cutoffs(len(energy_cutoffs['zr'][0]), energy_cutoffs)):
-
         # Copy ground state directory to GW directory
         # Use an index not max energy, as the max energy does not change in 3/4 runs
         job_dir = gw_root + '/max_energy_i' + str(ie)
         print('Creating directory, with input.xml, run.sh and optimised basis:', job_dir)
-        copy_tree(root_path + '/groundstate', job_dir)
+        copy_tree(root_path + '/../groundstate', job_dir)
 
         # Copy input.xml with GW settings
         shutil.copy(gw_root + "/input.xml", job_dir + "/input.xml")
@@ -89,36 +89,45 @@ def converge_each_zr_channel(root: str):
     :param str root: root job directory
     """
 
-    # TODO. These numbers need verifying from prior calcs
-    s_converged = 200
-    p_converged = 200
-    d_converged = 200
-    f_converged = 200
+    # Note, NLOs counts from n=0 in the LO recommendations and therefore corresponds to (optimised - default) basis LOs
+    # As such, the corresponding number of LOs here won't correspond to the number in the basis because we can add any
+    # amount to the default basis
+    # Really should define in terms of extra LOs for GW... but need to write some extra code
+    # Do so once I get this running
+    s_converged = 42  # NLOs = 7
+    p_converged = 300  # NLOs = 13
+    d_converged = 300  # NLOs = 12
+    f_converged = 200  # NLOs = 10
 
     base_energy_cutoffs = {'zr': {0: [s_converged] * 5,
                                   1: [p_converged] * 5,
                                   2: [d_converged] * 5,
                                   3: [f_converged] * 5},
 
-                           'o':  {0: [140] * 5,
-                                  1: [140] * 5,
-                                  2: [140] * 5}
+                           'o': {0: [140] * 5,
+                                 1: [140] * 5,
+                                 2: [140] * 5}
                            }
 
-    # Add these, of the form
-    # Ideal spd = [10, 10, 10]
-    # Run s= [4, 6, 8, 10, 11], p = 10, d = 10
-    # Run s= 10,  p = [4, 6, 8, 10, 11],  d = 10
-    # Run s= 10,  p = 10,  d = [4, 6, 8, 10, 11]
-    s_range = []
-    p_range = []
-    d_range = []
-    f_range = []
+    # None of these NLOs compare to what's been used below
+    # Ideal spdf = [7, 13, 12, 10]
+    # Run s = [5, 7, 9, 11], p = 13, d = 12 f = 10
+    # Run s = 7,  p = [9, 11, 13, 15] d = 12 f = 10
+    # Run s = 7,  p = 13,  d = [8, 10, 12, 14], f = 10
+    # Run  = 7,  p = 13,  d = 12,  f = [6, 8, 10, 12]
+
+    # In terms of energy cut-offs. Used 5 settings in each case
+    s_range = [8, 24, s_converged, 100, 165]
+    p_range = [50, 70, 125, 200, p_converged]
+    d_range = [50, 90, 120, 200, d_converged]
+    f_range = [50, 85, 110, f_converged, 260]
+
+    l_to_symbol = {0: 's', 1: 'p', 2: 'd', 3: 'f'}
 
     for l, lo_range in enumerate([s_range, p_range, d_range, f_range]):
         energy_cutoffs = base_energy_cutoffs
         energy_cutoffs['zr'][l] = lo_range
-        directory = root + "/" + str(l) + "channel"
+        directory = root + "/" + l_to_symbol[l] + "_channel"
         set_up_g0w0(directory, energy_cutoffs)
 
     return
