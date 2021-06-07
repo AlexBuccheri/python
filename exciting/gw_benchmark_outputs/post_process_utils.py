@@ -70,7 +70,7 @@ def max_energy_ext_per_directory(energy_cutoffs):
 
 
 # TODO Split this routine up and call the one below
-def parse_gw_results(root: str, settings: dict) -> dict:
+def parse_gw_results(root: str, settings: dict, dir_prefix='max_energy_') -> dict:
     """
 
     QP direct-gap (relative to the KS gap)
@@ -93,6 +93,9 @@ def parse_gw_results(root: str, settings: dict) -> dict:
 
     # Data to parse and return
     delta_E_qp = np.empty(shape=(len(max_energy_exts), len(l_max_values)))
+    E_qp = np.empty(shape=(len(max_energy_exts), len(l_max_values)))
+    E_ks = np.empty(shape=(len(max_energy_exts), len(l_max_values)))
+
     re_self_energy_VBM = np.empty(shape=delta_E_qp.shape)
     re_self_energy_CBm = np.empty(shape=delta_E_qp.shape)
     q_str = "".join(str(q) for q in q_grid)
@@ -104,20 +107,28 @@ def parse_gw_results(root: str, settings: dict) -> dict:
 
         # Max energy cut-off of LOs in each l-channel
         for ienergy, energy in enumerate(max_energy_exts):
-            file_path = gw_root + '/max_energy_' + str(energy)
+            file_path = gw_root + '/' + dir_prefix + str(energy)
 
             gw_data = parse_gw_info(file_path)
             qp_data = parse_gw_evalqp(file_path)
 
             print('Reading data from ', file_path)
+            print(gw_data['i_VBM'], gw_data['i_CBm'])
+            qp_gamma = qp_data[0]['results']
+            print(qp_gamma[gw_data['i_CBm']]['E_KS'] - qp_gamma[gw_data['i_VBM']]['E_KS'])
+
             results = process_gw_gamma_point(gw_data, qp_data)
+            E_qp[ienergy, i] = results['E_qp']
+            E_ks[ienergy, i] = results['E_ks']
             delta_E_qp[ienergy, i] = results['E_qp'] - results['E_ks']
             re_self_energy_VBM[ienergy, i] = results['re_sigma_VBM']
             re_self_energy_CBm[ienergy, i] = results['re_sigma_CBm']
 
     return {'delta_E_qp': delta_E_qp,
             're_self_energy_VBM': re_self_energy_VBM,
-            're_self_energy_CBm': re_self_energy_CBm
+            're_self_energy_CBm': re_self_energy_CBm,
+            'E_qp': E_qp,
+            'E_ks': E_ks
             }
 
 

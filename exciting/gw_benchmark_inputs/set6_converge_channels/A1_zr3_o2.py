@@ -5,6 +5,7 @@ with optimised bases, for a range of energy parameter cutoffs.
 import shutil
 from collections import OrderedDict
 from distutils.dir_util import copy_tree
+import copy
 
 from parse.lorecommendations_parser import parse_lorecommendations
 from parse.parse_linengy import parse_lo_linear_energies
@@ -99,15 +100,19 @@ def converge_each_zr_channel(root: str):
     d_converged = 300  # NLOs = 12
     f_converged = 200  # NLOs = 10
 
-    base_energy_cutoffs = {'zr': {0: [s_converged] * 5,
-                                  1: [p_converged] * 5,
-                                  2: [d_converged] * 5,
-                                  3: [f_converged] * 5},
+    max_runs = 7
 
-                           'o': {0: [140] * 5,
-                                 1: [140] * 5,
-                                 2: [140] * 5}
+    base_energy_cutoffs = {'zr': {0: [s_converged] * max_runs,
+                                  1: [p_converged] * max_runs,
+                                  2: [d_converged] * max_runs,
+                                  3: [f_converged] * max_runs},
+
+                           'o': {0: [140] * max_runs,
+                                 1: [140] * max_runs,
+                                 2: [140] * max_runs}
                            }
+    # energy_cutoffs['o'] = {lo: [oxy_base_energy_cutoff] * len(lo_range) for lo in range(0, 3)}
+
 
     # None of these NLOs compare to what's been used below
     # Ideal spdf = [7, 13, 12, 10]
@@ -116,31 +121,25 @@ def converge_each_zr_channel(root: str):
     # Run s = 7,  p = 13,  d = [8, 10, 12, 14], f = 10
     # Run  = 7,  p = 13,  d = 12,  f = [6, 8, 10, 12]
 
-    # In terms of energy cut-offs. Used 5 settings in each case
-    s_range = [8, 24, s_converged, 100, 165]
-    p_range = [50, 70, 125, 200, p_converged]
-    d_range = [50, 90, 120, 200, d_converged]
-    f_range = [50, 85, 110, f_converged, 260]
+    # In terms of energy cut-offs.
+    s_range = [8, 24, s_converged, 100, 165, 165, 165]  # Last 2 entries are required for the below. Simply don't run them for when s channel varies
+    p_range = [10, 25, 50, 70, 125, 200, p_converged]  # 350... have to do all sorts of hacks to get different number of directories per channel
+    # Should probably move base_energy_cutoffs into the loop and max_runs = len(lo_range)
+    d_range = [10, 25, 50, 90, 120, 200, d_converged]  #  350, 400
+    f_range = [15, 25, 50, 85, 110, f_converged, 260]  # Run two more
 
     l_to_symbol = {0: 's', 1: 'p', 2: 'd', 3: 'f'}
 
     for l, lo_range in enumerate([s_range, p_range, d_range, f_range]):
-        energy_cutoffs = base_energy_cutoffs
+        energy_cutoffs = copy.deepcopy(base_energy_cutoffs)
         energy_cutoffs['zr'][l] = lo_range
+        print(energy_cutoffs['zr'])
         directory = root + "/" + l_to_symbol[l] + "_channel"
         set_up_g0w0(directory, energy_cutoffs)
+        energy_cutoffs.clear()
 
     return
 
-
-# TODO Once the above is done, implement/run these:
-#
-# With the optimal permutation, add one channel to Zr l=4, with 10 LOs
-# With the optimal permutation, add one channel to O l=3, with 10 LOs
-# - Confirm it has not effect
-#
-# Run it for q= 4,4,4 and 6,6,6 => Set up on Hawk
-# Run a range of unoccupied states for q = [2,2,2]
 
 if __name__ == "__main__":
     print("Converge the QP gap w.r.t. each LO channel of Zr")

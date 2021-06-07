@@ -62,7 +62,7 @@ def gw_basis_convergence(root: str):
     plot_sigma = False
     save_plots = False
 
-    max_energy_exts_set4_spd = ['i0', 'i1', 'i2', 'i3']  # 'i2' 'i4'
+    max_energy_exts_set4_spd = ['i0', 'i1', 'i2', 'i3']  # 'i4'
 
     settings_set4_spd = {'rgkmax': 8,
                          'l_max_values': [D([('zr', 3), ('o', 2)])],
@@ -72,18 +72,39 @@ def gw_basis_convergence(root: str):
                          'max_energy_cutoffs': max_energy_exts_set4_spd
                         }
 
+    # S out of core
     data_set4 = parse_gw_results(root, settings_set4_spd)
     delta_E_qp_set4 = data_set4['delta_E_qp'][:, lmax_32] * ha_to_mev
+    E_qp_set4 = data_set4['E_qp'][:, lmax_32] * ha_to_mev
+    E_ks_set4 = data_set4['E_ks'][:, lmax_32] * ha_to_mev
+
+
     basis_labels = get_basis_labels(root, settings_set4_spd, verbose=True)
     basis_labels_set4 = combine_species_basis_labels(basis_labels, species_per_line=True)['(3,2)']
     n_los_set4 = n_local_orbitals(basis_labels)['(3,2)']
 
     # Give some changes in QP gap w.r.t. calculations
-    print(delta_E_qp_set4)
+    print('s out of core')
+    print('KS:', E_ks_set4)
+    print('QP:', E_qp_set4)
+    print('QP-KS:', delta_E_qp_set4)
     process_basis_numbers(delta_E_qp_set4, basis_labels_set4)
 
     # Total number of LOs per calculation (i.e. sum Zr and O basis sizes together)
     n_los_set4 = sum_los_per_species(n_los_set4)
+
+    # S in core
+    data_set4_in_core = parse_gw_results(root, settings_set4_spd, dir_prefix='s_in_core_')
+    delta_E_qp_s_core = data_set4_in_core['delta_E_qp'][:, lmax_32] * ha_to_mev
+    E_qp_set4_s_core = data_set4_in_core['E_qp'][:, lmax_32] * ha_to_mev
+    E_ks_set4_s_core = data_set4_in_core['E_ks'][:, lmax_32] * ha_to_mev
+
+    print('s in core')
+    print('KS:', E_ks_set4_s_core)
+    print('QP:', E_qp_set4_s_core)
+    print('QP-KS:', delta_E_qp_s_core)
+    quit()
+
 
     # --------------------------------------
     # QP vs LO basis size, for l-max = (4,3)
