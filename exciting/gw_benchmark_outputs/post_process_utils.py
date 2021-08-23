@@ -113,9 +113,9 @@ def parse_gw_results(root: str, settings: dict, dir_prefix='max_energy_') -> dic
             qp_data = parse_gw_evalqp(file_path)
 
             print('Reading data from ', file_path)
-            print(gw_data['i_VBM'], gw_data['i_CBm'])
+            #print(gw_data['i_VBM'], gw_data['i_CBm'])
             qp_gamma = qp_data[0]['results']
-            print(qp_gamma[gw_data['i_CBm']]['E_KS'] - qp_gamma[gw_data['i_VBM']]['E_KS'])
+            #print(qp_gamma[gw_data['i_CBm']]['E_KS'] - qp_gamma[gw_data['i_VBM']]['E_KS'])
 
             results = process_gw_gamma_point(gw_data, qp_data)
             E_qp[ienergy, i] = results['E_qp']
