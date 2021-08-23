@@ -3,9 +3,6 @@ Set GW input
 """
 from typing import Optional
 
-from gw_benchmark_inputs.set3.A1_gw import gw_string_template
-
-
 class GWInput:
 
     # All GW input options
@@ -98,7 +95,7 @@ class GWInput:
         self.string = self.gw_string_template.format(**self.dict_for_format())
 
 
-def set_gw_input_string(gs_input: str, gw_input: GWInput, gw_template=gw_string_template):
+def set_gw_input_string(gs_input: str, gw_input: GWInput, gw_template):
     """
 
     Given a converged ground state input, set it

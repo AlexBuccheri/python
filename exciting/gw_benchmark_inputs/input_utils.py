@@ -8,6 +8,8 @@ import numpy as np
 from parse.set_gw_input import GWInput, set_gw_input_string
 from process.optimised_basis import DefaultLOs, filter_lo_functions, generate_optimised_basis_string
 
+from gw_benchmark_inputs.set3.A1_gw import gw_string_template
+
 
 def write_file(file_name: str, string: str):
     """
@@ -21,9 +23,34 @@ def write_file(file_name: str, string: str):
     fid.close()
 
 
-def write_input_file_with_gw_settings(root_path: str, gs_input: str, gw_input: GWInput) -> str:
+def write_input_file_with_gw_settings(root_path: str,
+                                      gs_input: str,
+                                      gw_input: GWInput) -> str:
     """
     Generate GW path, create a GW input file and write it
+
+    :param str root_path: Path to the calculation directory
+    :param str gs_input: ground state input, used as the base for the GW input
+    :param GWInput gw_input: GW calculation input settings
+    :param str gw_template: GW input options template
+
+    :return: str gw_root: Directory for GW calculations
+    """
+    q_str = ''.join(str(q) for q in gw_input.ngridq)
+    gw_root = root_path + "/gw_q" + q_str + "_omeg" + str(gw_input.nomeg) + "_nempty"+str(gw_input.nempty)
+
+    Path(gw_root).mkdir(parents=True, exist_ok=True)
+    gw_input_string = set_gw_input_string(gs_input, gw_input, gw_string_template)
+    write_file(gw_root + "/input.xml", gw_input_string)
+    return gw_root
+
+
+def write_input_file(root_path: str,
+                     gs_input: str,
+                     gw_input: GWInput) -> str:
+    """
+    Generate GW path, create a GW input file and write it.
+    Written to work wit set8 inputs and beyond
 
     :param str root_path: Path to the calculation directory
     :param str gs_input: ground state input, used as the base for the GW input
@@ -33,9 +60,11 @@ def write_input_file_with_gw_settings(root_path: str, gs_input: str, gw_input: G
     """
     q_str = ''.join(str(q) for q in gw_input.ngridq)
     gw_root = root_path + "/gw_q" + q_str + "_omeg" + str(gw_input.nomeg) + "_nempty"+str(gw_input.nempty)
-
     Path(gw_root).mkdir(parents=True, exist_ok=True)
-    gw_input_string = set_gw_input_string(gs_input,  gw_input)
+
+    gs_input_string = gs_input.replace('do="skip"', 'do="fromfile"')
+    gw_input_string = gs_input_string.format(GW_INPUT=gw_input.string)
+
     write_file(gw_root + "/input.xml", gw_input_string)
     return gw_root
 
@@ -76,6 +105,19 @@ def write_optimised_lo_basis(species: str,
 
     basis_file = species.capitalize() + '.xml'
     write_file(job_dir + '/' + basis_file, basis_string)
+
+
+def write_optimised_lo_bases(species: list,
+                             l_max, energy_cutoff,
+                             lorecommendations,
+                             default_basis_string,
+                             default_los, job_dir):
+    """
+    Wrapper for write_optimised_lo_basis
+    """
+    for x in species:
+        write_optimised_lo_basis(x, l_max[x], energy_cutoff[x], lorecommendations[x],
+                                 default_basis_string[x], default_los[x], job_dir)
 
 
 def restructure_energy_cutoffs(n_energies: int, energy_cutoffs: dict) -> List[dict]:
@@ -142,6 +184,12 @@ def restructure_energy_cutoffs(n_energies: int, energy_cutoffs: dict) -> List[di
 
     return restructured_energies
 
+
+def write_file(file_name, string):
+    fid = open(file_name, "w")
+    fid.write(string)
+    fid.close()
+    return
 
 # # TODO Write this. Need to unpack in the same way I did in other instances.
 # # Or just dump the dict in JSON
