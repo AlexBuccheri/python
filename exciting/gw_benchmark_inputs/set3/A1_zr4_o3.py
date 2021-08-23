@@ -43,6 +43,7 @@ def write_input_file_with_gw_settings(root_path:str, gs_input:str, gw_input:GWIn
     write_file(gw_root + "/input.xml", gw_input_string)
     return gw_root
 
+
 def write_optimised_lo_basis(species:str, l_max:int, energy_cutoff:dict,
                              lorecommendations, default_basis_string, default_los, job_dir):
     """
@@ -55,6 +56,7 @@ def write_optimised_lo_basis(species:str, l_max:int, energy_cutoff:dict,
     basis_file = species.capitalize() + '.xml'
     write_file(job_dir + '/' + basis_file, basis_string)
     return
+
 
 def restructure_energy_cutoffs(n_energies:int, energy_cutoffs: dict) -> list:
     """
