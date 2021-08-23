@@ -40,7 +40,7 @@ def set_gw_input_string(gs_input:str, gw_input: GWInput):
     """
 
     Given a converged ground state input, set it
-    to repeat the ground state caculation from file (due
+    to repeat the ground state calculation from file (due
     to the additions to the basis) and add the GW inputs
 
     Note, both replace and format are not inplace
