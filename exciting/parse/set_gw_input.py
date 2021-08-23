@@ -1,10 +1,54 @@
 """
-Set GW input for A2 system
+Set GW input
 """
+from typing import Optional
+
 from gw_benchmark_inputs.set3.A1_gw import gw_string_template
 
+
 class GWInput:
-    def __init__(self, taskname:str, nempty:int, ngridq:list, skipgnd:bool, n_omega:int):
+
+    # All GW input options
+    gw_string_template = \
+        """  
+           <gw
+            taskname="{taskname}"
+            nempty="{nempty}"
+            ngridq="{ngridq}"
+            skipgnd="{skipgnd}"
+            >
+
+            <mixbasis
+              lmaxmb="{lmaxmb}"
+              epsmb="{epsmb}"
+              gmb="{gmb}"
+            ></mixbasis>
+
+            <freqgrid
+              nomeg="{nomeg}"
+              freqmax="{freqmax}"
+            ></freqgrid>
+
+            <barecoul
+              pwm="{pwm}"
+              stctol="{stctol}"
+              barcevtol="{barcevtol}"
+            ></barecoul>
+
+            <selfenergy
+              actype="{actype}"
+              singularity="{singularity}"
+            ></selfenergy>
+
+           </gw>
+        """
+
+    def __init__(self, taskname: str, nempty: int, ngridq: list, skipgnd: bool,
+                 n_omega: int, freqmax: Optional[float] = 1.0,
+                 lmaxmb: Optional[int] = 4, epsmb: Optional[float] = 1.e-3, gmb: Optional[float] = 1.0,
+                 pwm: Optional[float] = 2.0, stctol: Optional[float] = 1.e-16, barcevtol: Optional[float] = 0.1,
+                 actype: Optional[str] = 'pade', singularity: Optional[str] = 'mpb'
+                 ):
         """
         Set GW input class
         :param taskname: GW method
@@ -18,6 +62,17 @@ class GWInput:
         self.ngridq = ngridq
         self.skipgnd = skipgnd
         self.nomeg = n_omega
+        self.freqmax = freqmax
+        self.lmaxmb = lmaxmb
+        self.epsmb = epsmb
+        self.gmb = gmb
+        self.pwm = pwm
+        self.stctol = stctol
+        self.barcevtol = barcevtol
+        self.actype = actype
+        self.singularity = singularity
+        self.string = ''
+        self.set_input()
 
     def dict_for_format(self):
         """
@@ -35,8 +90,15 @@ class GWInput:
                 d[key] = value
         return d
 
+    def set_input(self):
+        """
+        Set input string for GW, only
+        :return: self.input_string
+        """
+        self.string = self.gw_string_template.format(**self.dict_for_format())
 
-def set_gw_input_string(gs_input:str, gw_input: GWInput):
+
+def set_gw_input_string(gs_input: str, gw_input: GWInput, gw_template=gw_string_template):
     """
 
     Given a converged ground state input, set it
@@ -49,7 +111,6 @@ def set_gw_input_string(gs_input:str, gw_input: GWInput):
     """
 
     gs_input = gs_input.replace('do="skip"', 'do="fromfile"')
-    gw_input = gw_string_template.format(**gw_input.dict_for_format())
+    gw_input = gw_template.format(**gw_input.dict_for_format())
 
     return gs_input.format(GW_INPUT=gw_input)
-
