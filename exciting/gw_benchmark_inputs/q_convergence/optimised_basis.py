@@ -201,7 +201,7 @@ zr_basis = """<?xml version="1.0" encoding="UTF-8"?>
         <wf matchingOrder="1" trialEnergy="108.14" searchE="false"/>
        </lo>
 
-    <basis>
+    </basis>
   </sp>
 </spdb>
 """
