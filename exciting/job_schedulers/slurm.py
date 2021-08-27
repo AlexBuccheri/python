@@ -5,7 +5,7 @@ from typing import Optional, Dict, List
 from collections import OrderedDict
 
 
-def set_slurm_script(slurm_directives:OrderedDict, env_vars:OrderedDict, module_envs:Optional[list]=None) -> str:
+def set_slurm_script(slurm_directives: OrderedDict, env_vars: OrderedDict, module_envs: Optional[list] = None) -> str:
     """
     Generate simple slurm submission script, suitable for hybrid MPI+OMP applications
 
@@ -31,7 +31,7 @@ def set_slurm_script(slurm_directives:OrderedDict, env_vars:OrderedDict, module_
 
     if module_envs is not None:
         for module in module_envs:
-            script +=  "module load " + module + '\n'
+            script += "module load " + module + '\n'
         script += '\n'
 
     for key, setting in env_vars.items():
@@ -50,7 +50,7 @@ mpirun -np $SLURM_NTASKS $EXE """
     return script
 
 
-def time_to_string(time:list):
+def time_to_string(time: list) -> str:
     """
     Time list to string
     :param time: List of length 4
@@ -59,7 +59,7 @@ def time_to_string(time:list):
     assert len(time) == 4, "expect [days, hours, mins, secs]"
 
     time_string = ''
-    for i,t in enumerate(reversed(time[1:])):
+    for t in reversed(time[1:]):
         t_str = str(t)
         if len(t_str) == 1:
             t_str = '0' + t_str
@@ -94,15 +94,15 @@ def exclude_nodes(nodes: List[str]) -> str:
     return exclude_string[:-1]
 
 
-def set_slurm_directives(job_name:Optional[str]='default_name',
-                         time:Optional[list]=None,
-                         partition:Optional[str]=None,
-                         exclusive:Optional[bool]=True,
-                         nodes:Optional[int]=1,
-                         ntasks_per_node:Optional[int]=None,
-                         cpus_per_task:Optional[int]=None,
-                         hint:Optional[str]='nomultithread',
-                         exclude:Optional[List]=None) -> OrderedDict:
+def set_slurm_directives(job_name: Optional[str] = 'default_name',
+                         time: Optional[list] = None,
+                         partition: Optional[str] = None,
+                         exclusive: Optional[bool] = True,
+                         nodes: Optional[int] = 1,
+                         ntasks_per_node: Optional[int] = None,
+                         cpus_per_task: Optional[int] = None,
+                         hint: Optional[str] = 'nomultithread',
+                         exclude: Optional[List] = None) -> OrderedDict:
     """
     Set ordered dictionary of slurm directives
     TODO Add logic statements for when optionals are not present
@@ -136,6 +136,6 @@ def set_slurm_directives(job_name:Optional[str]='default_name',
 
     # Add directives that don't have a RHS
     if exclusive:
-        slurm_directives['exclusive']  = ''
+        slurm_directives['exclusive'] = ''
 
     return slurm_directives
