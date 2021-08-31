@@ -5,7 +5,10 @@ Run systematic change in basis w.r.t.
  b) N LOs per channel
 
 l_max values: (4, 3) (5, 4) (6, 5) (7, 6)
-Cut-off can probably go to ~ 150 Ha per channel
+
+Same as A1_zr_o.py in set 8 but
+ a) Using high LO cut-offs i.e > 150 Ha. To check convergence
+ b) Setup is for HAWK, using PBS Pro, and limited to 24 hours run-time
 
 """
 
@@ -14,7 +17,7 @@ from collections import OrderedDict
 from distutils.dir_util import copy_tree
 import os
 
-from job_schedulers import slurm
+from job_schedulers.pbs_pro import set_pbs_pro_directives, set_pbs_pro
 from parse.lorecommendations_parser import parse_lorecommendations
 from parse.parse_linengy import parse_lo_linear_energies
 from parse.parse_basis_xml import parse_basis_as_string
@@ -38,18 +41,25 @@ def input_for_lmax_pair(root_path: str, species: list, l_max: dict):
     :return:
     """
 
-    # Slurm script settings
-    env_vars = OrderedDict([('EXE', '/users/sol/abuccheri/exciting/bin/excitingmpismp'),
+    # Notes:
+    # Ignore queue name and have HAWK assign the correct one.
+    # omplace caused issues on test queue, so ignore it for now.
+
+    omp = 16
+    directives = set_pbs_pro_directives(time=[24,00,0],
+                                        nodes=1,
+                                        mpi_ranks_per_node=8,
+                                        omp_threads_per_process=omp,
+                                        cores_per_node=128,
+                                        node_type='rome',
+                                        job_name='GW_gs')
+
+    env_vars = OrderedDict([('EXE', '/zhome/academic/HLRS/pri/ipralbuc/exciting-oxygen_release/bin/exciting_mpismp'),
                             ('OUT', 'terminal.out')
                             ])
-    module_envs = ['intel/2019']
-    slurm_directives = slurm.set_slurm_directives(time=[0, 72, 0, 0],
-                                                  partition='all',
-                                                  exclusive=True,
-                                                  nodes=4,
-                                                  ntasks_per_node=2,
-                                                  cpus_per_task=18,
-                                                  hint='nomultithread')
+    module_envs = ['intel/19.1.0', 'mkl/19.1.0', 'impi/19.1.0']
+    # mpi_options = ['omplace -nt ' + str(omp)]
+    mpi_options = []
 
     # Need some excessively large number for nempty => exciting takes upper bound
     gw_root = write_input_file(root_path,
@@ -76,12 +86,9 @@ def input_for_lmax_pair(root_path: str, species: list, l_max: dict):
 
     species_basis_string = "_".join(s.capitalize() + str(l_max[s]) for s in species)
 
-    # for ie, energy_cutoff in enumerate(energy_cutoffs):
-    # Initial set 8
-    # for ie in range(0, 4):
-    # Set 8 part 2
-    for ie in range(4, 7):
+    for ie in range(4, 6):
         energy_cutoff = energy_cutoffs[ie]
+
         # Copy ground state directory to GW directory
         job_dir = gw_root + '/max_energy_i' + str(ie)
         print('Creating directory, with input.xml, run.sh and optimised basis:', job_dir)
@@ -92,8 +99,8 @@ def input_for_lmax_pair(root_path: str, species: list, l_max: dict):
         shutil.copy(gw_root + "/input.xml", job_dir + "/input.xml")
 
         # New Slurm script
-        slurm_directives['job-name'] = "gw_A1_lmax_" + species_basis_string + str(ie)
-        write_file(job_dir + '/run.sh', slurm.set_slurm_script(slurm_directives, env_vars, module_envs))
+        directives['N'] = "gw_A1_lmax_" + species_basis_string + str(ie)
+        write_file(job_dir + '/run.sh', set_pbs_pro(directives, env_vars, module_envs, mpi_options))
 
         # Write optimised basis
         write_optimised_lo_bases(species, l_max, energy_cutoff, lorecommendations,
@@ -111,4 +118,4 @@ def generate_g0w0_inputs(root_path: str):
         input_for_lmax_pair(full_path, species, l_max)
 
 
-generate_g0w0_inputs("/users/sol/abuccheri/gw_benchmarks/A1_set8/")
+generate_g0w0_inputs("/lustre/hpe/ws10/ws10.3/ws/ipralbuc-gw_scratch/gw_calculations/set8_part2/")
