@@ -198,11 +198,12 @@ def get_basis_labels(root: str, settings: dict, verbose=False) -> dict:
     q_str = "".join(str(q) for q in q_grid)
 
     basis_labels = OrderedDict()
+    path_join = os.path.join
 
     # Lmax in LO basis, for example {Zr:4, O:3}
     for i, l_maxs in enumerate(l_max_values):
-        basis_root = root + '/' + directory_to_string(l_maxs) + 'rgkmax' + str(rgkmax)
-        gw_root = basis_root + "/gw_q" + q_str + "_omeg" + str(n_img_freq) + "_nempty" + str(n_empty_ext[i])
+        basis_root = path_join(root, directory_to_string(l_maxs) + 'rgkmax' + str(rgkmax))
+        gw_root = path_join(basis_root, "gw_q" + q_str + "_omeg" + str(n_img_freq) + "_nempty" + str(n_empty_ext[i]))
         lmaxs_str = l_max_dict_to_string(l_maxs)
         basis_labels[lmaxs_str] = OrderedDict()
 
@@ -212,11 +213,12 @@ def get_basis_labels(root: str, settings: dict, verbose=False) -> dict:
             l_values = [l for l in range(0, l_max + 1)]
 
             for ienergy, energy in enumerate(max_energy_exts):
-                file_path = gw_root + '/max_energy_' + str(energy)
+                file_path = path_join(gw_root, 'max_energy_' + str(energy))
+
                 if verbose:
                     print('Reading basis from ', file_path)
 
-                fid = open(file_path + '/' + species.capitalize() + '.xml', 'r')
+                fid = open(path_join(file_path, species.capitalize() + '.xml'), 'r')
                 basis_string = fid.read()
                 fid.close()
 
@@ -225,6 +227,23 @@ def get_basis_labels(root: str, settings: dict, verbose=False) -> dict:
                 basis_labels[lmaxs_str][species].append(basis_str)
 
     return basis_labels
+
+
+# def get_basis_labels_better_api(directories: List[str]) -> OrderedDict:
+#     """
+#
+#     :param directories:
+#     :return:
+#     """
+#
+#     basis_labels = OrderedDict()
+#     for directory in directories:
+#         #
+#         basis_los = parse_species_string(l_values, basis_string)
+#         basis_str = "".join(string for string in create_lo_label(basis_los))
+#         print(basis_str)
+#         #basis_labels[lmaxs_str][species].append(basis_str)
+#     return basis_labels
 
 
 def get_species(root: str, lower_case=True) -> list:
