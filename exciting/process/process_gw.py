@@ -3,16 +3,19 @@
 
 """
 
+
 # For a given basis i.e. (l-max, l-max) energy cutoff == basis functions
-def process_gw_gamma_point(gw_data, qp_data):
+def process_gw_gamma_point(gw_data: dict, qp_data: dict) -> dict:
     """
-    Process GW data dictionaries and return the quasiparticle gap - KS gap,
+    Process GW data dictionaries and return the direct quasi-particle gap - KS gap,
     VBT and CBB real self-energies
 
     :param gw_data:
     :param qp_data:
     :return:
     """
+    if (not gw_data) or (not qp_data):
+        return {}
 
     i_VBM = gw_data['i_VBM']
     i_CBm = gw_data['i_CBm']

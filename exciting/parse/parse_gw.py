@@ -5,6 +5,7 @@ import subprocess
 import warnings
 import numpy as np
 from pathlib import Path
+import os
 
 from exciting_utils.py_grep import grep
 
@@ -38,7 +39,7 @@ def get_nempty_from_evalqp(file_path: str, file_name='EVALQP.DAT') -> int:
     return int(lines.splitlines()[2].split()[0])
 
 
-def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT'):
+def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT') -> dict:
     """
     Parse GW output file EVALQP.DAT
 
@@ -61,7 +62,9 @@ def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT'):
     """
     if not Path(file_path + '/' + file_name).is_file():
         print("File does not exist:", file_path)
-        quit("Routine 'parse_gw_evalqp' quit")
+        print("Skipping file")
+        return {}
+        #quit("Routine 'parse_gw_evalqp' quit")
 
     # Value in input can exceed the total number of empty states.
     # The value used by exciting in GW is the smallest 'n_empty' value in KPOINTS.OUT,
@@ -101,7 +104,7 @@ def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT'):
 
         # skips extra blank line per k-point block
         i += 1
-        data[ik] = {'k_point':k_point, 'results':results.copy()}
+        data[ik] = {'k_point': k_point, 'results': results.copy()}
 
     return data
 
@@ -144,7 +147,7 @@ def parse_gw_timings(file_path: str, file_name='GW_INFO.OUT'):
     return timings
 
 
-def parse_gw_info(file_path: str, file_name='GW_INFO.OUT'):
+def parse_gw_info(file_path: str, file_name='GW_INFO.OUT') -> dict:
     """
     Parse variables from GW_INFO.OUT:
        max_n_lapw,
@@ -161,18 +164,21 @@ def parse_gw_info(file_path: str, file_name='GW_INFO.OUT'):
     :param file_name: file name
     :return: dictionary of important variables
     """
-    file_path += '/' + file_name
+    file_path = os.path.join(file_path, file_name)
 
-    data = {}
-    data['max_n_lapw'] = int(grep("Maximum number of LAPW states", file_path).split()[-1])
-    data['min_n_lapw'] = int(grep("Minimal number of LAPW states", file_path).split()[-1])
-    data['n_KS'] = int(grep("total KS", file_path).split()[-1])
-    data['n_occupied'] = int(grep("occupied", file_path).split()[2])
-    data['n_unoccupied'] = int(grep("occupied", file_path).split()[5])
+    if not os.path.isfile(file_path):
+        print('File not found:', file_path)
+        return {}
+
+    data = {'max_n_lapw': int(grep("Maximum number of LAPW states", file_path).split()[-1]),
+            'min_n_lapw': int(grep("Minimal number of LAPW states", file_path).split()[-1]),
+            'n_KS': int(grep("total KS", file_path).split()[-1]),
+            'n_occupied': int(grep("occupied", file_path).split()[2]),
+            'n_unoccupied': int(grep("occupied", file_path).split()[5]),
+            'i_VBM': int(grep("Band index of VBM", file_path).split()[-1]),
+            'i_CBm': int(grep("Band index of CBm", file_path).split()[-1])}
 
     # Save the second line in each case, which corresponds to the GW band indices
-    data['i_VBM'] = int(grep("Band index of VBM", file_path).split()[-1])
-    data['i_CBm'] = int(grep("Band index of CBm", file_path).split()[-1])
     assert data['i_CBm'] == data['i_VBM'] + 1
 
     return data
