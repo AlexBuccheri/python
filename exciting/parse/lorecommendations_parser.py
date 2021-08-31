@@ -53,7 +53,7 @@ def parse_lorecommendations(file_name:str, species:list)-> dict:
 
     # Hard-coded in exciting
     l_min = 0
-    l_max = 6
+    l_max = 7
     n_min = 0
     n_max = 20
 

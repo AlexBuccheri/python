@@ -112,7 +112,7 @@ def filter_lo_functions(lo_recommendations: List[np.ndarray],
              with a function per l-channel).
     """
 
-    assert len(lo_recommendations) == 7, "Expect 7 l-channels for lorecommendations, " \
+    assert len(lo_recommendations) == 8, "Expect 8 l-channels for lorecommendations, " \
                                          "per species, as it is hard-coded in exciting"
 
     assert len(lo_recommendations[0]) == 21, "Expect 21 entries per l-channel lorecommendations, " \
@@ -304,7 +304,7 @@ def generate_optimised_basis_string(ground_state_xml: str,
 
 def parse_species_string(l_channels: list, basis_string: str):
     """
-    Parse LO functions from a species.ml string.
+    Parse LO functions from a species.xml string.
 
     Every  <lo l="l-channel">  ... </lo> is counted as a unique LO in with
     orbital momentum "l-channel".
@@ -432,7 +432,8 @@ def create_lo_label(basis_los: dict) -> list:
     :param basis_los: Dictionary of LOs, constructed by parsing a species.xml string
     :return: basis_labels of the form ['6s ', '3d '], for example
     """
-    channel_label = {0: 's', 1: 'p', 2: 'd', 3: 'f', 4: 'g', 5: 'h', 6: 'i'}
+    # TODO Check if 7 = j
+    channel_label = {0: 's', 1: 'p', 2: 'd', 3: 'f', 4: 'g', 5: 'h', 6: 'i', 7: 'j'}
     basis_labels = []
 
     for l, los in basis_los.items():
