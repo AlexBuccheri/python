@@ -24,7 +24,7 @@ def pbs_resources_string_to_vars(pbs_directives: OrderedDict) -> tuple:
     """
     Extract nodes, mpi_per_node, omp_per_process from a pbs resources string of the form:
 
-    PBS -l select=2:node_type=rome:mpiprocs=2+1:node_type=rome:mpiprocs=3
+     PBS -l select=2:node_type=rome:mpiprocs=2
 
     TODO
     The number of lines in PBS_NODEFILE is the sum of the values of mpiprocs for all chunks (nodes)
@@ -36,6 +36,7 @@ def pbs_resources_string_to_vars(pbs_directives: OrderedDict) -> tuple:
     """
 
     # Note, this won't work if I ask for different MPI resources on different nodes i.e.:
+    # PBS -l select=2:node_type=rome:mpiprocs=2+1:node_type=rome:mpiprocs=3
     process_settings = pbs_directives['l'].split(':')
     for string in process_settings:
         if 'mpiprocs' in string:
@@ -50,25 +51,27 @@ def pbs_resources_string_to_vars(pbs_directives: OrderedDict) -> tuple:
 
 def set_pbs_pro(pbs_directives: OrderedDict,
                 env_vars: OrderedDict,
-                module_envs: Optional[list] = None):
+                module_envs: Optional[list] = None,
+                mpi_options: Optional[list] = []):
     """
     Generate simple PBS Pro submission script, suitable for hybrid MPI+OMP applications.
 
-    Currently always uses omplace as the default pinning option.
-
-    :param pbs_directives: Ordered dictionary of slurm directives
-    :param env_vars: Ordered dictionary of environment variables to set
-    :param module_envs: Optional list of modules to load
+    :param OrderedDict pbs_directives: Ordered dictionary of slurm directives
+    :param OrderedDict env_vars: Ordered dictionary of environment variables to set
+    :param Optional[list] module_envs: Optional list of modules to load
+    :param Optional[list] mpi_options: Optional list of mpirun options
     :return: slurm script string
     """
     env_keys = [key for key in env_vars.keys()]
     assert 'EXE' in env_keys, "EXE must be specified in env_vars"
 
+    spacing = lambda length: " " if length == 1 else ""
+
     pbs_prefix = "#PBS -"
 
     script = "#!/bin/bash \n\n"
     for directive, setting in pbs_directives.items():
-        script += pbs_prefix + directive + " " + setting + '\n'
+        script += pbs_prefix + directive + spacing(len(directive)) + setting + '\n'
     script += '\n'
 
     if module_envs is not None:
@@ -84,8 +87,14 @@ def set_pbs_pro(pbs_directives: OrderedDict,
     total_mpi_procs = mpi_per_node * nodes
 
     script += "cd $PBS_O_WORKDIR \n" + \
-              "export OMP_NUM_THREADS=" + str(omp) + "\n\n" + \
-              "mpirun -np " + str(total_mpi_procs) + 'omplace -nt ' + str(omp) + " $EXE"
+              "export OMP_NUM_THREADS=" + str(omp) + "\n\n"
+
+    # MPI run command
+    script += "mpirun -np " + str(total_mpi_procs)
+    for option in mpi_options:
+        script += " " + option
+
+    script += " $EXE"
 
     if 'OUT' in env_keys:
         script += ' > $OUT 2>&1'
@@ -162,15 +171,15 @@ def set_processes_string(nodes: int,
 
     string += 'ncpus=' + str(cores_per_node) + ':'
     string += 'mpiprocs=' + str(mpi_ranks_per_node) + ':'
-    string += 'ompthreads=' + str(omp_threads_per_process) + ':'
+    string += 'ompthreads=' + str(omp_threads_per_process)
 
     return string
 
 
-def set_pbs_pro_directives(time: list,
-                           queue_name: str,
-                           nodes: int,
-                           mpi_ranks_per_node: int,
+def set_pbs_pro_directives(time: Optional[list] = None,
+                           queue_name: Optional[str] = None,
+                           nodes: Optional[int] = 1,
+                           mpi_ranks_per_node: Optional[int] = 1,
                            omp_threads_per_process: Optional[int] = 1,
                            cores_per_node: Optional[int] = None,
                            node_type: Optional[str] = None,
@@ -228,7 +237,7 @@ def set_pbs_pro_directives(time: list,
                                          node_type_mem,
                                          node_type)
 
-    assert omp_threads_per_process * mpi_ranks_per_node <= cores_per_node, "MPI * OMP processes exceeds physical cores"
+    #assert omp_threads_per_process * mpi_ranks_per_node <= cores_per_node, "MPI * OMP processes exceeds physical cores"
 
     pbs_directives = OrderedDict([('N', job_name),
                                   ('A', project_code),
@@ -248,18 +257,3 @@ def set_pbs_pro_directives(time: list,
         final_pbs_directives[key] = value
 
     return final_pbs_directives
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
