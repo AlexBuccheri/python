@@ -1,14 +1,13 @@
 """
-Set 8
+Set 9
 
-Description:
-Set 7 converging slowly, and can't easily visualise the numbers
+Repeat set 8 with Zr MT_radius = 2.0 and O MT_radius = 1.6
 Run systematic change in basis w.r.t.
  a) l_max channels
  b) N LOs per channel
 
-l_max values: (4, 3) (5, 4) (6, 5) (7, 6)
-Cut-off can probably go to 250 Ha per channel
+l_max values: (6, 5) (7, 6)
+Cut-offs go to 200 Ha per channel
 
 """
 
@@ -27,13 +26,13 @@ from process.optimised_basis import DefaultLOs
 # I/O Utilities
 from gw_benchmark_inputs.input_utils import write_input_file, write_optimised_lo_bases, write_file
 # Settings
-from gw_benchmark_inputs.set8.basis import converged_ground_state_input as A1_gs_input, set_lo_channel_cutoffs
+from gw_benchmark_inputs.set9.basis import converged_ground_state_input as A1_gs_input, set_lo_channel_cutoffs
 
 
 def input_for_lmax_pair(root_path: str, species: list, l_max: dict):
     """
-    Given an l_max pair, create G0W0 inputs for a specifid range of LO cut-offs per channel,
-    as defined in set8/basis.py
+    Given an l_max pair, create G0W0 inputs for a specified range of LO cut-offs per channel,
+    as defined in set9/basis.py
 
     :param str root_path: Top level path to calculations
     :param List[str] species: List of species
@@ -49,7 +48,7 @@ def input_for_lmax_pair(root_path: str, species: list, l_max: dict):
     slurm_directives = slurm.set_slurm_directives(time=[0, 72, 0, 0],
                                                   partition='all',
                                                   exclusive=True,
-                                                  nodes=4,
+                                                  nodes=2,
                                                   ntasks_per_node=2,
                                                   cpus_per_task=18,
                                                   hint='nomultithread')
@@ -58,7 +57,7 @@ def input_for_lmax_pair(root_path: str, species: list, l_max: dict):
     gw_root = write_input_file(root_path,
                                A1_gs_input,
                                GWInput(taskname="g0w0",
-                                       nempty=2000,
+                                       nempty=3000,
                                        ngridq=[2, 2, 2],
                                        skipgnd=False,
                                        n_omega=32,
@@ -79,12 +78,8 @@ def input_for_lmax_pair(root_path: str, species: list, l_max: dict):
 
     species_basis_string = "_".join(s.capitalize() + str(l_max[s]) for s in species)
 
-    # for ie, energy_cutoff in enumerate(energy_cutoffs):
-    # Initial set 8
-    # for ie in range(0, 4):
-    # Set 8 part 2
-    for ie in range(4, 7):
-        energy_cutoff = energy_cutoffs[ie]
+    for ie, energy_cutoff in enumerate(energy_cutoffs):
+
         # Copy ground state directory to GW directory
         job_dir = gw_root + '/max_energy_i' + str(ie)
         print('Creating directory, with input.xml, run.sh and optimised basis:', job_dir)
@@ -106,7 +101,7 @@ def input_for_lmax_pair(root_path: str, species: list, l_max: dict):
 def generate_g0w0_inputs(root_path: str):
 
     species = ['zr', 'o']
-    l_max_pairs = [{'zr': 4, 'o': 3}, {'zr': 5, 'o': 4}, {'zr': 6, 'o': 5}, {'zr': 7, 'o': 6}]
+    l_max_pairs = [{'zr': 6, 'o': 5}, {'zr': 7, 'o': 6}]
 
     for l_max in l_max_pairs:
         l_max_path = 'zr_lmax' + str(l_max['zr']) + '_o_lmax' + str(l_max['o']) + '_rgkmax8'
@@ -114,4 +109,4 @@ def generate_g0w0_inputs(root_path: str):
         input_for_lmax_pair(full_path, species, l_max)
 
 
-generate_g0w0_inputs("/users/sol/abuccheri/gw_benchmarks/A1_set8/")
+generate_g0w0_inputs("/users/sol/abuccheri/gw_benchmarks/A1_set9/")

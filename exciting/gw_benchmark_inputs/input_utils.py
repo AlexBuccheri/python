@@ -91,7 +91,8 @@ def write_optimised_lo_basis(species: str,
     :param DefaultLOs default_los: Default LO basis details.
     :param str job_dir: Calculation directory.
     """
-    assert len(lorecommendations) == 7, "Expect 7 l-channels for lorecommendations, " \
+    # Note, this depends what I've compiled the code with
+    assert len(lorecommendations) == 8, "Expect 8 l-channels for lorecommendations, " \
                                         "per species, as it is hard-coded in exciting"
 
     assert len(lorecommendations[0]) == 21, "Expect 21 entries per l-channel lorecommendations, " \

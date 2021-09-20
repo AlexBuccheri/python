@@ -10,12 +10,15 @@ from collections import OrderedDict
 
 from parse.set_gw_input import GWInput
 from parse.parse_gw import parse_gw_info, parse_gw_evalqp
-from process.process_gw import process_gw_gamma_point
+from process.process_gw import process_gw_gamma_point, process_gw_gap
 from units_and_constants.unit_conversions import ha_to_mev
 from gw_benchmark_outputs.post_process_utils import get_basis_labels
 
 # Energy cutoffs
 from gw_benchmark_inputs.set8.basis import set_lo_channel_cutoffs, n_energies_per_channel
+
+# GLOBAL
+save_plots = True
 
 
 # These path functions should be shared by input and outputs of a given set
@@ -66,16 +69,30 @@ def process_gw_calculation(path: str) -> dict:
     qp_data = parse_gw_evalqp(path)
     results = process_gw_gamma_point(gw_data, qp_data)
 
-    if results:
-        return {'delta_E_qp': np.array(results['E_qp'] - results['E_ks']),
-                're_self_energy_VBM': np.array(results['re_sigma_VBM']),
-                're_self_energy_CBm': np.array(results['re_sigma_CBm'])
-                }
-    else:
+    if not results:
         return {'delta_E_qp': [],
                 're_self_energy_VBM': [],
                 're_self_energy_CBm': []
                 }
+
+    X_point = [0., 0.5, 0.5]
+    Gamma_point = [0., 0., 0.]
+
+    # Specific to the A1 system X (valence) -> Gamma (conduction)
+    results_x_gamma = process_gw_gap(gw_data, qp_data, X_point, Gamma_point)
+    results_x_x = process_gw_gap(gw_data, qp_data, X_point, X_point)
+
+    return {'E_qp': np.array(results['E_qp']),
+            'E_ks': np.array(results['E_ks']),
+            'E_qp_X_Gamma': np.array(results_x_gamma['E_qp']),
+            'E_ks_X_Gamma': np.array(results_x_gamma['E_ks']),
+            'E_qp_X_X': np.array(results_x_x['E_qp']),
+            'E_ks_X_X': np.array(results_x_x['E_ks']),
+
+            'delta_E_qp': np.array(results['E_qp'] - results['E_ks']),
+            're_self_energy_VBM': np.array(results['re_sigma_VBM']),
+            're_self_energy_CBm': np.array(results['re_sigma_CBm'])
+            }
 
 
 def process_gw_calculations(root: str,
@@ -104,18 +121,37 @@ def process_gw_calculations(root: str,
     return data
 
 
-def print_results(species: List[str], l_max_pairs: dict, data: dict):
-    i = 3  # 0,1,2,3
-    l_channel = 0
+# def print_results_65(species: List[str], l_max_pairs: dict, data: dict):
+#     # Take (Zr, O) = (6, 5) with i1 (100 Ha cut-off)
+#     i = 1
+#
+#     for l_max in l_max_pairs:
+#         l_max_key = get_l_max_key(species, l_max)
+#         # energy_cutoffs = set_lo_channel_cutoffs(l_max)
+#         # Zr and O cut-offs are the same, and consistent per l_channel
+#         # l_channel = 0
+#         # energy_cutoffs['zr'][l_channel][i]
+#
+#         qp = data[l_max_key][i]['delta_E_qp'] * ha_to_mev if data[l_max_key][i]['delta_E_qp'] else None
+#         print(l_max_key, i, qp, ks, )
+#
+#     return
 
-    for l_max in l_max_pairs:
-        l_max_key = get_l_max_key(species, l_max)
-        energy_cutoffs = set_lo_channel_cutoffs(l_max)
-        # Zr and O cut-offs are the same, and consistent per l_channel
-        # energy_cutoffs['zr'][l_channel][i]
 
-        qp = data[l_max_key][i]['delta_E_qp'] * ha_to_mev if data[l_max_key][i]['delta_E_qp'] else None
-        print(l_max_key, i, qp)
+def print_results_65(data: dict, energy_cutoff):
+    # Take (Zr, O) = (6, 5)
+
+    print('LO cut-off (Ha), QP(G-G), QP(X-G), QP(X-X), KS(G-G)')
+    for ie, energy in enumerate(energy_cutoff):
+        qp_g_g = data['(6,5)'][ie]['E_qp']
+        if qp_g_g:
+            qp_g_g = qp_g_g * ha_to_mev
+            qp_x_g = data['(6,5)'][ie]['E_qp_X_Gamma'] * ha_to_mev
+            qp_x_x = data['(6,5)'][ie]['E_qp_X_X'] * ha_to_mev
+            ks_g_g = data['(6,5)'][ie]['E_ks'] * ha_to_mev
+            ks_x_g = data['(6,5)'][ie]['E_ks_X_Gamma'] * ha_to_mev
+            ks_x_x = data['(6,5)'][ie]['E_ks_X_X'] * ha_to_mev
+            print(energy, qp_g_g, qp_x_g, qp_x_x, ks_g_g, ks_x_g, ks_x_x)
 
     return
 
@@ -147,7 +183,7 @@ def plot_data(l_max_pairs, data, basis_labels):
         for l_key in x_keys:
             qp_ks = data[l_key][ie]['delta_E_qp']
             if qp_ks:
-                print(ie, l_key, qp_ks)
+                # print(ie, l_key, qp_ks)
                 x_ie.append(x_label_to_i[l_key])
                 y_ie.append(qp_ks * ha_to_mev)
         ax.plot(x_ie, y_ie, marker='o', markersize=8, label=str(energy_cutoff[ie]))
@@ -172,14 +208,59 @@ def plot_data(l_max_pairs, data, basis_labels):
     #             ax.annotate(label.rstrip(), (x[i], qp_ks * ha_to_mev))
     #         i += 1
 
+    if save_plots:
+        plt.savefig('qp_lmax_LO_sweep.jpeg', dpi=300, facecolor='w', edgecolor='w',
+                    orientation='portrait', transparent=True, bbox_inches=None, pad_inches=0.1)
     plt.show()
 
     return
 
 
-def main():
+def plot_65_data(data, basis_labels):
+
+    fig, ax = plt.subplots()
+    fig.set_size_inches(14, 10)
+    plt.rcParams.update({'font.size': 16})
+
+    ax.set_xlabel('LO Energy Cutoff (Ha)', fontsize=16)
+    ax.set_ylabel('Quasiparticle Gap - KS Gap at Gamma (meV)', fontsize=16)
+
+    plt.xlim(75, 275)
+    plt.ylim(2100, 2108)
+
+    def make_label(basis_labels: OrderedDict) -> str:
+        label = ''
+        for species in ['zr', 'o']:
+            label += species.capitalize() + ': ' + basis_labels[l_key][species][ie].rstrip() + '.\n'
+        return label
+
+    # Plot each energy cutoff separately so missing data can easily be skipped
+    l_key = '(6,5)'
+    energy_cutoffs = [80, 100, 120, 150, 180, 200, 250]
+
+    x_ie = []
+    y_ie = []
+    for ie, energy_cutoff in enumerate(energy_cutoffs):
+        qp_ks = data[l_key][ie]['delta_E_qp']
+        if qp_ks:
+            # Set basis label for each marker
+            label = make_label(basis_labels)
+            ax.annotate(label.rstrip(), (energy_cutoff, qp_ks * ha_to_mev), fontsize=12)
+            # Store points
+            x_ie.append(energy_cutoff)
+            y_ie.append(qp_ks * ha_to_mev)
+
+    ax.plot(x_ie, y_ie, marker='o', markersize=8)
+    if save_plots:
+        plt.savefig('qp_lmax65.jpeg', dpi=300, facecolor='w', edgecolor='w',
+                    orientation='portrait', transparent=True, bbox_inches=None, pad_inches=0.1)
+    plt.show()
+
+    return
+
+
+def basis_convergence(root):
     # Settings
-    root = "/users/sol/abuccheri/gw_benchmarks/A1_set8/"
     species = ['zr', 'o']
     l_max_pairs = [{'zr': 4, 'o': 3}, {'zr': 5, 'o': 4}, {'zr': 6, 'o': 5}, {'zr': 7, 'o': 6}]
     gw_settings = GWInput(taskname="g0w0",
@@ -191,13 +272,14 @@ def main():
 
     data = process_gw_calculations(root, species, l_max_pairs, gw_settings)
 
-    print_results(species, l_max_pairs, data)
-
     # TODO API for generating basis labels needs to change
     l_max_values = [OrderedDict([('zr', 4), ('o', 3)]),
                     OrderedDict([('zr', 5), ('o', 4)]),
                     OrderedDict([('zr', 6), ('o', 5)]),
                     OrderedDict([('zr', 7), ('o', 6)])]
+
+    energy_indices = ['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6']
+    energy_cutoff = [80, 100, 120, 150, 180, 200, 250]
 
     settings = {'rgkmax': 8,
                 'l_max_values': l_max_values,
@@ -205,13 +287,53 @@ def main():
                 'q_grid': [2, 2, 2],
                 'n_empty_ext': [2000] * len(l_max_values),
                 # Extensions, not energies
-                'max_energy_cutoffs': ['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6']}
+                'max_energy_cutoffs': energy_indices}
 
+    # Post-process
     basis_labels = get_basis_labels(root, settings)
 
     plot_data(l_max_pairs, data, basis_labels)
+    print_results_65(data, energy_cutoff)
+    plot_65_data(data, basis_labels)
 
-    return None
+    return
+
+
+def q_point_convergence(root: str):
+    """
+    (2,2,2) vs (4,4,4) q-points
+    """
+    def print_me(data, label):
+        qp_g_g = data['E_qp'] * ha_to_mev
+        qp_x_g = data['E_qp_X_Gamma'] * ha_to_mev
+        qp_x_x = data['E_qp_X_X'] * ha_to_mev
+        ks_g_g = data['E_ks'] * ha_to_mev
+        ks_x_g = data['E_ks_X_Gamma'] * ha_to_mev
+        ks_x_x = data['E_ks_X_X'] * ha_to_mev
+        print(label, qp_g_g, qp_x_g, qp_x_x, ks_g_g, ks_x_g, ks_x_x)
+
+
+    data_222 = process_gw_calculation(os.path.join(root, "gw_q222_omeg32_nempty2000/max_energy_i1"))
+    data_444 = process_gw_calculation(os.path.join(root, "gw_q444_omeg32_nempty2000/max_energy_i1"))
+
+    print('L_max (Zr, O) = (6,5), for i1 = 100Ha cut-off in LOs per channel')
+    print('QP(G-G), QP(X-G), QP(X-X), KS(G-G), KS(X-G), KS(X-X) in meV')
+    np.set_printoptions(precision=0)
+
+    print_me(data_222, 'q=2x2x2')
+    print_me(data_444, 'q=4x4x4')
+
+
+def main():
+
+    basis_convergence("/users/sol/abuccheri/gw_benchmarks/A1_set8/")
+
+    # Same as above, but using APWs rather than LAPWs
+    # Note, got a result for i0, i1 and i2 are running (don't expect either to finish)
+    # Note 2. apw_gw_q222_omeg32_nempty2000 => I need to hack `get_gw_path` to read in from correct place
+    # basis_convergence("/users/sol/abuccheri/gw_benchmarks/A1_set8/")
+
+    #q_point_convergence("/users/sol/abuccheri/gw_benchmarks/A1_set8/zr_lmax6_o_lmax5_rgkmax8")
 
 
 if __name__ == "__main__":
