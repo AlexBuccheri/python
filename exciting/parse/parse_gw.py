@@ -60,18 +60,17 @@ def parse_gw_evalqp(file_path: str, file_name='EVALQP.DAT') -> dict:
     :return: dictionary of form {ik: k-point, results},
     where results[istate].keys = ['E_KS', 'E_HF', 'E_GW', 'sigma_x',' Re_sigma_c', 'Im_sigma_c', 'V_xc', 'delta_HF', 'delta_GW', 'Znk']
     """
-    if not Path(file_path + '/' + file_name).is_file():
-        print("File does not exist:", file_path)
+
+    if not os.path.isfile(os.path.join(file_path, file_name)):
+        print('File not found:', os.path.join(file_path, file_name))
         print("Skipping file")
         return {}
-        #quit("Routine 'parse_gw_evalqp' quit")
 
     # Value in input can exceed the total number of empty states.
     # The value used by exciting in GW is the smallest 'n_empty' value in KPOINTS.OUT,
     # as each k-point can differ due to the plane-wave cut-off
     # TODO(Alex) This doesn't always. As in, it may not be the minimum work as in
     # n_empty = parse_kpoints(file_path)['n_empty']
-
     n_empty = get_nempty_from_evalqp(file_path)
 
     # TODO Note, if n_empty in input is not max number, this will be used for number of entries
