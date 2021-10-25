@@ -138,20 +138,22 @@ def process_gw_calculations(root: str,
 #     return
 
 
-def print_results_65(data: dict, energy_cutoff):
-    # Take (Zr, O) = (6, 5)
+def print_results(data: dict, energy_cutoff, lmax_str: str):
 
+    print('Printing data for ' + lmax_str)
     print('LO cut-off (Ha), QP(G-G), QP(X-G), QP(X-X), KS(G-G)')
     for ie, energy in enumerate(energy_cutoff):
-        qp_g_g = data['(6,5)'][ie]['E_qp']
-        if qp_g_g:
+        try:
+            qp_g_g = data[lmax_str][ie]['E_qp']
             qp_g_g = qp_g_g * ha_to_mev
-            qp_x_g = data['(6,5)'][ie]['E_qp_X_Gamma'] * ha_to_mev
-            qp_x_x = data['(6,5)'][ie]['E_qp_X_X'] * ha_to_mev
-            ks_g_g = data['(6,5)'][ie]['E_ks'] * ha_to_mev
-            ks_x_g = data['(6,5)'][ie]['E_ks_X_Gamma'] * ha_to_mev
-            ks_x_x = data['(6,5)'][ie]['E_ks_X_X'] * ha_to_mev
+            qp_x_g = data[lmax_str][ie]['E_qp_X_Gamma'] * ha_to_mev
+            qp_x_x = data[lmax_str][ie]['E_qp_X_X'] * ha_to_mev
+            ks_g_g = data[lmax_str][ie]['E_ks'] * ha_to_mev
+            ks_x_g = data[lmax_str][ie]['E_ks_X_Gamma'] * ha_to_mev
+            ks_x_x = data[lmax_str][ie]['E_ks_X_X'] * ha_to_mev
             print(energy, qp_g_g, qp_x_g, qp_x_x, ks_g_g, ks_x_g, ks_x_x)
+        except KeyError:
+            print('Index, energy:', ie, energy, 'not computed')
 
     return
 
@@ -293,7 +295,8 @@ def basis_convergence(root):
     basis_labels = get_basis_labels(root, settings)
 
     plot_data(l_max_pairs, data, basis_labels)
-    print_results_65(data, energy_cutoff)
+    print_results(data, energy_cutoff, '(6,5)')
+    print_results(data, energy_cutoff, '(7,6)')
     plot_65_data(data, basis_labels)
 
     return
