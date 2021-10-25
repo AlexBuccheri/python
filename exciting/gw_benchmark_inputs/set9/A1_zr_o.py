@@ -48,7 +48,7 @@ def input_for_lmax_pair(root_path: str, species: list, l_max: dict):
     slurm_directives = slurm.set_slurm_directives(time=[0, 72, 0, 0],
                                                   partition='all',
                                                   exclusive=True,
-                                                  nodes=2,
+                                                  nodes=4,
                                                   ntasks_per_node=2,
                                                   cpus_per_task=18,
                                                   hint='nomultithread')
