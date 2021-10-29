@@ -69,6 +69,25 @@ def write_input_file(root_path: str,
     return gw_root
 
 
+def write_input_file_in_root(root_path: str,
+                             gs_input: str,
+                             gw_input: GWInput) -> str:
+    """
+    Generate GW path, create a GW input file and write it.
+    Written to work wit set8 inputs and beyond
+
+    :param str root_path: Path to the calculation directory
+    :param str gs_input: ground state input, used as the base for the GW input
+    :param GWInput gw_input: GW calculation input settings
+
+    :return: str gw_root: Directory for GW calculations
+    """
+    Path(root_path).mkdir(parents=True, exist_ok=True)
+    gs_input_string = gs_input.replace('do="skip"', 'do="fromfile"')
+    gw_input_string = gs_input_string.format(GW_INPUT=gw_input.string)
+    write_file(root_path + "/input.xml", gw_input_string)
+
+
 def write_optimised_lo_basis(species: str,
                              l_max: int,
                              energy_cutoff: dict,
