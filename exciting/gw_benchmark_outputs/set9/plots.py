@@ -1,5 +1,5 @@
 """
-Plot set 8 data
+Plot set 9 data
 # For each l-max pair, plot QP vs
 """
 import numpy as np
@@ -15,7 +15,7 @@ from units_and_constants.unit_conversions import ha_to_mev
 from gw_benchmark_outputs.post_process_utils import get_basis_labels
 
 # Energy cutoffs
-from gw_benchmark_inputs.set8.basis import set_lo_channel_cutoffs, n_energies_per_channel
+from gw_benchmark_inputs.set9.basis import set_lo_channel_cutoffs, n_energies_per_channel
 
 # GLOBAL
 save_plots = True
@@ -58,7 +58,7 @@ def get_l_max_key(species: List[str], l_max: dict):
 def process_gw_calculation(path: str) -> dict:
     """
     This could be a more generic routine
-
+    Add other gaps to it as well
     # TODO(Alex) Check parse_gw_evalqp parser is valid (and replace with one from exciting tools)
 
     :param str path: Path to GW files
@@ -121,23 +121,6 @@ def process_gw_calculations(root: str,
     return data
 
 
-# def print_results_65(species: List[str], l_max_pairs: dict, data: dict):
-#     # Take (Zr, O) = (6, 5) with i1 (100 Ha cut-off)
-#     i = 1
-#
-#     for l_max in l_max_pairs:
-#         l_max_key = get_l_max_key(species, l_max)
-#         # energy_cutoffs = set_lo_channel_cutoffs(l_max)
-#         # Zr and O cut-offs are the same, and consistent per l_channel
-#         # l_channel = 0
-#         # energy_cutoffs['zr'][l_channel][i]
-#
-#         qp = data[l_max_key][i]['delta_E_qp'] * ha_to_mev if data[l_max_key][i]['delta_E_qp'] else None
-#         print(l_max_key, i, qp, ks, )
-#
-#     return
-
-
 def print_results(data: dict, energy_cutoff, lmax_str: str):
 
     print('Printing data for ' + lmax_str)
@@ -168,7 +151,7 @@ def plot_data(l_max_pairs, data, basis_labels):
 
     # Get x data in useful form
     x = np.arange(0, len(l_max_pairs))
-    x_label_to_i = {'(4,3)': 0, '(5,4)': 1, '(6,5)': 2, '(7,6)': 3}
+    x_label_to_i = {'(6,5)': 0, '(7,6)': 1}
 
     # Assume the l_max_pairs dict is ordered
     x_keys = ["(" + ",".join(str(l) for l in l_pair.values()) + ")" for l_pair in l_max_pairs]
@@ -178,7 +161,7 @@ def plot_data(l_max_pairs, data, basis_labels):
     ax.tick_params(axis='both', which='major', labelsize=16)
 
     # Plot each energy cutoff separately so missing data can easily be skipped
-    energy_cutoff = [80, 100, 120, 150, 180, 200, 250]
+    energy_cutoff = [80, 100, 120, 150, 180, 200]
     for ie in range(0, n_energies_per_channel):
         x_ie = []
         y_ie = []
@@ -238,7 +221,7 @@ def plot_65_data(data, basis_labels):
 
     # Plot each energy cutoff separately so missing data can easily be skipped
     l_key = '(6,5)'
-    energy_cutoffs = [80, 100, 120, 150, 180, 200, 250]
+    energy_cutoffs = [80, 100, 120, 150, 180, 200]
 
     x_ie = []
     y_ie = []
@@ -262,11 +245,16 @@ def plot_65_data(data, basis_labels):
 
 
 def basis_convergence(root):
+    """
+    Main routine for plotting basis convergence
+    :param root:
+    :return:
+    """
     # Settings
     species = ['zr', 'o']
-    l_max_pairs = [{'zr': 4, 'o': 3}, {'zr': 5, 'o': 4}, {'zr': 6, 'o': 5}, {'zr': 7, 'o': 6}]
+    l_max_pairs = [{'zr': 6, 'o': 5}, {'zr': 7, 'o': 6}]
     gw_settings = GWInput(taskname="g0w0",
-                          nempty=2000,
+                          nempty=3000,
                           ngridq=[2, 2, 2],
                           skipgnd=False,
                           n_omega=32,
@@ -275,68 +263,35 @@ def basis_convergence(root):
     data = process_gw_calculations(root, species, l_max_pairs, gw_settings)
 
     # TODO API for generating basis labels needs to change
-    l_max_values = [OrderedDict([('zr', 4), ('o', 3)]),
-                    OrderedDict([('zr', 5), ('o', 4)]),
-                    OrderedDict([('zr', 6), ('o', 5)]),
+    l_max_values = [OrderedDict([('zr', 6), ('o', 5)]),
                     OrderedDict([('zr', 7), ('o', 6)])]
 
-    energy_indices = ['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6']
-    energy_cutoff = [80, 100, 120, 150, 180, 200, 250]
+    energy_indices = ['i0', 'i1', 'i2', 'i3', 'i4', 'i5']
+    energy_cutoffs = [80, 100, 120, 150, 180, 200]
 
     settings = {'rgkmax': 8,
                 'l_max_values': l_max_values,
                 'n_img_freq': 32,
                 'q_grid': [2, 2, 2],
-                'n_empty_ext': [2000] * len(l_max_values),
+                'n_empty_ext': [gw_settings.nempty] * len(l_max_values),
                 # Extensions, not energies
                 'max_energy_cutoffs': energy_indices}
 
     # Post-process
     basis_labels = get_basis_labels(root, settings)
 
+    print_results(data, energy_cutoffs, '(6,5)')
+    print_results(data, energy_cutoffs, '(7,6)')
+
     plot_data(l_max_pairs, data, basis_labels)
-    print_results(data, energy_cutoff, '(6,5)')
-    print_results(data, energy_cutoff, '(7,6)')
     plot_65_data(data, basis_labels)
+
 
     return
 
 
-def q_point_convergence(root: str):
-    """
-    (2,2,2) vs (4,4,4) q-points
-    """
-    def print_me(data, label):
-        qp_g_g = data['E_qp'] * ha_to_mev
-        qp_x_g = data['E_qp_X_Gamma'] * ha_to_mev
-        qp_x_x = data['E_qp_X_X'] * ha_to_mev
-        ks_g_g = data['E_ks'] * ha_to_mev
-        ks_x_g = data['E_ks_X_Gamma'] * ha_to_mev
-        ks_x_x = data['E_ks_X_X'] * ha_to_mev
-        print(label, qp_g_g, qp_x_g, qp_x_x, ks_g_g, ks_x_g, ks_x_x)
-
-
-    data_222 = process_gw_calculation(os.path.join(root, "gw_q222_omeg32_nempty2000/max_energy_i1"))
-    data_444 = process_gw_calculation(os.path.join(root, "gw_q444_omeg32_nempty2000/max_energy_i1"))
-
-    print('L_max (Zr, O) = (6,5), for i1 = 100Ha cut-off in LOs per channel')
-    print('QP(G-G), QP(X-G), QP(X-X), KS(G-G), KS(X-G), KS(X-X) in meV')
-    np.set_printoptions(precision=0)
-
-    print_me(data_222, 'q=2x2x2')
-    print_me(data_444, 'q=4x4x4')
-
-
 def main():
-
-    basis_convergence("/users/sol/abuccheri/gw_benchmarks/A1_set8/")
-
-    # Same as above, but using APWs rather than LAPWs
-    # Note, got a result for i0, i1 and i2 are running (don't expect either to finish)
-    # Note 2. apw_gw_q222_omeg32_nempty2000 => I need to hack `get_gw_path` to read in from correct place
-    # basis_convergence("/users/sol/abuccheri/gw_benchmarks/A1_set8/")
-
-    #q_point_convergence("/users/sol/abuccheri/gw_benchmarks/A1_set8/zr_lmax6_o_lmax5_rgkmax8")
+    basis_convergence("/users/sol/abuccheri/gw_benchmarks/A1_set9/")
 
 
 if __name__ == "__main__":
