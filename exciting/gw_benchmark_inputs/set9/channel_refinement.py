@@ -20,8 +20,11 @@ from distutils.dir_util import copy_tree
 import os
 from typing import List
 import copy
+import numpy as np
 
 from job_schedulers import slurm
+from job_schedulers.pbs_pro import set_pbs_pro_directives, set_pbs_pro
+
 from parse.lorecommendations_parser import parse_lorecommendations
 from parse.parse_linengy import parse_lo_linear_energies
 from parse.parse_basis_xml import parse_basis_as_string
@@ -36,6 +39,56 @@ from gw_benchmark_inputs.set9.basis import converged_ground_state_input as A1_gs
 
 
 # TODO Make a note of the directory structure
+
+# 'HAWK' or 'Dune3'
+cluster = 'Dune3'
+
+
+def cut_lo_function(file_name: str):
+
+    # Need to remove this from the BASIS, as it prevents convergence
+    basis_to_kill = """            <lo l="2">
+                 <wf matchingOrder="0" trialEnergy="5.64" searchE="false"/>
+                 <wf matchingOrder="1" trialEnergy="5.64" searchE="false"/>
+                </lo>
+    """
+
+    fid = open(file_name, mode='r')
+    lines = fid.readlines()
+    fid.close()
+
+    basis_to_kill = basis_to_kill.split('\n')
+    n_lines = len(basis_to_kill)
+
+
+    # Match the lines
+    line_indices_to_kill = []
+    for i, line in enumerate(lines):
+        # I know that this line is unique
+        if line.strip() == basis_to_kill[1].strip():
+            line_indices_to_kill = np.arange(i - 1, i + 3)
+
+
+    # This routine should be generic - but need to test again
+    # line_indices_to_kill = []
+    # j = 0
+    # for i, line in enumerate(lines):
+    #     if line.strip() == basis_to_kill[j].strip():
+    #         j += 1
+    #         if j == (n_lines - 1):
+    #             line_indices_to_kill = np.arange(j - (n_lines - 1), j + 1)
+    #             continue
+    #         else:
+    #             j = 0
+
+
+    # Delete the lines - must go backwards due to how lists index
+    for i in sorted(line_indices_to_kill, reverse=True):
+        del lines[i]
+
+    fid = open(file_name, mode='w')
+    fid.writelines(lines)
+    fid.close()
 
 
 def gw_input(root_path: str,
@@ -52,19 +105,43 @@ def gw_input(root_path: str,
     :param l_max:
     """
 
-    # Slurm script settings
-    env_vars = OrderedDict([('EXE', '/users/sol/abuccheri/exciting/bin/excitingmpismp'),
-                            ('OUT', 'terminal.out')
-                            ])
-    module_envs = ['intel/2019']
-    slurm_directives = slurm.set_slurm_directives(time=[0, 72, 0, 0],
-                                                  partition='all',
-                                                  exclusive=True,
-                                                  nodes=4,
-                                                  ntasks_per_node=2,
-                                                  cpus_per_task=18,
-                                                  hint='nomultithread')
+    # Run script settings
+    if cluster == 'Dune3':
+        env_vars = OrderedDict([('EXE', '/users/sol/abuccheri/exciting/bin/excitingmpismp'),
+                                ('OUT', 'terminal.out')
+                                ])
+        module_envs = ['intel/2019']
+        slurm_directives = slurm.set_slurm_directives(time=[0, 72, 0, 0],
+                                                          partition='all',
+                                                          exclusive=True,
+                                                          nodes=4,
+                                                          ntasks_per_node=2,
+                                                          cpus_per_task=18,
+                                                          hint='nomultithread')
+    elif cluster == 'HAWK':
+        omp = 64
+        pbs_directives = set_pbs_pro_directives(time=[24, 00, 0],
+                                                queue_name='normal',
+                                                send_email='abe',
+                                                nodes=2,
+                                                mpi_ranks_per_node=1,
+                                                omp_threads_per_process=omp,
+                                                cores_per_node=128,
+                                                node_type='rome',
+                                                job_name='GW_gs')
 
+        env_vars = OrderedDict(
+            [('EXE', '/zhome/academic/HLRS/pri/ipralbuc/exciting-oxygen_release/bin/exciting_mpismp'),
+             ('OUT', 'terminal.out')
+             ])
+        #module_envs = ['intel/19.1.0', 'mkl/19.1.0', 'impi/19.1.0']
+        module_envs = ['intel/19.1.0', 'impi/19.1.0']
+        mpi_options = ['omplace -nt ' + str(omp)]
+
+    else:
+        print('Cluster choice not recognised: ', cluster)
+
+    # GW settings
     # Need some excessively large number for nempty => exciting takes upper bound
     write_input_file_in_root(root_path,
                              A1_gs_input,
@@ -75,6 +152,7 @@ def gw_input(root_path: str,
                                      n_omega=32,
                                      freqmax=1.0)
                              )
+
     # Default basis settings
     default_linear_energies = parse_lo_linear_energies(ground_state_dir)
     default_los = {'zr': DefaultLOs(default_linear_energies['zr'], energy_tol=0.8),
@@ -101,13 +179,20 @@ def gw_input(root_path: str,
         # Copy input.xml with GW settings
         shutil.copy(root_path + "/input.xml", job_dir + "/input.xml")
 
-        # New Slurm script
-        slurm_directives['job-name'] = "gw_A1_lmax_" + species_basis_string + str(ie)
-        write_file(job_dir + '/run.sh', slurm.set_slurm_script(slurm_directives, env_vars, module_envs))
+        # New run script
+        if cluster == 'Dune3':
+            slurm_directives['job-name'] = "gw_A1_lmax_" + species_basis_string + str(ie)
+            write_file(job_dir + '/run.sh', slurm.set_slurm_script(slurm_directives, env_vars, module_envs))
+        else:
+            pbs_directives['N'] = "gw_A1_lmax_" + species_basis_string + str(ie)
+            write_file(job_dir + '/run.sh', set_pbs_pro(pbs_directives, env_vars, module_envs, mpi_options))
 
         # Write optimised basis
         write_optimised_lo_bases(species, l_max, energy_cutoff, lorecommendations,
                                  default_basis_string, default_los, job_dir)
+
+        # Remove problem LO from basis
+        cut_lo_function(job_dir + '/Zr.xml')
 
 
 def generate_g0w0_inputs(root_path: str, ground_state_path: str):
@@ -152,14 +237,6 @@ def generate_g0w0_inputs(root_path: str, ground_state_path: str):
                              4: [75, 50, 30],
                              5: [85, 60, 40]}
                        }
-
-    # Need to remove this from the BASIS!!!
-    #        <lo l="2">
-    #         <wf matchingOrder="0" trialEnergy="5.64" searchE="false"/>
-    #         <wf matchingOrder="1" trialEnergy="5.64" searchE="false"/>
-    #        </lo>
-
-    # TODO Note that slurm needs to be replaced for HAWK
 
     for l_channel, cutoffs_to_vary in channel_cutoffs['zr'].items():
         energy_cutoffs = copy.deepcopy(original_cutoffs)
