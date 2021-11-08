@@ -286,7 +286,6 @@ def basis_convergence(root):
     plot_data(l_max_pairs, data, basis_labels)
     plot_65_data(data, basis_labels)
 
-
     return
 
 

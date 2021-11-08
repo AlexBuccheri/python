@@ -5,6 +5,11 @@ read and plot the effect on the QP energy w.r.t. highest-energy LOs
 Tolerate ~ 1 meV change in QP direct gap got a change of basis in any given
 l-channel.
 
+1 meV change in energy w.r.t converged basis from set9/A1_zr_o.py should
+be the maximum allowed, as there are 13 channels => Could introduce 13 meV error
+on top of whatever the error is associated with converged basis (i.e. one might get
+a few more meV from increasing rgkmax, moving to (7,6), increasing the energy cut-off etc.
+
 Converged GW settings
  MT radius (Zr, O) = (2, 1.6)
  rgkmax = 8
@@ -127,9 +132,9 @@ def print_results(species: str, l_channel: int, cutoffs: list, gw_results: dict)
             print('(Index, energy):', ie, energy, 'not computed')
 
 
-def main(root_path: str):
+def refinements(root_path: str):
     """
-    Main
+    Process/report refinement of each channel
 
     :param str root_path: Path to calculations
     """
@@ -168,6 +173,44 @@ def main(root_path: str):
         print_results('o', l_channel, cutoffs, results)
 
 
+def refined(root_path: str):
+    gaps = a1_gaps()
+    results = process_gw_calculation(root_path, gaps)
+    rounded_results = {key: int(round(value * ha_to_mev, 0)) for key, value in results.items()}
+
+    print('Printing data for result of using all refined channels ')
+    print('LO cut-off (Ha), QP(G-G), QP(X-G), QP(X-X), KS(G-G)')
+
+    # All data is relative to this converged calculation
+    print('With full LO basis (100 Ha per channel):')
+    print(converged_energies['E_qp_Gamma_Gamma'],
+          converged_energies['E_qp_X_Gamma'],
+          converged_energies['E_qp_X_X'],
+          converged_energies['E_ks_Gamma_Gamma'],
+          converged_energies['E_ks_X_Gamma'],
+          converged_energies['E_ks_X_X']
+          )
+
+    print('With refined LO basis:')
+    print(rounded_results['E_qp_Gamma_Gamma'],
+          rounded_results['E_qp_X_Gamma'],
+          rounded_results['E_qp_X_X'],
+          rounded_results['E_ks_Gamma_Gamma'],
+          rounded_results['E_ks_X_Gamma'],
+          rounded_results['E_ks_X_X']
+          )
+
+
 if __name__ == "__main__":
+    # Refinements
     root_path = "/users/sol/abuccheri/gw_benchmarks/A1_set9/zr_lmax6_o_lmax5_rgkmax8/channel_refinement/"
-    main(root_path)
+    refinements(root_path)
+
+    # Result of combining all LO reports:
+    # Note, I manually edited the Zr and O species files based on the above print-outs
+    root_path = "/users/sol/abuccheri/gw_benchmarks/A1_set9/zr_lmax6_o_lmax5_rgkmax8/refined/"
+    refined(root_path)
+
+
+
+
