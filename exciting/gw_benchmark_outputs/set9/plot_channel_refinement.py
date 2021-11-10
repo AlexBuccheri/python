@@ -15,6 +15,27 @@ Converged GW settings
  rgkmax = 8
  L_max=(6,5)
  LO cut-off = 100 Ha
+
+
+Converged Calculation has a direct gap of 5941 meV
+
+Zr
+0. 70. Cancelation of errors => 0 Mev
+1. 50. 1 meV
+2. 50. 1 meV
+3. 100. Can’t change it
+4. 40. 1 meV
+5. 65. 1 meV
+6. 100. Can’t change
+
+0
+0 70. 1 meV
+1. 85. 0 meV
+2. 100. Can’t change it
+3. 60. 1 meV
+4. 75. 1 meV
+5. 100. Can’t change it.
+
 """
 import numpy as np
 import os
@@ -179,7 +200,7 @@ def refined(root_path: str):
     rounded_results = {key: int(round(value * ha_to_mev, 0)) for key, value in results.items()}
 
     print('Printing data for result of using all refined channels ')
-    print('LO cut-off (Ha), QP(G-G), QP(X-G), QP(X-X), KS(G-G)')
+    print('QP(G-G), QP(X-G), QP(X-X), KS(G-G), KS(X-G), KS(X-X)')
 
     # All data is relative to this converged calculation
     print('With full LO basis (100 Ha per channel):')
@@ -202,11 +223,15 @@ def refined(root_path: str):
 
 
 if __name__ == "__main__":
-    # Refinements
-    root_path = "/users/sol/abuccheri/gw_benchmarks/A1_set9/zr_lmax6_o_lmax5_rgkmax8/channel_refinement/"
-    refinements(root_path)
 
-    # Result of combining all LO reports:
+    only_result = True
+
+    if not only_result:
+        print('Refinements')
+        root_path = "/users/sol/abuccheri/gw_benchmarks/A1_set9/zr_lmax6_o_lmax5_rgkmax8/channel_refinement/"
+        refinements(root_path)
+
+    print('Result of combining all LO reports:')
     # Note, I manually edited the Zr and O species files based on the above print-outs
     root_path = "/users/sol/abuccheri/gw_benchmarks/A1_set9/zr_lmax6_o_lmax5_rgkmax8/refined/"
     refined(root_path)
