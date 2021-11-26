@@ -201,6 +201,48 @@ def plot_data(l_max_pairs, data, basis_labels):
     return
 
 
+def plot_data_for_set8_and_set9(set8, set9):
+    fig, ax = plt.subplots()
+    fig.set_size_inches(14, 10)
+    plt.rcParams.update({'font.size': 16})
+
+    ax.set_xlabel('l_max (Zr, O)', fontsize=16)
+    ax.set_ylabel('Quasiparticle Gap - KS Gap at Gamma (meV)', fontsize=16)
+    ax.legend(loc='lower right', title='LO cutoff (Ha)')
+
+    # Get x data in useful form
+    n_l_pairs = 4
+    x = np.arange(0, n_l_pairs)
+    x_label_to_i = {'(4,3)': 0, '(5,4)': 1, '(6,5)': 2, '(7,6)': 3}
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(list(x_label_to_i))
+    ax.tick_params(axis='both', which='major', labelsize=16)
+
+    # Plot each energy cutoff separately so missing data can easily be skipped
+    def plot_data(ax, data, x_keys, energy_cutoff):
+        for ie in range(0, n_energies_per_channel):
+            x_ie = []
+            y_ie = []
+            for l_key in x_keys:
+                qp_ks = data[l_key][ie]['delta_E_qp']
+                if qp_ks:
+                    # print(ie, l_key, qp_ks)
+                    x_ie.append(x_label_to_i[l_key])
+                    y_ie.append(qp_ks * ha_to_mev)
+            ax.plot(x_ie, y_ie, marker='o', markersize=8, label=str(energy_cutoff[ie]))
+        return ax
+
+    ax = plot_data(ax, set8, ['(4,3)', '(5,4)', '(6,5)', '(7,6)'], [80, 100, 120, 150, 180, 200, 250])
+    ax = plot_data(ax, set9, ['(6,5)', '(7,6)'], [80, 100, 120, 150, 180, 200])
+
+    if save_plots:
+        plt.savefig('qp_lmax_LO_sweep.jpeg', dpi=300, facecolor='w', edgecolor='w',
+                    orientation='portrait', transparent=True, bbox_inches=None, pad_inches=0.1)
+    plt.show()
+
+
+
 def plot_65_data(data, basis_labels):
 
     fig, ax = plt.subplots()
@@ -244,6 +286,56 @@ def plot_65_data(data, basis_labels):
     return
 
 
+def get_set8_data(root_set8):
+    """
+    rgkmax = 8
+    MT (Zr, O) = (1.6, 1.6)
+    Energies in meV
+
+    :param root_set8:
+    :return:
+    """
+
+    data = {}
+
+    energies_43 = {80:  [],
+                   100: [],
+                   120: [],
+                   150: [],
+                   180: [],
+                   200: [],
+                   250: []}
+
+    energies_54 = {80:  [],
+                   100: [],
+                   120: [],
+                   150: [],
+                   180: [],
+                   200: [],
+                   250: []}
+
+    #                  QP(G-G) | QP(X-G) | QP(X-X) | KS(G-G) | KS(X-G) | KS(X-X) |
+    energies_65 = {80:  [5972,  5403, 5560, 3865, 3321, 3748],
+                   100: [5968,  5399, 5557, 3865, 3321, 3748],
+                   120: [5967,  5398, 5555, 3865, 3321, 3748],
+                   150: [5968,  5399, 5557, 3865, 3321, 3748],
+                   180: [5967,  5398, 5556, 3865, 3321, 3748],
+                   200: [5972,  5403, 5561, 3865, 3321, 3748],
+                   250: [5967,  5398, 5557, 3865, 3321, 3748]}
+
+    for ie in [80, 100, 120, 150, 180, 200, 250]:
+        data['(6,5)'][ie]['delta_E_qp'] = energies_65[ie][0] - energies_65[ie][2]
+
+    energies_76 = {80:  [5975, 5407, 5564, 3865, 3321, 3748],
+                   100: [5972, 5403, 5561, 3865, 3321, 3748],
+                   120: [5974, 5404, 5562, 3865, 3321, 3748]}
+
+    for ie in [80, 100, 120]:
+        data['(7,6)'][ie]['delta_E_qp'] = energies_76[ie][0] - energies_76[ie][2]
+
+    return data
+
+
 def basis_convergence(root):
     """
     Main routine for plotting basis convergence
@@ -283,8 +375,16 @@ def basis_convergence(root):
     print_results(data, energy_cutoffs, '(6,5)')
     print_results(data, energy_cutoffs, '(7,6)')
 
-    plot_data(l_max_pairs, data, basis_labels)
-    plot_65_data(data, basis_labels)
+    # Plot just for set 9
+    # plot_data(l_max_pairs, data, basis_labels)
+    # TODO(Alex) Fix plotting for this
+    # plot_65_data(data, basis_labels)
+
+    # Plot for set 8 and set 9
+    # TODO(Alex) Test they both load on the same plot
+    # If so, fix the colour scheme and plot
+    set8_data = get_set8_data("/users/sol/abuccheri/gw_benchmarks/A1_set8/")
+    plot_data_for_set8_and_set9(set8_data, data)
 
     return
 
