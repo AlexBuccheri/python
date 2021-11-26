@@ -20,7 +20,6 @@ from gw_benchmark_inputs.set9.basis import set_lo_channel_cutoffs, n_energies_pe
 # GLOBAL
 save_plots = True
 
-
 # These path functions should be shared by input and outputs of a given set
 def zro2_path(l_max: dict) -> str:
     """
@@ -208,7 +207,6 @@ def plot_data_for_set8_and_set9(set8, set9):
 
     ax.set_xlabel('l_max (Zr, O)', fontsize=16)
     ax.set_ylabel('Quasiparticle Gap - KS Gap at Gamma (meV)', fontsize=16)
-    ax.legend(loc='lower right', title='LO cutoff (Ha)')
 
     # Get x data in useful form
     n_l_pairs = 4
@@ -219,22 +217,46 @@ def plot_data_for_set8_and_set9(set8, set9):
     ax.set_xticklabels(list(x_label_to_i))
     ax.tick_params(axis='both', which='major', labelsize=16)
 
+    # Fucking mess of hacks
+
     # Plot each energy cutoff separately so missing data can easily be skipped
-    def plot_data(ax, data, x_keys, energy_cutoff):
-        for ie in range(0, n_energies_per_channel):
+    def plot_data_set8(ax, data, x_keys, energy_cutoffs,):
+        for ie in energy_cutoffs:
             x_ie = []
             y_ie = []
             for l_key in x_keys:
-                qp_ks = data[l_key][ie]['delta_E_qp']
-                if qp_ks:
-                    # print(ie, l_key, qp_ks)
+                try:
+                    qp_ks = data[l_key][ie]['delta_E_qp']
                     x_ie.append(x_label_to_i[l_key])
-                    y_ie.append(qp_ks * ha_to_mev)
-            ax.plot(x_ie, y_ie, marker='o', markersize=8, label=str(energy_cutoff[ie]))
+                    y_ie.append(qp_ks)
+                except KeyError:
+                    pass
+            ax.plot(x_ie, y_ie, marker='o',  color='grey', markersize=8)
         return ax
 
-    ax = plot_data(ax, set8, ['(4,3)', '(5,4)', '(6,5)', '(7,6)'], [80, 100, 120, 150, 180, 200, 250])
-    ax = plot_data(ax, set9, ['(6,5)', '(7,6)'], [80, 100, 120, 150, 180, 200])
+    # Plot each energy cutoff separately so missing data can easily be skipped
+    def plot_data_set9(ax, data, x_keys, energy_cutoffs):
+        for ie in range(0, 6):
+            x_ie = []
+            y_ie = []
+            for l_key in x_keys:
+                try:
+                    qp_ks = data[l_key][ie]['delta_E_qp']
+                    if qp_ks:
+                        x_ie.append(x_label_to_i[l_key])
+                        y_ie.append(qp_ks * ha_to_mev)
+                except KeyError:
+                    pass
+            ax.plot(x_ie, y_ie, marker='o', markersize=8, label=str(energy_cutoffs[ie]))
+        return ax
+
+    print('Plotting set 8')
+    ax = plot_data_set8(ax, set8, ['(4,3)', '(5,4)', '(6,5)', '(7,6)'], [80, 100, 120, 150, 180, 200, 250])
+
+    print('Plotting set 9')
+    ax = plot_data_set9(ax, set9, ['(6,5)', '(7,6)'], [80, 100, 120, 150, 180, 200])
+
+    ax.legend(loc='upper left', title='LO cutoff (Ha)')
 
     if save_plots:
         plt.savefig('qp_lmax_LO_sweep.jpeg', dpi=300, facecolor='w', edgecolor='w',
@@ -286,35 +308,34 @@ def plot_65_data(data, basis_labels):
     return
 
 
-def get_set8_data(root_set8):
+def get_set8_data():
     """
+    "/users/sol/abuccheri/gw_benchmarks/A1_set8/"
+
     rgkmax = 8
     MT (Zr, O) = (1.6, 1.6)
-    Energies in meV
+    Energy cut-off in Ha, energies in meV
 
     :param root_set8:
     :return:
     """
+    # Initialise stuff data structure
+    data = {l_pair: {} for l_pair in ['(4,3)', '(5,4)', '(6,5)', '(7,6)']}
 
-    data = {}
+    # LO cut-off (Ha),  QP(G-G) | QP(X-G) | QP(X-X) | KS(G-G) | KS(X-G) | KS(X-X) |
+    energies_43 = {80:  [5935, 5359, 5523, 3865, 3321, 3748],
+                   100: [5930, 5355, 5520, 3865, 3321, 3748],
+                   120: [5926, 5352, 5517, 3865, 3321, 3748],
+                   150: [5928, 5354, 5518, 3865, 3321, 3748],
+                   180: [5927, 5352, 5517, 3865, 3321, 3748],
+                   200: [5927, 5352, 5518, 3865, 3321, 3748],
+                   250: [5928, 5353, 5518, 3865, 3321, 3748]}
 
-    energies_43 = {80:  [],
-                   100: [],
-                   120: [],
-                   150: [],
-                   180: [],
-                   200: [],
-                   250: []}
+    energies_54 = {80:  [5964, 5393, 5551, 3865, 3321, 3748],
+                   100: [5961, 5390, 5548, 3865, 3321, 3748],
+                   120: [5961, 5391, 5549, 3865, 3321, 3748],
+                   150: [5959, 5389, 5548, 3865, 3321, 3748]}
 
-    energies_54 = {80:  [],
-                   100: [],
-                   120: [],
-                   150: [],
-                   180: [],
-                   200: [],
-                   250: []}
-
-    #                  QP(G-G) | QP(X-G) | QP(X-X) | KS(G-G) | KS(X-G) | KS(X-X) |
     energies_65 = {80:  [5972,  5403, 5560, 3865, 3321, 3748],
                    100: [5968,  5399, 5557, 3865, 3321, 3748],
                    120: [5967,  5398, 5555, 3865, 3321, 3748],
@@ -323,15 +344,27 @@ def get_set8_data(root_set8):
                    200: [5972,  5403, 5561, 3865, 3321, 3748],
                    250: [5967,  5398, 5557, 3865, 3321, 3748]}
 
-    for ie in [80, 100, 120, 150, 180, 200, 250]:
-        data['(6,5)'][ie]['delta_E_qp'] = energies_65[ie][0] - energies_65[ie][2]
-
     energies_76 = {80:  [5975, 5407, 5564, 3865, 3321, 3748],
                    100: [5972, 5403, 5561, 3865, 3321, 3748],
                    120: [5974, 5404, 5562, 3865, 3321, 3748]}
 
+    for ie in [80, 100, 120, 150, 180, 200, 250]:
+        delta_E_qp = energies_43[ie][0] - energies_43[ie][3]
+        data['(4,3)'].update({ie: {'delta_E_qp': delta_E_qp}})
+
+    for ie in [80, 100, 120, 150]:
+        delta_E_qp = energies_54[ie][0] - energies_54[ie][3]
+        data['(5,4)'].update({ie: {'delta_E_qp': delta_E_qp}})
+
+    for ie in [80, 100, 120, 150, 180, 200, 250]:
+        delta_E_qp = energies_65[ie][0] - energies_65[ie][3]
+        data['(6,5)'].update({ie: {'delta_E_qp': delta_E_qp}})
+
     for ie in [80, 100, 120]:
-        data['(7,6)'][ie]['delta_E_qp'] = energies_76[ie][0] - energies_76[ie][2]
+        delta_E_qp = energies_76[ie][0] - energies_76[ie][3]
+        data['(7,6)'].update({ie: {'delta_E_qp': delta_E_qp}})
+
+    print(data)
 
     return data
 
@@ -377,13 +410,10 @@ def basis_convergence(root):
 
     # Plot just for set 9
     # plot_data(l_max_pairs, data, basis_labels)
-    # TODO(Alex) Fix plotting for this
     # plot_65_data(data, basis_labels)
 
     # Plot for set 8 and set 9
-    # TODO(Alex) Test they both load on the same plot
-    # If so, fix the colour scheme and plot
-    set8_data = get_set8_data("/users/sol/abuccheri/gw_benchmarks/A1_set8/")
+    set8_data = get_set8_data()
     plot_data_for_set8_and_set9(set8_data, data)
 
     return
