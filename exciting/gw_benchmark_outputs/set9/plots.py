@@ -20,6 +20,7 @@ from gw_benchmark_inputs.set9.basis import set_lo_channel_cutoffs, n_energies_pe
 # GLOBAL
 save_plots = True
 
+
 # These path functions should be shared by input and outputs of a given set
 def zro2_path(l_max: dict) -> str:
     """
@@ -264,7 +265,6 @@ def plot_data_for_set8_and_set9(set8, set9):
     plt.show()
 
 
-
 def plot_65_data(data, basis_labels):
 
     fig, ax = plt.subplots()
@@ -274,8 +274,7 @@ def plot_65_data(data, basis_labels):
     ax.set_xlabel('LO Energy Cutoff (Ha)', fontsize=16)
     ax.set_ylabel('Quasiparticle Gap - KS Gap at Gamma (meV)', fontsize=16)
 
-    plt.xlim(75, 275)
-    plt.ylim(2100, 2108)
+    plt.xlim(75, 220)
 
     def make_label(basis_labels: OrderedDict) -> str:
         label = ''
@@ -290,19 +289,23 @@ def plot_65_data(data, basis_labels):
     x_ie = []
     y_ie = []
     for ie, energy_cutoff in enumerate(energy_cutoffs):
-        qp_ks = data[l_key][ie]['delta_E_qp']
-        if qp_ks:
+        try:
+            qp_ks = data[l_key][ie]['delta_E_qp']
             # Set basis label for each marker
             label = make_label(basis_labels)
             ax.annotate(label.rstrip(), (energy_cutoff, qp_ks * ha_to_mev), fontsize=12)
             # Store points
             x_ie.append(energy_cutoff)
             y_ie.append(qp_ks * ha_to_mev)
+        except KeyError:
+            print(f"Plot skipping (index, energy_cutoff): ({ie}, {energy_cutoff})")
 
     ax.plot(x_ie, y_ie, marker='o', markersize=8)
+
     if save_plots:
         plt.savefig('qp_lmax65.jpeg', dpi=300, facecolor='w', edgecolor='w',
                     orientation='portrait', transparent=True, bbox_inches=None, pad_inches=0.1)
+
     plt.show()
 
     return
@@ -410,7 +413,8 @@ def basis_convergence(root):
 
     # Plot just for set 9
     # plot_data(l_max_pairs, data, basis_labels)
-    # plot_65_data(data, basis_labels)
+    plot_65_data(data, basis_labels)
+    quit()
 
     # Plot for set 8 and set 9
     set8_data = get_set8_data()

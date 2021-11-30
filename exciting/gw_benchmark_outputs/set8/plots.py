@@ -295,6 +295,8 @@ def basis_convergence(root):
     basis_labels = get_basis_labels(root, settings)
 
     plot_data(l_max_pairs, data, basis_labels)
+    print_results(data, energy_cutoff, '(4,3)')
+    print_results(data, energy_cutoff, '(5,4)')
     print_results(data, energy_cutoff, '(6,5)')
     print_results(data, energy_cutoff, '(7,6)')
     plot_65_data(data, basis_labels)
