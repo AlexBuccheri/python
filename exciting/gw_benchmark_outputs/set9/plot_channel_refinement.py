@@ -224,7 +224,7 @@ def refined(root_path: str):
 
 if __name__ == "__main__":
 
-    only_result = True
+    only_result = False
 
     if not only_result:
         print('Refinements')
@@ -235,7 +235,3 @@ if __name__ == "__main__":
     # Note, I manually edited the Zr and O species files based on the above print-outs
     root_path = "/users/sol/abuccheri/gw_benchmarks/A1_set9/zr_lmax6_o_lmax5_rgkmax8/refined/"
     refined(root_path)
-
-
-
-

@@ -111,44 +111,41 @@ def plot_qp_vs_qpoints(q_points, results: list, label: str, file_name):
     ax.set_ylabel(label, fontsize=16)
     ax.plot(regular_x_values, converted_results, 'ro-', markersize=10)
     if save_plots:
-        plt.savefig(file_name + '.jpeg', dpi=300, facecolor='w', edgecolor='w',
+        plt.savefig(file_name, dpi=300, facecolor='w', edgecolor='w',
                     orientation='portrait', transparent=True, bbox_inches=None, pad_inches=0.1)
     plt.show()
+    return
 
 
 def print_results(q_points: List[str], results: list):
-    converted_results = [x * ha_to_mev for x in results]
 
     print("Energies in meV")
 
     header = "# Q-point Grid, QP (Gamma), QP (X-Gamma), QP (X-X), KS (Gamma), KS (X-Gamma), KS (X-X)"
     print(header)
     for i in range(0, len(q_points)):
-        print(q_points[i], converted_results['E_qp_Gamma_Gamma'][i],
-              converted_results['E_qp_X_Gamma'][i],
-              converted_results['E_qp_X_X'][i],
-              converted_results['E_ks_Gamma_Gamma'][i],
-              converted_results['E_ks_X_Gamma'][i],
-              converted_results['E_ks_X_X'][i]
+        print(q_points[i],
+              results['E_qp_Gamma_Gamma'][i] * ha_to_mev,
+              results['E_qp_X_Gamma'][i] * ha_to_mev,
+              results['E_qp_X_X'][i] * ha_to_mev,
+              results['E_ks_Gamma_Gamma'][i] * ha_to_mev,
+              results['E_ks_X_Gamma'][i] * ha_to_mev,
+              results['E_ks_X_X'][i] * ha_to_mev
               )
 
     header = "# Q-point Grid, QP-KS (Gamma), QP-KS (X-Gamma), QP-KS (X-X)"
     print(header)
     for i in range(0, len(q_points)):
-        print(q_points[i], converted_results['delta_E_qp_Gamma_Gamma'][i],
-                           converted_results['delta_E_qp_X_Gamma'][i],
-                           converted_results['delta_E_qp_X_X'][i],
+        print(q_points[i], results['delta_E_qp_Gamma_Gamma'][i] * ha_to_mev,
+                           results['delta_E_qp_X_Gamma'][i] * ha_to_mev,
+                           results['delta_E_qp_X_X'][i] * ha_to_mev,
               )
 
 
 def main(root_path: str):
     """
-    TODO Alex
-    Set plot (and save) for each gap
-    Plot the max number of irr q-points
-    Push to github
 
-    :param root_path:
+    :param str root_path: Root path to calculations
     :return:
     """
     q_point_labels = ['2x2x2', '4x4x4', '6x6x6']
@@ -159,15 +156,18 @@ def main(root_path: str):
 
     plot_qp_vs_qpoints(q_point_labels,
                        results['delta_E_qp_Gamma_Gamma'],
-                       'Quasiparticle Gap - KS Gap at Gamma (meV)')
+                       'Quasiparticle Gap - KS Gap at Gamma (meV)',
+                       "qp_vs_grid_GG.jpeg")
 
     plot_qp_vs_qpoints(q_point_labels,
                        results['delta_E_qp_X_Gamma'],
-                       'Quasiparticle Gap - KS Gap (X-Gamma) (meV)')
+                       'Quasiparticle Gap - KS Gap (X-Gamma) (meV)',
+                       "qp_vs_grid_XG.jpeg")
 
     plot_qp_vs_qpoints(q_point_labels,
                        results['delta_E_qp_X_X'],
-                       'Quasiparticle Gap - KS Gap (X-X) (meV)')
+                       'Quasiparticle Gap - KS Gap (X-X) (meV)',
+                       "qp_vs_grid_XX.jpeg")
 
     print_results(q_point_labels, results)
 
