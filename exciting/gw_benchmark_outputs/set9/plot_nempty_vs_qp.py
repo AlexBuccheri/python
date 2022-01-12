@@ -12,7 +12,7 @@ from units_and_constants.unit_conversions import ha_to_mev
 
 
 class Gap:
-    def __init__(self, v: list, c: list, v_label: Optional[str]='', c_label: Optional[str]=''):
+    def __init__(self, v: list, c: list, v_label: Optional[str] = '', c_label: Optional[str] = ''):
         self.v = v
         self.c = c
         self.v_label = v_label
@@ -64,7 +64,6 @@ def process_gw_calculation(path: str, gaps: List[Gap]) -> dict:
 
 
 def process_gw_calculations(root_path: str, nempty_range: List[int]) -> dict:
-
     gaps = a1_gaps()
     results = {'E_qp_Gamma_Gamma': [],
                'E_ks_Gamma_Gamma': [],
@@ -90,8 +89,7 @@ def process_gw_calculations(root_path: str, nempty_range: List[int]) -> dict:
     return results
 
 
-def plot_qp_vs_nempty(nempty_range, results: list, label: str):
-
+def plot_qp_vs_nempty(nempty_range, results: list, label: str, file_name='output.jpeg'):
     converted_results = [x * ha_to_mev for x in results]
 
     fig, ax = plt.subplots()
@@ -101,6 +99,9 @@ def plot_qp_vs_nempty(nempty_range, results: list, label: str):
     ax.set_xlabel('Number of Empty States', fontsize=16)
     ax.set_ylabel(label, fontsize=16)
     ax.plot(nempty_range, converted_results, 'ro-', markersize=10)
+    if save_plots:
+        plt.savefig(file_name, dpi=300, facecolor='w', edgecolor='w',
+                    orientation='portrait', transparent=True, bbox_inches=None, pad_inches=0.1)
     plt.show()
 
 
@@ -114,15 +115,39 @@ def print_results(nempty_range: List[int], results: list, label: str):
 def main(root_path: str, nempty_range: List[int]):
     results = process_gw_calculations(root_path, nempty_range)
 
+    # Plots
     plot_qp_vs_nempty(nempty_range,
                       results['delta_E_qp_Gamma_Gamma'],
-                      'Quasiparticle Gap - KS Gap at Gamma (meV)')
+                      'Quasiparticle Gap - KS Gap at Gamma (meV)',
+                      file_name="qp_GG_vs_nempty.jpeg")
+
+    plot_qp_vs_nempty(nempty_range,
+                      results['delta_E_qp_X_Gamma'],
+                      'Quasiparticle Gap - KS Gap (X-Gamma) (meV)',
+                      file_name="qp_XG_vs_nempty.jpeg")
+
+    plot_qp_vs_nempty(nempty_range,
+                      results['delta_E_qp_X_X'],
+                      'Quasiparticle Gap - KS Gap (X-X) (meV)',
+                      file_name="qp_XX_vs_nempty.jpeg")
+
+    # Printing
     print_results(nempty_range,
-                      results['delta_E_qp_Gamma_Gamma'],
-                      'Quasiparticle Gap - KS Gap at Gamma (meV)')
+                  results['delta_E_qp_Gamma_Gamma'],
+                  'Quasiparticle Gap - KS Gap at Gamma (meV)')
+
+    print_results(nempty_range,
+                  results['delta_E_qp_X_Gamma'],
+                  'Quasiparticle Gap - KS Gap (X-Gamma( (meV)')
+
+    print_results(nempty_range,
+                  results['delta_E_qp_X_X'],
+                  'Quasiparticle Gap - KS Gap (X-X) (meV)')
 
 
+save_plots = True
 if __name__ == "__main__":
+    # 1187 = max available. I.e. 1200 all - 21 occupied
     root_path = "/users/sol/abuccheri/gw_benchmarks/A1_set9/zr_lmax6_o_lmax5_rgkmax8/nempty_vs_qp"
-    nempty_range = [200, 400, 600, 800, 1000, 1100, 1208]
+    nempty_range = [200, 400, 600, 800, 1000, 1100, 1187]
     main(root_path, nempty_range)
