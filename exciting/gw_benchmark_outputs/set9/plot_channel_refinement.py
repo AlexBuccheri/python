@@ -221,6 +221,12 @@ def refined(root_path: str):
           rounded_results['E_ks_X_X']
           )
 
+    # TODO(Alex) Need to remove directory naming from the routine
+    # before I can use this
+    # print('Refined basis')
+    # basis_labels = get_basis_labels(root, settings)
+    # label = make_label(basis_labels)
+
 
 if __name__ == "__main__":
 

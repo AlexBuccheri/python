@@ -114,7 +114,6 @@ def plot_qp_vs_qpoints(q_points, results: list, label: str, file_name):
         plt.savefig(file_name, dpi=300, facecolor='w', edgecolor='w',
                     orientation='portrait', transparent=True, bbox_inches=None, pad_inches=0.1)
     plt.show()
-    return
 
 
 def print_results(q_points: List[str], results: list):
