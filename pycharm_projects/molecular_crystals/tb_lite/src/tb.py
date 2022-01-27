@@ -2,7 +2,6 @@
 
 """
 import re
-
 import numpy as np
 
 
@@ -81,22 +80,35 @@ def parse_qcore_structure(file_name: str) -> dict:
             'lattice': [a, b, c], 'lattice_vectors_unit': unit}
 
 
+def parse_qcore_settings(file_name: str) -> dict:
+
+    with open(file_name) as fid:
+        qcore_input_lines = fid.readlines()
+
+    for line in qcore_input_lines:
+        line_str = line.strip()
+        match_mp = re.match("monkhorst_pack", line_str)
+        match_etmp = re.match("temperature", line_str)
+        if match_mp:
+            k_str = line_str.split('=')[-1].strip()[1:-1]
+            k_points = [float(k) for k in k_str.split(',')]
+        if match_etmp:
+            electronic_temperature = float(line_str.split()[-2])
+
+    data = {'k_points': k_points, 'electronic_temperature': electronic_temperature}
+
+    return data
 
 
-def parse_qcore_settings():
-    k_points = [] # monkhorst_pack
-    electronic_temperature = [] #
-    return None
-
-def apply_lattice_multipliers():
+def apply_lattice_multiplier(multiplier: float, lattice: np.ndarray):
     return
 
 
-def generate_tb_input():
-    return None
 
 
-class BinaryRunner():
+
+
+class BinaryRunner:
     # Copy from my ASE implementation
     def __init__(self, a):
         self.a = a
