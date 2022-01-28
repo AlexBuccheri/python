@@ -1,12 +1,9 @@
 """
-For each molecular crystal, vary the lattice constant from 0.8 to 1.2 * equilibrium
-- Have positions in fraction
-Write the TB lite input files
+TODOs
 Run the calculation
  - note any failing
 Parse the results
 Plot the results
-https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.Atoms.cell
 """
 from typing import List
 

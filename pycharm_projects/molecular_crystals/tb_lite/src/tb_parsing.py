@@ -99,6 +99,50 @@ def parse_qcore_settings(file_name: str) -> dict:
     return data
 
 
-def parse_tb_output():
-    return None
+def parse_tb_output(input: str) -> dict:
+    """
+    Parse selected TB lite outputs in eV.
+
+    End of file has the typical structure:
+    '''
+       Fermi level:                        -0.4495587982 H          -12.2331 eV
+       Band energy:                       -21.9227015154 H         -596.5471 eV
+       TS:                                  0.0000949682 H            0.0026 eV
+       Band free energy (E-TS):           -21.9227964836 H         -596.5496 eV
+       Extrapolated E(0K):                -21.9227489995 H         -596.5484 eV
+       Input / Output electrons (q):     44.0000000000     44.0000000000
+
+       Energy H0:                         -18.2466149624 H         -496.5157 eV
+       Energy SCC:                         -0.0415167324 H           -1.1297 eV
+       Total Electronic energy:           -18.2881316948 H         -497.6454 eV
+       Repulsive energy:                    0.0000000000 H            0.0000 eV
+       Total energy:                      -18.2881316948 H         -497.6454 eV
+       Extrapolated to 0:                 -18.2881791788 H         -497.6467 eV
+       Total Mermin free energy:          -18.2882266629 H         -497.6480 eV
+       Force related energy:              -18.2882266629 H         -497.6480 eV
+
+      SCC converged
+
+      Full geometry written in geo_end.{xyz|gen}
+
+      Geometry converged
+    '''
+
+    :param input: File string
+    :return: results dictionary
+    """
+    energy_h0 = re.findall(r'^Energy H0: .*$', input, flags=re.MULTILINE)[0].split()[-2]
+    energy_scc = re.findall(r'^Energy SCC: .*$', input, flags=re.MULTILINE)[0].split()[-2]
+    total_electronic_energy = re.findall(r'^Total Electronic energy: .*$', input, flags=re.MULTILINE)[0].split()[-2]
+    repulsive_energy = re.findall(r'^Repulsive energy: .*$', input, flags=re.MULTILINE)[0].split()[-2]
+    total_energy = re.findall(r'^Total energy: .*$', input, flags=re.MULTILINE)[0].split()[-2]
+
+    results = {'energy_h0': energy_h0, 'energy_scc': energy_scc, 'total_electronic_energy': total_electronic_energy,
+               'repulsive_energy': repulsive_energy, 'total_energy': total_energy}
+
+    # Convert all strings to floats
+    for key, value in results.items():
+        results[key] = float(value)
+
+    return results
 

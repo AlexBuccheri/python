@@ -1,6 +1,9 @@
 """
 Main workflow operations:
     generate TB lite inputs for a range of
+
+TODO Alex. The directory generation should be done separately to the file generation
+- Really makes routines inflexible.
 """
 import os
 from pathlib import Path
@@ -10,7 +13,7 @@ import numpy as np
 from ase.io.dftb import write_dftb
 
 from tb_lite.src.dftb_input import generate_dftb_hsd, DftbInput
-from tb_lite.src.tb import parse_qcore_structure, parse_qcore_settings
+from tb_lite.src.tb_parsing import parse_qcore_structure, parse_qcore_settings
 
 
 def generate_inputs(input_directory: str,
@@ -22,7 +25,10 @@ def generate_inputs(input_directory: str,
 
     For writing DFTB+ with ASE, see:
     https://wiki.fysik.dtu.dk/ase/_modules/ase/io/dftb.html#write_dftb
-    Aannoyingly no option to write to .gen in fractional (even though DFTB+ accepts it)
+    Annoyingly no option to write to .gen in fractional (even though DFTB+ accepts it)
+
+    ASE Atoms():
+    https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.Atoms.cell
 
     :param input_directory: Location of input file
     :param output_directory: Run/output directory
