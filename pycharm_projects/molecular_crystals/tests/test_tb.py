@@ -5,7 +5,7 @@ def test_parse_qcore_input():
     # Assumes pytest run from the root
     structure: dict = parse_qcore_structure('data/entos/acetic.cif.in')
     # TODO(Alex) Add an assert
-    #print(structure)
+    # print(structure)
 
 
 def test_parse_qcore_settings():
@@ -45,6 +45,7 @@ Full geometry written in geo_end.{xyz|gen}
  
 Geometry converged
 """
+
 
 def test_parse_tb_output():
     result: dict = parse_tb_output(partial_tblite_output)
