@@ -3,6 +3,18 @@ Generate DFTB+/TB lite input file
 """
 
 
+class DftbInput:
+    """ Class to collate all DFTB+ input classes
+    """
+    def __init__(self,
+                 driver=None,
+                 hamiltonian=None,
+                 options=None):
+        self.driver = driver
+        self.hamiltonian = hamiltonian
+        self.options = options
+
+
 class Driver:
     def __init__(self,
                  type='ConjugateGradient',

@@ -1,8 +1,7 @@
 """
-
+Should rename module - contains parsers
 """
 import re
-import numpy as np
 
 
 def parse_qcore_structure(file_name: str) -> dict:
@@ -100,19 +99,6 @@ def parse_qcore_settings(file_name: str) -> dict:
     return data
 
 
-def apply_lattice_multiplier(multiplier: float, lattice: np.ndarray):
-    return
-
-
-
-
-
-
-class BinaryRunner:
-    # Copy from my ASE implementation
-    def __init__(self, a):
-        self.a = a
-
-
 def parse_tb_output():
     return None
+
