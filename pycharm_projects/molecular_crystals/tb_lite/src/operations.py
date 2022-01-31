@@ -12,8 +12,18 @@ import ase
 import numpy as np
 from ase.io.dftb import write_dftb
 
-from tb_lite.src.dftb_input import generate_dftb_hsd, DftbInput
+from tb_lite.src.dftb_input import DftbInput
 from tb_lite.src.tb_parsing import parse_qcore_structure, parse_qcore_settings
+
+
+def directory_name(output_directory: str, material: str, multiplier: float) -> str:
+    """ Define directory name
+    :param output_directory:
+    :param material:
+    :param multiplier:
+    :return:
+    """
+    return os.path.join(output_directory, material.split('.')[0], str(round(multiplier, 4)))
 
 
 def generate_inputs(input_directory: str,
@@ -40,14 +50,12 @@ def generate_inputs(input_directory: str,
     # QCore
     qcore_file = os.path.join(input_directory, material)
     structure = parse_qcore_structure(qcore_file)
-
     # TBLite
-    dftb_input_str = generate_dftb_hsd(dftb_input.driver, dftb_input.hamiltonian, dftb_input.options)
+    dftb_input_str = dftb_input.generate_dftb_hsd()
 
-    Path(output_directory).mkdir(parents=True, exist_ok=True)
     for multiplier in lattice_multipliers:
         # Run/output directory
-        dir = output_directory + '/' + str(multiplier)
+        dir = directory_name(output_directory, material, multiplier)
         Path(dir).mkdir(parents=True, exist_ok=True)
 
         # DFTB input file
