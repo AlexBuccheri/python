@@ -4,6 +4,7 @@ import os.path
 from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 from tb_lite.src.dftb_input import Hamiltonian, Options, DftbInput
 from tb_lite.src.operations import generate_inputs, directory_name
@@ -95,19 +96,25 @@ def run_jobs(root):
             print(run_dir, process_results.success)
 
 
-def get_results(root):
+def get_results(root, pickle_me=False) -> dict:
     """ Get results and plot energy vs volume
+
+    Pickle results:
+        {
+        'lattice_multipliers': np.array([0.8, ..., 1.2]),
+        'material': np.energies
+        }
 
     :param root:
     :return:
     """
-    materials = ['trioxane_g']
+    materials = all_materials
     lattice_multipliers = np.arange(0.8, 1.2, step=0.025)
     output_directory = os.path.join(root, 'outputs')
 
     # Collated results
     total_energy = np.empty(shape=(len(lattice_multipliers)))
-    total_energies = {}
+    total_energies = {'lattice_multipliers': lattice_multipliers}
 
     for material in materials:
 
@@ -118,13 +125,33 @@ def get_results(root):
             results = parse_tb_output(file_str)
             total_energy[i] = results['total_energy']
 
-        total_energies[material] = total_energy
+        total_energies[material] = total_energy.copy()
 
-    print(total_energies)
-    plt.plot(lattice_multipliers, total_energies['trioxane_g'], 'go--', linewidth=2, markersize=12)
-    plt.show()
+    if pickle_me:
+        pickle.dump(total_energies, open("molecular_crystals_tblite.p", "wb"))
+
+    return total_energies
+
+
+def plot_results(total_energies):
+    lattice_multipliers = np.arange(0.8, 1.2, step=0.025)
+
+    for file in all_materials:
+        material = file.split('.')[0]
+        fname = os.path.join('plots', material)
+        plt.xlabel('Lattice Mulitplier')
+        plt.ylabel('Total Energy (eV)')
+        plt.plot(lattice_multipliers, total_energies[file], 'go--', linewidth=2, markersize=12, label=material)
+        plt.legend()
+        plt.savefig(fname, dpi='figure', format=None, metadata=None, bbox_inches=None, pad_inches=0.1)
+        plt.clf()
 
 
 
-inputs(all_materials)
+# -----------------
+# Run the script
+# -----------------
+#inputs(all_materials)
 #run_jobs('/home/alex/tblite/molecular_crystals')
+total_energies = get_results("/Users/alexanderbuccheri/Python/pycharm_projects/molecular_crystals")
+plot_results(total_energies)

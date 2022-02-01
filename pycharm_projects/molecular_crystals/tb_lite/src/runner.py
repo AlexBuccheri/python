@@ -7,6 +7,7 @@ import os
 import subprocess
 import shutil
 
+
 class SubprocessRunResults:
     """
     Results returned from subprocess.run()
@@ -30,7 +31,7 @@ class BinaryRunner:
                  run_cmd: List[str],
                  omp_num_threads: int,
                  time_out: int,
-                 directory: Optional[path_type]='./',
+                 directory: Optional[path_type] = './',
                  args=None
                  ) -> None:
         """
