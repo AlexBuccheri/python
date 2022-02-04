@@ -22,7 +22,7 @@ def get_material(material_name: str) -> DftbInput:
     materials = {}
 
     materials['silicon'] = DftbInput(hamiltonian=Hamiltonian(method='GFN1-xTB', temperature=0.0, scc_tolerance=1.e-6,
-                                                             k_points=[8, 8, 8]))
+                                                             k_grid=[8, 8, 8]))
 
     try:
         material = materials[material_name]

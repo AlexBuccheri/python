@@ -71,7 +71,7 @@ def inputs(materials: List[str]):
 
     for material in materials:
         dftb_input = DftbInput(
-            hamiltonian=Hamiltonian(method='GFN1-xTB', temperature=0, scc_tolerance=1.e-6, k_points=[4, 4, 4]),
+            hamiltonian=Hamiltonian(method='GFN1-xTB', temperature=0, scc_tolerance=1.e-6, k_grid=[4, 4, 4]),
             options=Options())
         generate_inputs(input_directory, 'outputs', material, dftb_input)
 

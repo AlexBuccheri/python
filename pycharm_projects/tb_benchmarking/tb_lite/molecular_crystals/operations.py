@@ -75,12 +75,3 @@ def generate_inputs(input_directory: str,
 
         write_dftb(dir + "/geometry.gen", atoms)
 
-
-def run_inputs():
-    # Run files and log run-time errors
-    return None
-
-
-def parse_inputs():
-    # Parse files and plot
-    return None

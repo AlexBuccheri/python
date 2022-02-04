@@ -62,23 +62,29 @@ class Hamiltonian:
                  method='GFN1-xTB',
                  temperature=0.0,
                  scc_tolerance=1.e-6,
+                 k_grid=None,
                  k_points=None,
                  max_scf=50):
         self.method = method
         self.temperature = temperature
         self.scc_tolerance = scc_tolerance
-        self.k_points = [4, 4, 4] if k_points is None else k_points
+        self.k_grid = k_grid
+        # TODO(Alex) Fix the to_string for explicit k_points
+        self.k_points = k_points
         self.k_weights = self.set_k_weights()
         self.max_scf = max_scf
+
+        if (k_grid is not None) and (k_points is not None):
+            raise ValueError('k_grid or explicit k_points should be set, but not both')
 
     def set_k_weights(self) -> list:
         weights = [0.0, 0.0, 0.0]
         # 0.0 if odd, 0.5 if even
-        weights = [0.5 for k in self.k_points if k % 2 == 0]
+        weights = [0.5 for k in self.k_grid if k % 2 == 0]
         return weights
 
     def to_string(self):
-        k1, k2, k3 = self.k_points
+        k1, k2, k3 = self.k_grid
         w1, w2, w3 = self.k_weights
         string = f"""Hamiltonian = xTB {{
   Method = "{self.method}"
