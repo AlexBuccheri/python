@@ -1,0 +1,56 @@
+
+mgo_volume := xtb(
+ structure( 
+          fractional= [['H', 0.0, 0.95048, 0.04996],
+                       ['H', 0.0, 0.0, 0.04993],
+                       ['H', 0.0, 0.09219, 0.02496],
+                       ['H', 0.0, 0.04952, 0.04996],
+                       ['H', 0.0, 0.04952, 0.95004],
+                       ['H', 0.0, 0.09219, 0.97504],
+                       ['H', 0.0, 0.0, 0.95007],
+                       ['H', 0.0, 0.90781, 0.02496],
+                       ['H', 0.0, 0.90781, 0.97504],
+                       ['H', 0.0, 0.95048, 0.95004],
+                       ['C', 0.0, 0.07321, 0.01423],
+                       ['C', 0.0, 0.04953, 0.02814],
+                       ['C', 0.0, 0.02448, 0.01447],
+                       ['C', 0.0, 0.02448, 0.98553],
+                       ['C', 0.0, 0.04953, 0.97186],
+                       ['C', 0.0, 0.07321, 0.98577],
+                       ['C', 0.0, 0.0, 0.02809],
+                       ['C', 0.0, 0.0, 0.97191],
+                       ['C', 0.0, 0.97552, 0.98553],
+                       ['C', 0.0, 0.97552, 0.01447],
+                       ['C', 0.0, 0.95047, 0.02814],
+                       ['C', 0.0, 0.92679, 0.01423],
+                       ['C', 0.0, 0.92679, 0.98577],
+                       ['C', 0.0, 0.95047, 0.97186]]
+          
+          lattice( 
+                   lattice_vectors = [[50.0, 0.0, 3.061616997868383e-15], [8.040613248383182e-15, 50.0, 3.061616997868383e-15], [0.0, 0.0, 50.0]]
+                   lattice_vectors_unit = angstrom
+                  )
+          
+         )
+
+ h0_cutoff = 100 bohr
+ overlap_cutoff = 100 bohr
+ repulsive_cutoff = 100 bohr
+ ewald_real_cutoff = 40 bohr
+ ewald_reciprocal_cutoff = 5 
+ ewald_alpha = 0.6 
+ ewald_expansion_order = 13 
+ ewald_dipole_cutoff = 80 bohr
+ overlap_screening_threshold = -1 
+ monkhorst_pack = [4, 4, 4] 
+ no_fail = true 
+ symmetry_reduction = false 
+ temperature = 0 kelvin
+ potential_type = full 
+ max_iter = 500 
+ print_level = 1 
+ solver = SCC 
+
+)
+
+

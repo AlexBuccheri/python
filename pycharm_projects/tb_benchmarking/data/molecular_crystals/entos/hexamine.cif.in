@@ -1,0 +1,54 @@
+
+mgo_volume := xtb(
+ structure( 
+          fractional= [['H', 0.0, 0.24172, 0.42528],
+                       ['H', 0.42528, 0.0, 0.24172],
+                       ['H', 0.18356, 0.75827, 0.75827],
+                       ['H', 0.42528, 0.24172, 0.0],
+                       ['H', 0.24172, 0.0, 0.42528],
+                       ['H', 0.24172, 0.42528, 0.0],
+                       ['H', 0.81644, 0.57472, 0.57472],
+                       ['H', 0.57472, 0.81644, 0.57472],
+                       ['H', 0.75827, 0.18356, 0.75827],
+                       ['H', 0.0, 0.42528, 0.24172],
+                       ['H', 0.75827, 0.75827, 0.18356],
+                       ['H', 0.57472, 0.57472, 0.81644],
+                       ['C', 0.0, 0.24304, 0.24304],
+                       ['C', 0.24304, 0.0, 0.24304],
+                       ['C', 0.0, 0.75696, 0.75696],
+                       ['C', 0.24304, 0.24304, 0.0],
+                       ['C', 0.75696, 0.0, 0.75696],
+                       ['C', 0.75696, 0.75696, 0.0],
+                       ['N', 0.24955, 0.24955, 0.24955],
+                       ['N', 0.0, 0.75045, 0.0],
+                       ['N', 0.0, 0.0, 0.75045],
+                       ['N', 0.75045, 0.0, 0.0]]
+          
+          lattice( 
+                   lattice_vectors = [[5.67681511668647, 0.0, -2.007057232275653], [-2.8384075583432353, 4.916266103638005, -2.007057232275653], [0.0, 0.0, 6.021171696826958]]
+                   lattice_vectors_unit = angstrom
+                  )
+          
+         )
+
+ h0_cutoff = 100 bohr
+ overlap_cutoff = 100 bohr
+ repulsive_cutoff = 100 bohr
+ ewald_real_cutoff = 40 bohr
+ ewald_reciprocal_cutoff = 5 
+ ewald_alpha = 0.6 
+ ewald_expansion_order = 13 
+ ewald_dipole_cutoff = 80 bohr
+ overlap_screening_threshold = -1 
+ monkhorst_pack = [4, 4, 4] 
+ no_fail = true 
+ symmetry_reduction = false 
+ temperature = 0 kelvin
+ potential_type = full 
+ max_iter = 500 
+ print_level = 1 
+ solver = SCC 
+
+)
+
+
