@@ -196,4 +196,3 @@ def parse_dftb_bands(directory) -> np.ndarray:
         bands[ik, :] = band_energies
 
     return bands
-
