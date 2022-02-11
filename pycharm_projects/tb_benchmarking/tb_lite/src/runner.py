@@ -67,7 +67,7 @@ class BinaryRunner:
             raise ValueError("Run commands expected in a list. For example ['mpirun', '-np', '2']")
 
         try:
-            i = run_cmd.index('np')
+            i = run_cmd.index('-np')
             mpi_processes = eval(run_cmd[i + 1])
             assert type(mpi_processes) == int, "Number of MPI processes should be an int"
             assert mpi_processes > 0, "Number of MPI processes must be > 0"
