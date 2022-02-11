@@ -11,7 +11,7 @@ Approach:
 # and have the code also run 14, 14,14 - confirm converged.
 # Can then fully automate
 import os.path
-from typing import Tuple
+from typing import Tuple, List
 from pathlib import Path
 
 import ase
@@ -44,10 +44,15 @@ def write_an_xtb1_input(directory: str, material: str):
         fid.write(input.generate_dftb_hsd())
 
 
-def converge_density(cif_file_name: str, calculation_dir, clear_dir=True):
+def converge_density(cif_file_name: str, calculation_dir, clear_dir=True) -> List[dict]:
     """ Converge the density for a material w.r.t. k-points
-    Start with something highly-converged,
-    :return:
+
+    Note, some materials will converge very quickly w.r.t. k. Others may require
+    the full range of sampling to be tested.
+
+    TODO(Alex) Add the directory management and test. If ok, roll out on all of the systems.
+
+    :return: List of k_sampling and total_energy, per calculation.
     """
     pj = os.path.join
     results = []
@@ -57,7 +62,7 @@ def converge_density(cif_file_name: str, calculation_dir, clear_dir=True):
         pass
         # TODO Clear directory to start
 
-    for i, k in enumerate([12, 14, 16, 18]):
+    for i, k in enumerate([4, 6, 8, 10, 12, 14, 16, 18, 20]):
         # Geometry and input
         atoms = cif_to_ase_atoms(cif_file_name)
         input = DftbInput(
@@ -88,9 +93,6 @@ def converge_density(cif_file_name: str, calculation_dir, clear_dir=True):
                 return results
 
         return results
-
-
-
 
 
 def get_material_xtb1(material_name: str) -> Tuple[ase.atoms.Atoms, DftbInput]:
