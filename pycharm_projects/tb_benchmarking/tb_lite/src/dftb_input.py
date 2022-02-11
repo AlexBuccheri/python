@@ -23,7 +23,7 @@ class DftbInput:
         GEN format done separately, with ASE
         """
         driver_string = self.driver.to_string() if isinstance(self.driver, Driver) else ''
-        ham_string = self.hamiltonian.to_string() if isinstance(self.hamiltonian, Hamiltonian) else ''
+        ham_string = self.hamiltonian.to_string() if isinstance(self.hamiltonian, (Hamiltonian, BandStructureHamiltonian)) else ''
         options_string = self.options.to_string() if isinstance(self.options, Options) else ''
 
         dftb_in_template = f"""
