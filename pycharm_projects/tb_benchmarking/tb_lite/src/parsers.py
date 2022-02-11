@@ -6,6 +6,10 @@ import os
 import subprocess
 import numpy as np
 
+import ase
+from pymatgen.io.cif import CifParser
+from pymatgen.core import Structure
+
 
 def parse_qcore_structure(file_name: str) -> dict:
     """ Parse the atomic structure and lattice vectors from QCore.
@@ -196,3 +200,17 @@ def parse_dftb_bands(directory) -> np.ndarray:
         bands[ik, :] = band_energies
 
     return bands
+
+
+def cif_to_ase_atoms(file: str) -> ase.atoms.Atoms:
+    """Convert CIF to ASE Atoms.
+
+    ASE's read_cif() doesn't seem robust, or I'm using it wrong, so use pymatgen instead.
+    :param file:
+    :return:
+    """
+    structure = CifParser(file).get_structures()[0]
+    atoms = ase.atoms.Atoms(numbers=structure.atomic_numbers,
+                            cell=structure.lattice,
+                            scaled_positions=structure.frac_coords)
+    return atoms
