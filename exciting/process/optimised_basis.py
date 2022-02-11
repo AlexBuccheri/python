@@ -45,7 +45,7 @@ class DefaultLOs():
 
         Nodes appear to be interchangeable with the energy parameters, as basis functions
         are solutions of isolated atoms. So each radial function corresponds
-        to an eigenstate of the atom with princial QN, l, n nodes and an energy.
+        to an eigenstate of the atom with principal QN, l, n nodes and an energy.
 
         As such, max_nodes = number of unique trial energies - 1.
 
@@ -56,6 +56,14 @@ class DefaultLOs():
              3: [1.000000000,  1.000000000],
              4: [1.000000000,  1.000000000]}
 
+        self.nodes = {0: 1
+                      1: 0
+                      2: 0
+                      3: 0
+                      4: 0}
+
+        where set(energies) removes duplicates.
+
         :return: dictionary of max_nodes
         """
         self.nodes = {}
@@ -64,7 +72,7 @@ class DefaultLOs():
             self.nodes[l_value] = len(set(energies)) - 1
         return self.nodes
 
-    def __init__(self, linear_energies:dict, nodes:Optional[dict]=None, energy_tol=0.1):
+    def __init__(self, linear_energies: dict, nodes: Optional[dict] = None, energy_tol=0.1):
         """
         Initialise class
         :param linear_energies: Dictionary of all linear energies for an atom's local orbitals

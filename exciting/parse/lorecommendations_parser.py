@@ -8,7 +8,7 @@ import numpy as np
 from exciting_utils.py_grep import grep
 
 
-def parse_lorecommendations(file_name:str, species:list)-> dict:
+def parse_lorecommendations(file_name: str, species: list) -> dict:
     """
     Parse lorecommendations
 
