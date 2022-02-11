@@ -8,32 +8,38 @@ for these materials:
 * TODO  GET Narrow band-gap II-VI: PbS, PbSe, PbTe
 * TODO  GET MoS2, WS2
 """
-import ase
+import os.path
 import numpy as np
+from typing import List
+from pathlib import Path
+import shutil
 
-from tb_lite.src.dftb_input import DftbInput, BandStructureHamiltonian
+from ase.io.gen import read_gen
+from ase.atoms import Atoms
 
-
-# TODO
-# Collate all CIF files
-# Create input files
-# Converge each calculation (no relaxation) - do so manually, for the first instance
-# Plot band structure
-#
-# Done
-# Generate inputs for calculation 2: generate_band_structure_input
-# Parse band structure - needs testing
-# Get band gap - needs testing
+from tb_lite.src.dftb_input import generate_band_structure_input
 
 
-def run_calculations():
-    """
-    Run calculation 1 to get converged charges
-     - I will probably semi-manually run these to confirm convergence in each case.
-    Run calculation 2 to get the band structure
+def generate_band_structure_inputs(converged_directories: List[str]):
+    """ Given a list of directories with converged calculations,
+        Generate band structure inputs.
     :return:
     """
-    return None
+    for converged_directory in converged_directories:
+        # Create new directory - assumes a naming convention: some/directory/material_name
+        head, material_name = os.path.split(converged_directory)
+        bands_directory = os.path.join(head, material_name + "_bands")
+        Path(bands_directory).mkdir(parents=True, exist_ok=True)
+
+        # Copy the charges and structure
+        for file in ['charges.bin', 'geometry.gen']:
+            shutil.copyfile(os.path.join(converged_directory, file), os.path.join(bands_directory, file))
+
+        # Generate a new input file, for band structure
+        atoms: Atoms = read_gen(os.path.join(bands_directory, 'geometry.gen'))
+        input_xml_str = generate_band_structure_input(atoms.get_cell(), 'GFN1-xTB')
+        with open(os.path.join(bands_directory, 'dftb_in.hsd'), 'w') as fid:
+            fid.write(input_xml_str)
 
 
 def plot_band_structure():
@@ -82,3 +88,8 @@ class BandGap:
         i_vb_max = np.amax(self.band_energies[:, self.n_occupied_bands])
         i_cb_min = np.amin(self.band_energies[:, self.n_occupied_bands + 1])
         return k_points[i_vb_max, :], k_points[i_cb_min, :]
+
+
+# bs_root = '/Users/alexanderbuccheri/Python/pycharm_projects/tb_benchmarking/band_structures/'
+# converged_dirs = [bs_root + x for x in ['diamond', 'silicon', 'germanium']]
+# generate_band_structure_inputs(converged_dirs)
