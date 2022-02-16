@@ -68,7 +68,7 @@ def consistent_muffin_tin_radius(rgkmax_input: int, atomic_number_x: int, minimu
 
     :return:
     """
-    return (fixed_precision_rgkmax(atomic_number_x) / rgkmax_input) * minimum_mt_radius
+    # return (fixed_precision_rgkmax(atomic_number_x) / rgkmax_input) * minimum_mt_radius
 
 
 class MoS2WS2Bilayer:
@@ -82,75 +82,18 @@ class MoS2WS2Bilayer:
     #                     [6.365167633892244e-18 -3.748609667104484e-30, 39.58711265]])
 
     # Lattice with ~ zero terms rounded
-    lattice = np.array([[ 3.168394160510246,  0.0,                0.0],
+    lattice = np.array([[3.168394160510246, 0.0, 0.0],
                         [-1.5841970805453853, 2.7439098312114987, 0.0],
-                        [ 0.0,                0.0,                39.58711265]])
+                        [0.0, 0.0, 39.58711265]])
 
-    positions = np.array([[0.00000000,  0.00000000,  16.68421565],
-                          [1.58419708,  0.91463661,  18.25982194],
-                          [1.58419708,  0.91463661,  15.10652203],
-                          [1.58419708,  0.91463661,  22.90251866],
-                          [0.00000000,  0.00000000,  24.46831689],
-                          [0.00000000,  0.00000000,  21.33906353]])
+    positions = np.array([[0.00000000, 0.00000000, 16.68421565],
+                          [1.58419708, 0.91463661, 18.25982194],
+                          [1.58419708, 0.91463661, 15.10652203],
+                          [1.58419708, 0.91463661, 22.90251866],
+                          [0.00000000, 0.00000000, 24.46831689],
+                          [0.00000000, 0.00000000, 21.33906353]])
     elements = ['W', 'S', 'S', 'Mo', 'S', 'S']
     atomic_numbers = [74, 16, 16, 42, 16, 16]
-
-# TODO(Alex)
-# This is more work than I would like:
-# Need to ensure the cell origin is at the corner
-# Would prefer fractional coordinates
-# Need to test that the expression works on a simple 2D example I can work out the result to
-# dr - np.rint(dr / cell_lengths) * cell_lengths
-
-# def minimum_image_distance_matrix(a: np.ndarray, lattice: np.ndarray):
-#
-#     assert a.shape[1] == 3, "Expect vectors to be Euclidean"
-#     n_vectors = a.shape[0]
-#     cell_lengths = np.asarray([np.linalg.norm(lattice[i, :]) for i in range(0, 3)])
-#
-#     d = np.empty(shape=(n_vectors, n_vectors))
-#     np.fill_diagonal(d, 0.)
-#
-#     # Upper triangle
-#     for i in range(0, n_vectors):
-#         for j in range(i + 1, n_vectors):
-#             dr = a[j, :] - a[i, :]
-#             print(dr - np.rint(dr / cell_lengths) * cell_lengths)
-#             d[i, j] = np.linalg.norm(dr - np.rint(dr / cell_lengths) * cell_lengths)
-#             d[j, i] = d[i, j]
-#
-#     return d
-#
-#
-# def distance_matrix(a: np.ndarray):
-#
-#     assert a.shape[1] == 3, "Expect vectors to be Euclidean"
-#     n_vectors = a.shape[0]
-#     d = np.empty(shape=(n_vectors, n_vectors))
-#     np.fill_diagonal(d, 0.)
-#
-#     # Upper triangle
-#     for i in range(0, n_vectors):
-#         for j in range(i + 1, n_vectors):
-#             d[i, j] = np.linalg.norm(a[j, :] - a[i, :])
-#             d[j, i] = d[i, j]
-#
-#     return d
-#
-# def optimal_muffin_tin_radii(positions: np.ndarray, lattice: np.ndarray, atomic_numbers: List[int]):
-#
-#     # Use rgkmax as proxy for MT radius (seem to be correlated)
-#     species_min_mt = np.amin([fixed_precision_rgkmax(x) for x in atomic_numbers])
-#
-#     dm = scipy_distance_matrix(positions, positions)
-#     dm2 = distance_matrix(positions)
-#     dm3 = minimum_image_distance_matrix(positions - positions[0, :], lattice)
-#     print(dm - dm2)
-#     print(dm2)
-#     print(dm3)
-#
-
-
 
 
 def minimum_muffin_tin_radius(positions: np.ndarray, lattice: np.ndarray, atomic_numbers: List[int]):
@@ -170,7 +113,7 @@ def minimum_muffin_tin_radius(positions: np.ndarray, lattice: np.ndarray, atomic
         # Percentage of the bond that should be taken by the radius of an_min and an, respectively
         percentage_min = 1. / denominator
         percentage_x = (fixed_precision_rgkmax(an) / rgkmax_min) / denominator
-        #print(percentage_min, percentage_x)
+        # print(percentage_min, percentage_x)
         print((an_min, an), percentage_min * bond_length)
 
 
@@ -256,18 +199,67 @@ def minimum_bond_length(vectors: np.ndarray) -> float:
     return np.min(norms)
 
 
+def optimal_smallest_muffin_tin_radius(an_x, an_y, bond_length):
+    """For each bond length, compute the smaller MT radius associated with the two
+    elements comprising the bond, according to the ratio of rgkmaxs.
+
+    MT_y = (rgkmax_y / rgkmax_x) * MT_x
+    where MT_x corresponds to the smallest MT in the system, and rgkmax_i are a consistent set of tabulated
+    rgkmax values (leading to the same precision in total energy), the smallest MT radius can be used
+    to determine consistent MT radii for all other elements in the system.
+
+    The sum of two muffin tin radii cannot exceed the bond length:
+    MT_y + MY_x = bond_length
+
+    therefore substituting for MT_y and rearranging for MT_x:
+    MT_x = bond_length / (1 + (rgkmax_y / rgkmax_x))
+
+    :param an_x:
+    :param an_y:
+    :param bond_length:
+    :return:
+    """
+    mt_x = bond_length / (1 + fixed_precision_rgkmax(an_y) / fixed_precision_rgkmax(an_x))
+    return mt_x
 
 
-# Method for finding the optimal MT radii
-# Optimal is almost-touching MT spheres
-# Want to find a pair list for each diatomic permutation in the system, then determine the optimal MT radii of
-# non-touching spheres from this, using the ratio above
-# This can be a starting point, however one may then need to reduce them
-# if the charge overlaps too much
+if __name__ == "__main__":
+    # Get touching spheres, using optimal radius ratios.
+    # In the case of the bond length = min(X_min_mt - Y), the MT spheres should touch.
+    # In all other cases, the Y_mt will be determined by X_min_mt
+    # Basically want to get the touching sphere recommendations, select the smallest MT radius for the element
+    # expected to have the smallest MT radius, else I cannot maintain valid ratios with the other species without overlap
+    # Then I just reduce all MT radii by 10-30% (printing out the radii) and do the charge plotting to view an optimal
 
-system = MoS2WS2Bilayer()
-#print(find_minimum_bond_lengths(system.positions, system.lattice, system.atomic_numbers))
-minimum_muffin_tin_radius(system.positions, system.lattice, system.atomic_numbers)
+    system = MoS2WS2Bilayer()
+    an_mt_min = atomic_number_species_with_mt_min(system.atomic_numbers)
+    min_bond_lengths = find_minimum_bond_lengths(system.positions, system.lattice, system.atomic_numbers)
 
-for x in [74, 42]:
-    print(consistent_muffin_tin_radius(8, x, 1.05))
+    print(f"Minimum bond lengths between atomic number {an_mt_min} and:")
+    for an, min_b_len in min_bond_lengths.items():
+        print(f' Atomic number {an}, min bond length {min_b_len}')
+
+    print("For each bond, compute the MT radius associated with the element"
+          "with the smallest MT radius. \n Do this for each bond, and choose the "
+          "minimum.")
+    mt_mins = []
+    for an_y, bond_length in min_bond_lengths.items():
+        radius = optimal_smallest_muffin_tin_radius(an_mt_min, an_y, bond_length)
+        mt_mins.append(round(radius, ndigits=4))
+
+    print(mt_mins)
+    # TODO Run this for a few scaling factors, put into the code, check for when the density overlap becomes small
+    scaling_factor = 0.9
+    mt_min = scaling_factor * min(mt_mins)
+    print(f"Smallest muffin tin radius for element {an_mt_min} is {mt_min}")
+
+    print("Use this to determine the MT radii for all other elements in the system")
+    for an_y in set(system.atomic_numbers):
+        mt_y = fixed_precision_rgkmax(an_y) / fixed_precision_rgkmax(an_mt_min) * mt_min
+        print(f"Atomic Number {an_y}, MT radius {mt_y}, sum of MT radii {mt_min + mt_y}, min_bond_length {min_bond_lengths[an_y]}")
+
+
+
+
+
+
