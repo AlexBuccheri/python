@@ -53,3 +53,67 @@
 #     print(dm2)
 #     print(dm3)
 #
+
+# def mufftin_radius_to_conserve_precision():
+#     """ Given the minimum MT radius in the system, and the input RGKMAX,
+#     return the MT radius to assure a consistent RGKMAX for element x.
+#
+#     :return:
+#     """
+
+# def consistent_muffin_tin_radius(rgkmax_input: int, atomic_number_x: int, minimum_mt_radius: float):
+#     """ Given the smallest MT radius of species in a system, return the MT radius of element X
+#
+#     Different `rgkmax` values are required for different species to obtain the same accuracy (in same quantity - I
+#     assume total energy). Because `rgkmax` is set once according to the smallest muffin tin radius, this determines
+#     the maximum $G$ vector for all species. As such, to obtain the desired `rgkmax` values for all other species in the
+#     calculation, their muffin tin radii must be set proportionally to min(MT), to obtain the target `rgkmax` values
+#     which ensure a consistent accuracy.
+#
+#      \textrm{rgkmax}_{input} = \min(\textrm{MT}) * \textrm{G}_{max}
+#
+#      therefore:
+#
+#      \begin{equation}
+#      \textrm{G}_{max} = \textrm{rgkmax}_{input} / \min(MT).
+#      \end{equation}
+#
+#      So for a given species, $X$, in the system:
+#
+#      \begin{align}
+#      \textrm{rgkmax}_X &= MT_X * \textrm{G}_{max},  \\
+#      \textrm{rgkmax}_X &= MT_X * \textrm{rgkmax}_{input} / \min(MT).
+#      \end{align}
+#
+#      Therefore, to obtain the desired $\textrm{rgkmax}$, $MT_X$ is the free parameter:
+#
+#      \begin{equation}
+#      MT_X = \frac{\textrm{rgkmax}_X}{\textrm{rgkmax}_{input}} * min(MT)
+#      \end{equation}
+#
+#     :return:
+#     """
+#     # return (fixed_precision_rgkmax(atomic_number_x) / rgkmax_input) * minimum_mt_radius
+
+
+# def minimum_muffin_tin_radius(positions: np.ndarray, lattice: np.ndarray, atomic_numbers: List[int]):
+#     """
+#
+#
+#
+#     :param positions:
+#     :param lattice:
+#     :param atomic_numbers:
+#     :return:
+#     """
+#     bonds = find_minimum_bond_lengths(positions, lattice, atomic_numbers)
+#     an_min = atomic_number_species_with_mt_min(atomic_numbers)
+#     rgkmax_min = fixed_precision_rgkmax(an_min)
+#
+#     for an, bond_length in bonds.items():
+#         denominator = 1. + (fixed_precision_rgkmax(an) / rgkmax_min)
+#         # Percentage of the bond that should be taken by the radius of an_min and an, respectively
+#         percentage_min = 1. / denominator
+#         percentage_x = (fixed_precision_rgkmax(an) / rgkmax_min) / denominator
+#         # print(percentage_min, percentage_x)
+#         print((an_min, an), percentage_min * bond_length)
