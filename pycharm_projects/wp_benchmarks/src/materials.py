@@ -27,14 +27,14 @@ class ZrO2Primitive:
     Lattice in angstrom, as extracted from FHI-aims input file
     """
     lattice = np.array([[0.00000000,  2.53574055,   2.53574055],
-                        [2.53574055,  0.00000000,   2.53574055,
-                         2.53574055,  2.53574055,   0.00000000]])
+                        [2.53574055,  0.00000000,   2.53574055],
+                        [2.53574055,  2.53574055,   0.00000000]])
     fractional_positions = np.array([[0.00000000,  0.00000000,  0.00000000],
                                      [0.25000000,  0.25000000,  0.2500000],
                                      [0.75000000,  0.75000000,  0.7500000]])
 
     # In angstrom
-    positions = np.transpose(lattice).dot(fractional_positions)
+    positions = np.transpose(np.transpose(lattice) @ np.transpose(fractional_positions))
 
     elements = ['Zr', 'O', 'O']
     atomic_numbers = [40, 8, 8]
@@ -64,8 +64,7 @@ class MoS2WS2Bilayer:
                           [0.00000000, 0.00000000, 24.46831689],
                           [0.00000000, 0.00000000, 21.33906353]])
 
-    # TODO Maybe need to wrap them
-    fractional_positions = np.linalg.inv(np.transpose(lattice)).dot(positions)
+    fractional_positions = np.transpose(np.linalg.inv(np.transpose(lattice)) @ np.transpose(positions))
 
     elements = ['W', 'S', 'S', 'Mo', 'S', 'S']
     atomic_numbers = [74, 16, 16, 42, 16, 16]
@@ -85,7 +84,7 @@ class TiO2Rutile:
                         [0.000000000000,  0.000000000000,  5.591116638050]])
 
     # In angstrom
-    positions = np.transpose(lattice).dot(fractional_positions)
+    positions = np.transpose(np.transpose(lattice) @ np.transpose(fractional_positions))
 
     elements = ['Ti', 'Ti', 'O', 'O', 'O', 'O']
     atomic_numbers = [22, 22, 8, 8, 8, 8]
@@ -122,7 +121,7 @@ class ZnOWurzite:
                                      [3.33333333e-01, 6.66666667e-01, 1.17900000e-01]])
 
     # In angstrom
-    positions = np.transpose(lattice).dot(fractional_positions)
+    positions = np.transpose(np.transpose(lattice) @ np.transpose(fractional_positions))
 
     elements = ['Zn', 'Zn', 'O', 'O']
     atomic_numbers = [30, 30, 8, 8]
@@ -154,7 +153,7 @@ class SiliconPrimitive:
                                      [0.25,   0.25,   0.25]])
 
     # In angstrom
-    positions = np.transpose(lattice).dot(fractional_positions)
+    positions = np.transpose(np.transpose(lattice) @ np.transpose(fractional_positions))
 
     elements = ['Si', 'Si']
     atomic_numbers = [14, 14]
