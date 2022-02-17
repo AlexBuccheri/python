@@ -1,8 +1,8 @@
 import numpy as np
-from typing import List, Callable, Optional
+from typing import List
 
-from ase.geometry import complete_cell, find_mic, wrap_positions
 from ase.neighborlist import mic
+# from ase.geometry import complete_cell, find_mic, wrap_positions
 
 from src.materials import MoS2WS2Bilayer
 
@@ -171,7 +171,7 @@ def main(system, scaling_factor=1.0):
     min_bond_lengths = find_minimum_bond_lengths(system.positions, system.lattice, system.atomic_numbers)
 
     for an, bond in min_bond_lengths.items():
-        print(f'Minimum bond length  between atomic numbers ({an_mt_min}, {an}): {bond}')
+        print(f'Minimum bond length between atomic numbers ({an_mt_min}, {an}): {bond}')
 
     print("For each bond, compute the MT radius associated with the element with the smallest MT radius. \n"
           "Do this for each bond, and choose the minimum.")
