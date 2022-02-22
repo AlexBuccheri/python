@@ -5,6 +5,7 @@ import re
 import os
 import subprocess
 import numpy as np
+import glob
 
 import ase
 from pymatgen.io.cif import CifParser
@@ -214,3 +215,13 @@ def cif_to_ase_atoms(file: str) -> ase.atoms.Atoms:
                             cell=structure.lattice,
                             scaled_positions=structure.frac_coords)
     return atoms
+
+
+def clear_directory(directory: str):
+    """ Remove all files from a directory
+
+    :param directory: Directory to clear
+    """
+    files = glob.glob(os.path.join(directory, '*'))
+    for file in files:
+        os.remove(file)
