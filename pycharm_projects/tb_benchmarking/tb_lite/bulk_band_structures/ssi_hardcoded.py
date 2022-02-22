@@ -131,5 +131,101 @@ ParserOptions {
 
 
 
+# def generate_inputs():
+#     """ Generate some xTB inputs
+#     """
+#     root = '/Users/alexanderbuccheri/Python/pycharm_projects/tb_benchmarking/check'
+#     for material in ['silicon', 'germanium', 'diamond']:
+#         directory = os.path.join(root, material)
+#         Path(directory).mkdir(parents=True, exist_ok=True)
+#         write_an_xtb1_input(directory, material)
+#
+#
+# def write_an_xtb1_input(directory: str, material: str):
+#     """Given a material, write xTB input files to a directory.
+#     """
+#     atoms, input = get_material_xtb1(material)
+#     write_dftb(directory + "/geometry.gen", atoms)
+#     with open(directory + "/dftb_in.hsd", "w") as fid:
+#         fid.write(input.generate_dftb_hsd())
+#
+#
+# def get_material_xtb1(material_name: str) -> Tuple[ase.atoms.Atoms, DftbInput]:
+#     """ TB lite Inputs for bulk crystals of Interest
+#
+#     Manually-converged inputs:
+#      * Si
+#      * Ge
+#      * Diamond
+#     Inputs Requiring Convergence:
+#      * Graphite
+#      * Graphene
+#      * ZrO2
+#      * ZnO
+#      * WS2
+#      * GaAs
+#      * InAs
+#      * PbS
+#      * BN -cubic, hexagonal and wurzite
+#      * MoS2
+#      * WS2
+#      * TiO2 rutile
+#      * TiO2 anatase
+#
+#     :param material_name: Material key
+#     :return: Atoms object and DFTB+ Input object.
+#     """
+#     # Group IV elemental crystals
+#     if material_name == 'silicon':
+#         input = DftbInput(hamiltonian=Hamiltonian(method='GFN1-xTB', temperature=0.0, scc_tolerance=1.e-6, k_grid=[8, 8, 8]))
+#         return silicon(), input
+#
+#     elif material_name == 'germanium':
+#         input = DftbInput(hamiltonian=Hamiltonian(method='GFN1-xTB', temperature=0.0, scc_tolerance=1.e-6, k_grid=[12, 12, 12]))
+#         return germanium(), input
+#
+#     elif material_name == 'diamond':
+#         input = DftbInput(hamiltonian=Hamiltonian(method='GFN1-xTB', temperature=0.0, scc_tolerance=1.e-6, k_grid=[8, 8, 8]))
+#         return diamond(), input
+#
+#     elif material_name == 'zinc_oxide':
+#         file_path = hexagonal.hexagonal_cifs.get(material_name).file
+#         # Should read with pymatgen and convert to ASE atoms... Doesn't seem particularly robust
+#         # atoms = read_cif(file_path, index=0, primitive_cell=True)
+#         # print(list(atoms))
+#         # input = DftbInput(hamiltonian=Hamiltonian(method='GFN1-xTB', temperature=0.0, scc_tolerance=1.e-6, k_grid=[]))
+#         return [], []
+#
+#     else:
+#         print(f'material_name is not valid: {material_name}')
+#
+#     #elif material_name == '':
+#         #
+#     # Graphite
+#     # Graphene
+#     # ZrO2
+#     #
+#     # WS2
+#     # GaAs
+#     # InAs
+#     # PbS
+#     # BN -cubic, hexagonal and wurzite
+#     # MoS2
+#     # WS2
+#     # TiO2 rutile
+#     # TiO2 anatase
+#     # Consider high throughput on the set form the Sotti paper ~ 400 crystals.
+#
+#
+#
+#
+# file = hexagonal.hexagonal_cifs.get('zinc_oxide').file
+# material, atoms = cif_to_ase_atoms(file)
+#
+# print(material)
+
+
+
+
 
 
