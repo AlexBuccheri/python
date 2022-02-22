@@ -1,37 +1,34 @@
-"""
- Module containing orthrhombic crystal dictionaries with the signature:
-  key : str
-    crystal name
-  value : str
-    file path to cif
+"""Module containing orthorhombic crystal dictionaries with the signature:
 
-  calcium titanate, and aluminum hexathiohypodiphosphate details are tabulated.
+Calcium Titanate and Aluminum Hexathiohypodiphosphate details are tabulated.
 """
+from tb_lite.src.utils import FileUrl
 
-from src.utils import Set, FileUrl
 
 # Orthorhombic crystals by bravais lattice
 # Space groups: 16 - 74
 
+root = 'data/bulk_crystals/cifs/orthorhombic/'
+
 # Any space group beginning with P
-simple_orthorhombic_cifs = {'gold_cadmium': FileUrl("cifs/orthorhombic/Simple/CdAu/CdAu_mp-1404_primitive.cif",
+simple_orthorhombic_cifs = {'gold_cadmium': FileUrl(root + "Simple/CdAu/CdAu_mp-1404_primitive.cif",
                                                     "https://materialsproject.org/materials/mp-1404"),
-                            'calcium_titanate': FileUrl("cifs/orthorhombic/Simple/CaTiO3/CaTiO3_mp-4019_primitive.cif"
+                            'calcium_titanate': FileUrl(root + "Simple/CaTiO3/CaTiO3_mp-4019_primitive.cif"
                                                         "")
                             }
 
 # Any space group beginning with C
 # Need in C-configuration to be consistent with qCore lattice vectors
 # and tabulated k-points
-base_centred_orthorhombic_cifs = {'aluminium_titanate': FileUrl("cifs/orthorhombic/base_centred_C/TiAl2O5_mp-4930_primitive.cif",
+base_centred_orthorhombic_cifs = {'aluminium_titanate': FileUrl(root + "base_centred_C/TiAl2O5_mp-4930_primitive.cif",
                                                                 "https://materialsproject.org/materials/mp-4930")}
 
 # Any space group beginning with I
-body_centred_orthorhombic_cifs = {'copper_oxyfluoride': FileUrl("cifs/orthorhombic/body_centred/CuO2F_mp-997107_primitive.cif",
+body_centred_orthorhombic_cifs = {'copper_oxyfluoride': FileUrl(root + "body_centred/CuO2F_mp-997107_primitive.cif",
                                                                 "https://materialsproject.org/materials/mp-997107")
                                   }
 
-face_centred_orthorhombic_cifs = {'titanium_disilicide': FileUrl("cifs/orthorhombic/face_centred/TiSi2_mp-2582_primitive.cif",
+face_centred_orthorhombic_cifs = {'titanium_disilicide': FileUrl(root + "face_centred/TiSi2_mp-2582_primitive.cif",
                                                                  "https://materialsproject.org/materials/mp-2582")}
 
 
@@ -40,9 +37,9 @@ face_centred_orthorhombic_cifs = {'titanium_disilicide': FileUrl("cifs/orthorhom
 # these dictionaries.
 
 def calcium_titanate():
-    """
-    calcium titanate
+    """Calcium titanate
 
+    TODO(Alex) Refactor to return ase Atoms()
     Notes
       Ref: https://materialsproject.org/materials/mp-4019/
       Space group: Pnma [62]
@@ -90,6 +87,8 @@ def calcium_titanate():
 def aluminum_hexathiohypodiphosphate():
     """
     AlPS4.
+
+    TODO(Alex) Refactor to return ase Atoms()
 
     Notes
       Simple orthorhombic. Space group: P222 [16]

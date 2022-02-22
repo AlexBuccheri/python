@@ -7,6 +7,7 @@
 
   boron nitride is tabulated.
 """
+import ase
 import numpy as np
 from ase.atoms import Atoms
 
@@ -17,12 +18,14 @@ from tb_lite.src.utils import FileUrl
 # Space groups: 168 - 194
 # All space groups in this system begin with P
 
-hexagonal_cifs = {'zinc_oxide': FileUrl('data/bulk_crystals/cifs/hexagonal/ZnO-WZ/ZnO_mp-2133_primitive.cif', "https://materialsproject.org/materials/mp-2133/"),
-                  'molybdenum_disulfide': FileUrl('data/bulk_crystals/cifs/hexagonal/MoS2/MoS2_mp-2815_primitive.cif', 'https://materialsproject.org/materials/mp-2815/'),
-                  'boron_nitride': {'wurzite': FileUrl('data/bulk_crystals/cifs/hexagonal/BN-WZ/BN_mp-2653_primitive.cif', "https://materialsproject.org/materials/mp-2653/")},
-                  'unbuckled_graphite': FileUrl('data/bulk_crystals/cifs/hexagonal/Unbluckled_graphite/A_hP4_194_bc.cif', 'UNKNOWN'),
-                  'tungsten_disulfide': FileUrl('data/bulk_crystals/cifs/hexagonal/WS2/WS2_mp-224_primitive.cif', 'https://materialsproject.org/materials/mp-224/'),
-                  'cadmium_selenide': FileUrl('data/bulk_crystals/cifs/hexagonal/CdSe-hexagonal/CdSe_mp-1070_primitive.cif', 'https://materialsproject.org/materials/mp-1070/')
+root = 'data/bulk_crystals/cifs/hexagonal/'
+
+hexagonal_cifs = {'zinc_oxide': FileUrl(root + 'ZnO-WZ/ZnO_mp-2133_primitive.cif', "https://materialsproject.org/materials/mp-2133/"),
+                  'molybdenum_disulfide': FileUrl(root + 'MoS2/MoS2_mp-2815_primitive.cif', 'https://materialsproject.org/materials/mp-2815/'),
+                  'boron_nitride': {'wurzite': FileUrl(root + 'BN-WZ/BN_mp-2653_primitive.cif', "https://materialsproject.org/materials/mp-2653/")},  #TODO CHECK ME±!!!!
+                  'unbuckled_graphite': FileUrl(root + 'Unbluckled_graphite/A_hP4_194_bc.cif', 'UNKNOWN'),
+                  'tungsten_disulfide': FileUrl(root + 'WS2/WS2_mp-224_primitive.cif', 'https://materialsproject.org/materials/mp-224/'),
+                  'cadmium_selenide': FileUrl(root + 'CdSe-hexagonal/CdSe_mp-1070_primitive.cif', 'https://materialsproject.org/materials/mp-1070/')
                   }
 
 
@@ -30,33 +33,29 @@ hexagonal_cifs = {'zinc_oxide': FileUrl('data/bulk_crystals/cifs/hexagonal/ZnO-W
 # Avoid additional tabulating and use cif_parser_wrapper to generate
 # these dictionaries.
 
-# def boron_nitride():
-#
-#     """
-#     # TODO(Alex) Refactor to ASE
-#     hexagonal boron nitride.
-#
-#     Notes
-#       Space group: P63/mmc [194]
-#       Primitive lattice vectors and atomic basis
-#       Indirect and gap: 4.482 eV
-#       https://materialsproject.org/materials/mp-984/
-#     """
-#
-#     positions = [[1/3, 2/3, 1/4],
-#                  [2/3, 1/4, 3/4],
-#                  [1/3, 2/3, 3/4],
-#                  [2/3, 1/3, 1/4]]
-#     species = ['B', 'B', 'N', 'N']
-#     bravais = 'hexagonal'
-#     space_group = 194
-#     lattice_parameters = {'a': Set(2.51242804, 'angstrom'), 'c': Set(7.70726501, 'angstrom')}
-#     data = {'fractional':positions,
-#             'species':species,
-#             'lattice_parameters':lattice_parameters,
-#             'space_group': ('', space_group),
-#             'bravais': bravais,
-#             'n_atoms': 4}
-#     return data
+def boron_nitride_hexagonal() -> ase.atoms.Atoms:
+    """Hexagonal boron nitride.
 
+    Space group: P63/mmc [194] 'hexagonal'
+    Primitive lattice vectors and atomic basis
+    Indirect and gap: 4.482 eV
+    https://materialsproject.org/materials/mp-984/
+    """
+    fractional_positions = [[1/3, 2/3, 1/4],
+                            [2/3, 1/4, 3/4],
+                            [1/3, 2/3, 3/4],
+                            [2/3, 1/3, 1/4]]
 
+    # Angstrom
+    a = 2.51242804
+    c = 7.70726501
+    cell = np.array([[a * 0.5, - a * 0.5 * np.sqrt(3), 0.0],
+                     [a * 0.5,   a * 0.5 * np.sqrt(3), 0.0],
+                     [0.0, 0.0, c]])
+
+    atoms = Atoms(symbols=['B', 'B', 'N', 'N'],
+                  scaled_positions=fractional_positions,
+                  cell=cell,
+                  pbc=True)
+
+    return atoms

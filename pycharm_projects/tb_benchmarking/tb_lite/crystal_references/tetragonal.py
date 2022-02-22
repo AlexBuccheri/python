@@ -1,17 +1,17 @@
-"""
- Module containing tetragonal crystal dictionaries with the signature:
-  key : str
-    crystal name
-  value : str
-    file path to cif
+"""Module containing tetragonal crystal dictionaries.
 
-  rutile and anatase details are tabulated.
+Rutile and Anatase details are tabulated.
 """
+import ase
+import numpy as np
 
-from src.utils import Set
+from tb_lite.src.utils import FileUrl
+
 
 # Cubic crystals by bravais lattice
 # Space groups: 75 - 142.
+
+root = 'data/bulk_crystals/cifs/tetragonal/'
 
 # Any space group beginning with P
 simple_tetragonal_cifs = {}
@@ -24,63 +24,54 @@ body_centred_tetragonal_cifs = {}
 # Avoid additional tabulating and use cif_parser_wrapper to generate
 # these dictionaries.
 
-def tio2_rutile() -> dict:
+def tio2_rutile() -> ase.atoms.Atoms:
+    """TiO2 Rutile.
 
+    Space group P42/mnm (136)
+    Direct band gap: 1.781 eV
+    Ref: https://materialsproject.org/materials/mp-2657/
     """
-    TiO2 Rutile.
+    fractional_positions = [[0.000000, 0.000000, 0.000000],
+                            [0.500000, 0.500000, 0.500000],
+                            [0.695526, 0.695526, 0.000000],
+                            [0.304474, 0.304474, 0.000000],
+                            [0.195526, 0.804474, 0.500000],
+                            [0.804474, 0.195526, 0.500000]]
+    # Angstrom
+    a = 4.6068
+    c = 2.9916
 
-    Notes
-      Space group P42/mnm (136)
-      Direct band gap: 1.781 eV
-      Ref: https://materialsproject.org/materials/mp-2657/
+    atoms = ase.atoms.Atoms(symbols=['Ti', 'Ti', 'O', 'O', 'O', 'O'],
+                            scaled_positions=fractional_positions,
+                            cell=np.array([[a, 0.0, 0.0], [0.0, a, 0.0], [0.0, 0.0, c]]),
+                            pbc=True)
+
+    return atoms
+
+
+def tio2_anatase() -> ase.atoms.Atoms:
+    """TiO2 Anatase.
+
+    Space group:  I4_1/amd (141)
+    Indirect band gap: 2.062 eV
+    Ref: https://materialsproject.org/materials/mp-390/
+    TODO(Alex) Looks like I've run it through SPGLib - maybe should check this structure
     """
-    positions = [[0.000000, 0.000000, 0.000000],
-                 [0.500000, 0.500000, 0.500000],
-                 [0.695526, 0.695526, 0.000000],
-                 [0.304474, 0.304474, 0.000000],
-                 [0.195526, 0.804474, 0.500000],
-                 [0.804474, 0.195526, 0.500000]]
-    species = ['Ti', 'Ti', 'O', 'O', 'O', 'O']
-    bravais = 'tetragonal'
-    space_group = 136
-    lattice_parameters = {'a': Set(4.6068, 'angstrom'), 'c': Set(2.9916, 'angstrom')}
-    data = {'fractional': positions,
-            'species': species,
-            'lattice_parameters': lattice_parameters,
-            'space_group': ('', space_group),
-            'n_atoms': len(species)}
+    fractional_positions = [[0.500000, 0.500000, 0.000000],
+                            [0.250000, 0.750000, 0.500000],
+                            [0.456413, 0.956413, 0.500000],
+                            [0.706413, 0.706413, 0.000000],
+                            [0.043587, 0.543587, 0.500000],
+                            [0.293587, 0.293587, 0.000000]]
 
-    return data
+    a = 5.55734663
+    c = 5.55734663
 
+    atoms = ase.atoms.Atoms(symbols=['Ti', 'Ti', 'O', 'O', 'O', 'O'],
+                            scaled_positions=fractional_positions,
+                            cell= 0.5 * a * np.array([[-1.0,  1.0,  c/a],
+                                                       [1.0, -1.0,  c/a],
+                                                       [1.0,  1.0, -c/a]]),
+                            pbc=True)
 
-def tio2_anatase() -> dict:
-
-    """
-    TiO2 Anatase. Space group:  I4_1/amd (141)
-
-    Notes
-      Indirect band gap: 2.062 eV
-      Ref: https://materialsproject.org/materials/mp-390/#
-
-      SPGLib confirms that this is the primitive cell and is space group 141,
-      however, it looks body-centred cubic rather than body-centred tetragonal
-      from visual inspection of the lattice vectors and parameters.
-    """
-    positions = [[0.500000, 0.500000, 0.000000],
-                 [0.250000, 0.750000, 0.500000],
-                 [0.456413, 0.956413, 0.500000],
-                 [0.706413, 0.706413, 0.000000],
-                 [0.043587, 0.543587, 0.500000],
-                 [0.293587, 0.293587, 0.000000]]
-    species = ['Ti', 'Ti', 'O', 'O', 'O', 'O']
-    bravais = 'body_centred_tetragonal'
-    space_group = 141
-    lattice_parameters = {'a': Set(5.55734663, 'angstrom'), 'c': Set(5.55734663, 'angstrom')}
-    data = {'fractional': positions,
-            'species': species,
-            'lattice_parameters': lattice_parameters,
-            'space_group': ('', space_group),
-            'n_atoms': len(species)}
-
-    return data
-
+    return atoms

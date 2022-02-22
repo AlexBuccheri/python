@@ -1,53 +1,53 @@
-"""
- Module containing cubic crystal dictionaries with the signature:
+"""Module containing cubic crystal dictionaries with the signature:
 
  Cubic crystals by bravais lattice
  Space groups: 195-230.
-
 """
 import numpy as np
 from ase.atoms import Atoms
 
 from tb_lite.src.utils import FileUrl
 
+root = 'data/bulk_crystals/cifs/cubic/'
+
 # Any space group beginning with I
-bcc_cifs = {'potassium': FileUrl("cifs/cubic/BCC/potassium/K_mp-58_primitive.cif",
+bcc_cifs = {'potassium': FileUrl(root + "BCC/potassium/K_mp-58_primitive.cif",
                                  "https://materialsproject.org/materials/mp-58/"),
-            'sio2': FileUrl("cifs/cubic/BCC/sio2/SiO2_mp-1188220_primitive.cif",
+            'sio2': FileUrl(root + "BCC/sio2/SiO2_mp-1188220_primitive.cif",
                             "https://materialsproject.org/materials/mp-1188220/"),
             }
 
 # Any space group beginning with F
 fcc_cifs = {
-    'copper': FileUrl("cifs/cubic/FCC/Cu/Cu_mp-30_primitive.cif",
+    'copper': FileUrl(root + "FCC/Cu/Cu_mp-30_primitive.cif",
                       "https://materialsproject.org/materials/mp-30/"),
-    'pbs': FileUrl("cifs/cubic/FCC/PbS/PbS_mp-21276_primitive.cif",
+    'pbs': FileUrl(root + "FCC/PbS/PbS_mp-21276_primitive.cif",
                    "https://materialsproject.org/materials/mp-21276/"),
-    'palladium': FileUrl("cifs/cubic/FCC/Pa/Pa_mp-10740_primitive.cif",
+    'palladium': FileUrl(root + "FCC/Pa/Pa_mp-10740_primitive.cif",
                          "https://materialsproject.org/materials/mp-10740/"),
-    'boron_nitride': FileUrl("cifs/cubic/FCC/BN-cubic/BN_mp-1639_primitive.cif",
+    'boron_nitride': FileUrl(root + "FCC/BN-cubic/BN_mp-1639_primitive.cif",
                              "https://materialsproject.org/materials/mp-1639/"),
-    'sodium_chloride': FileUrl("cifs/cubic/FCC/NaCl/NaCl_mp-22862_primitive.cif",
+    'sodium_chloride': FileUrl(root + "FCC/NaCl/NaCl_mp-22862_primitive.cif",
                                "https://materialsproject.org/materials/mp-22862/"),
-    'magnesium_oxide': FileUrl("cifs/cubic/FCC/MgO/MgO_mp-1265_primitive.cif",
+    'magnesium_oxide': FileUrl(root + "FCC/MgO/MgO_mp-1265_primitive.cif",
                                "https://materialsproject.org/materials/mp-1265/"),
-    'lithium_hydride': FileUrl("cifs/cubic/FCC/LiH/LiH_mp-23703_primitive.cif",
+    'lithium_hydride': FileUrl(root + "FCC/LiH/LiH_mp-23703_primitive.cif",
                                "https://materialsproject.org/materials/mp-23703/"),
-    'silicon': FileUrl("cifs/cubic/FCC/Si/Si_mp-149_primitive.cif",
+    'silicon': FileUrl(root + "FCC/Si/Si_mp-149_primitive.cif",
                        "https://materialsproject.org/materials/mp-149/"),
-    'zirconium_oxide': FileUrl("cifs/cubic/FCC/ZrO2/ZrO2_mp-1565_primitive.cif",
+    'zirconium_dioxide': FileUrl(root + "FCC/ZrO2/ZrO2_mp-1565_primitive.cif",
                                "https://materialsproject.org/materials/mp-1565/")
 }
 
 # FCC but the lattice vectors are cubic
 conventional_fcc_cifs = {
-    'copper': FileUrl("cifs/cubic/FCC/Cu/Cu_mp-30_conventional_standard.cif",
+    'copper': FileUrl(root + "FCC/Cu/Cu_mp-30_conventional_standard.cif",
                       "https://materialsproject.org/materials/mp-30/"),
-    'sodium_chloride': FileUrl("cifs/cubic/FCC/NaCl/NaCl_mp-22862_conventional_standard.cif",
+    'sodium_chloride': FileUrl(root + "FCC/NaCl/NaCl_mp-22862_conventional_standard.cif",
                                "https://materialsproject.org/materials/mp-22862/"),
-    'magnesium_oxide': FileUrl("cifs/cubic/FCC/MgO/MgO_mp-1265_conventional_standard.cif",
+    'magnesium_oxide': FileUrl(root + "FCC/MgO/MgO_mp-1265_conventional_standard.cif",
                                "https://materialsproject.org/materials/mp-1265/"),
-    'silicon': FileUrl("cifs/cubic/FCC/Si/Si_mp-149_conventional_standard.cif",
+    'silicon': FileUrl(root + "FCC/Si/Si_mp-149_conventional_standard.cif",
                        "https://materialsproject.org/materials/mp-149/")
 }
 
