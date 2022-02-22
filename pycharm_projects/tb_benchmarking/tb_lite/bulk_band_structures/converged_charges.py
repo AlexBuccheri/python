@@ -1,6 +1,5 @@
 """Module for converging the SCC of Bulk Systems of Interest
 """
-import abc
 import sys
 import os.path
 from typing import List, Union
@@ -16,32 +15,9 @@ from tb_lite.src.runner import BinaryRunner
 from tb_lite.src.parsers import cif_to_ase_atoms, parse_dftb_output, clear_directory
 
 
-# Abstract OO approach - Not quite worth it
-#class Calculation(abc.ABC):
-#     """Abstract base class for a calculation
-#
-#     A calculation is expected to have:
-#         * A name
-#         * A (run) directory
-#         * An input
-#
-#     """
-#     def __init__(self, name: str,  directory: Union[str, Path]):
-#         self.name = name
-#         self.directory = self.set_directory()
-#
-#     @abc.abstractmethod
-#     def set_directory(self) -> Union[str, Path]:
-#         ...
-#
-#
-# class TbliteCalculation(Calculation):
-
-
 def converge_densities(calculations: dict) -> dict:
     """ Automatically converge SCC for a set of calculations.
 
-    TODO(Alex) Would be more portable to use an abstract class.
     :return: Dictionary of all results
     """
     all_results = calculations.copy()
@@ -63,8 +39,6 @@ def converge_densities(calculations: dict) -> dict:
 
 def converge_density(atoms: ase.atoms.Atoms, calculation_dir, clear_dir=True) -> List[dict]:
     """ Converge the density for a material w.r.t. k-points.
-
-    TODO(Alex) Would be more portable to use an abstract class.
 
     Note, some materials will converge very quickly w.r.t. k. Others may require
     the full range of sampling to be tested.
@@ -114,7 +88,7 @@ def converge_density(atoms: ase.atoms.Atoms, calculation_dir, clear_dir=True) ->
         return results
 
 
-def define_directory(root: Path, nam: Union[str, Path]) -> Path:
+def define_directory(root: Path, name: Union[str, Path]) -> Path:
     """ Define directories for calculation to run in.
 
     :return: Dictionary of directories settings
@@ -126,10 +100,10 @@ if __name__ == "__main__":
     # Converge SCC calculations using DFTB+ TB Lite
     # Materials dict could be simplified if every system was defined with a CIF file
 
-    # To Add: WO3, GaAs, InP  PbTe, CdSe
+    # To Add: WO3, GaAs, InP  PbTe, CdSe, graphene
     # To Add: GaN, GaP, InN, InAs, PbSe
     # Added: Si, Ge, Diamond, MoS2, WS2, ZnO, BN hexagonal, BN cubic, MgO, copper, sodium_chloride,
-    # ZrO2, PbS, TiO2 anatase, TiO2 rutile,
+    # ZrO2, PbS, TiO2 anatase, TiO2 rutile
 
     major, minor = sys.version_info[0:2]
     if major < 3 or minor < 6:
