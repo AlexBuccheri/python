@@ -99,8 +99,7 @@ def define_directory(root: Path, name: Union[str, Path]) -> Path:
 if __name__ == "__main__":
     # Converge SCC calculations using DFTB+ TB Lite
     # Materials dict could be simplified if every system was defined with a CIF file
-
-    # To Add: WO3, GaAs, InP  PbTe, CdSe, graphene
+    #
     # To Add: GaN, GaP, InN, InAs, PbSe
     # Added: Si, Ge, Diamond, MoS2, WS2, ZnO, BN hexagonal, BN cubic, MgO, copper, sodium_chloride,
     # ZrO2, PbS, TiO2 anatase, TiO2 rutile
