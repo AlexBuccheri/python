@@ -212,8 +212,9 @@ def cif_to_ase_atoms(file: str) -> ase.atoms.Atoms:
     """
     structure = CifParser(file).get_structures()[0]
     atoms = ase.atoms.Atoms(numbers=structure.atomic_numbers,
-                            cell=structure.lattice,
-                            scaled_positions=structure.frac_coords)
+                            cell=structure.lattice.matrix,
+                            scaled_positions=structure.frac_coords,
+                            pbc=True)
     return atoms
 
 
