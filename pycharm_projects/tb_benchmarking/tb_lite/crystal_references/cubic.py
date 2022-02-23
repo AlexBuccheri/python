@@ -21,8 +21,8 @@ bcc_cifs = {'potassium': FileUrl(root + "BCC/potassium/K_mp-58_primitive.cif",
 fcc_cifs = {
     'copper': FileUrl(root + "FCC/Cu/Cu_mp-30_primitive.cif",
                       "https://materialsproject.org/materials/mp-30/"),
-    'pbs': FileUrl(root + "FCC/PbS/PbS_mp-21276_primitive.cif",
-                   "https://materialsproject.org/materials/mp-21276/"),
+    'lead_sulfide': FileUrl(root + "FCC/PbS/PbS_mp-21276_primitive.cif",
+                            "https://materialsproject.org/materials/mp-21276/"),
     'palladium': FileUrl(root + "FCC/Pa/Pa_mp-10740_primitive.cif",
                          "https://materialsproject.org/materials/mp-10740/"),
     'boron_nitride': FileUrl(root + "FCC/BN-cubic/BN_mp-1639_primitive.cif",
@@ -36,7 +36,16 @@ fcc_cifs = {
     'silicon': FileUrl(root + "FCC/Si/Si_mp-149_primitive.cif",
                        "https://materialsproject.org/materials/mp-149/"),
     'zirconium_dioxide': FileUrl(root + "FCC/ZrO2/ZrO2_mp-1565_primitive.cif",
-                               "https://materialsproject.org/materials/mp-1565/")
+                                 "https://materialsproject.org/materials/mp-1565/"),
+    'gallium_nitride': FileUrl(root + "FCC/GaN/GaN_mp-830_primitive.cif",
+                               "https://materialsproject.org/materials/mp-830/"),
+    'gallium_arsenide': FileUrl(root + "FCC/GaAs/GaAs_mp-2534_primitive.cif",
+                                "https://materialsproject.org/materials/mp-2534/"),
+    'lead_telluride': FileUrl(root + "FCC/PbTe/TePb_mp-19717_primitive.cif",
+                              "https://materialsproject.org/materials/mp-19717/"),
+    'indium_phosphide': FileUrl(root + "FCC/InP/InP_mp-20351_primitive.cif",
+                                "https://materialsproject.org/materials/mp-20351/")
+
 }
 
 # FCC but the lattice vectors are cubic

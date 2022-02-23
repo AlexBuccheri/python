@@ -6,12 +6,16 @@
     file path to cif
 
 """
+from tb_lite.src.utils import FileUrl
 
 # Monoclinic crystals by bravais lattice
 # Space groups: 3-15.
 
+root = 'data/bulk_crystals/cifs/monoclinic/'
+
 # Any space group beginning with P
-simple_monoclinic_cifs = {}
+simple_monoclinic_cifs = {"tungsten_oxide": FileUrl(root + 'Simple/WO3/WO3_mp-19033_primitive.cif',
+                                                    "https://materialsproject.org/materials/mp-19033/")}
 
 # Any space group beginning with C:
 # Need in C-configuration to be consistent with qCore lattice vectors

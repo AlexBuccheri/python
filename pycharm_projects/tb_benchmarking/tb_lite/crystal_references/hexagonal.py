@@ -22,10 +22,11 @@ root = 'data/bulk_crystals/cifs/hexagonal/'
 
 hexagonal_cifs = {'zinc_oxide': FileUrl(root + 'ZnO-WZ/ZnO_mp-2133_primitive.cif', "https://materialsproject.org/materials/mp-2133/"),
                   'molybdenum_disulfide': FileUrl(root + 'MoS2/MoS2_mp-2815_primitive.cif', 'https://materialsproject.org/materials/mp-2815/'),
-                  'boron_nitride': {'wurzite': FileUrl(root + 'BN-WZ/BN_mp-2653_primitive.cif', "https://materialsproject.org/materials/mp-2653/")},  #TODO CHECK ME±!!!!
+                  'boron_nitride': {'wurzite': FileUrl(root + 'BN-WZ/BN_mp-2653_primitive.cif', "https://materialsproject.org/materials/mp-2653/")},  #TODO CHECK ME
                   'unbuckled_graphite': FileUrl(root + 'Unbluckled_graphite/A_hP4_194_bc.cif', 'UNKNOWN'),
                   'tungsten_disulfide': FileUrl(root + 'WS2/WS2_mp-224_primitive.cif', 'https://materialsproject.org/materials/mp-224/'),
-                  'cadmium_selenide': FileUrl(root + 'CdSe-hexagonal/CdSe_mp-1070_primitive.cif', 'https://materialsproject.org/materials/mp-1070/')
+                  'cadmium_selenide': FileUrl(root + 'CdSe-hexagonal/CdSe_mp-1070_primitive.cif', 'https://materialsproject.org/materials/mp-1070/'),
+                  'graphite': FileUrl(root + 'graphite/C_mp-48_primitive.cif', "https://materialsproject.org/materials/mp-48/")
                   }
 
 
