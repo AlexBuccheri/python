@@ -1,0 +1,907 @@
+{
+    "silicon": {
+        "directory": "/home/alex/tblite/bulk/scc/silicon",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -100.1538
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -100.1547
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -100.1547
+            }
+        ]
+    },
+    "germanium": {
+        "directory": "/home/alex/tblite/bulk/scc/germanium",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -92.6272
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -92.6334
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -92.6338
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -92.6339
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -92.6339
+            }
+        ]
+    },
+    "diamond": {
+        "directory": "/home/alex/tblite/bulk/scc/diamond",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -116.2287
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -116.2284
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -116.2284
+            }
+        ]
+    },
+    "zinc_oxide": {
+        "directory": "/home/alex/tblite/bulk/scc/zinc_oxide",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -300.1248
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -300.1215
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -300.1211
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -300.1211
+            }
+        ]
+    },
+    "mos2": {
+        "directory": "/home/alex/tblite/bulk/scc/mos2",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -523.5208
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -523.5334
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -523.5341
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -523.534
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -523.534
+            }
+        ]
+    },
+    "ws2": {
+        "directory": "/home/alex/tblite/bulk/scc/ws2",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -535.2556
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -535.287
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -535.2871
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -535.287
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -535.287
+            }
+        ]
+    },
+    "bn_hex": {
+        "directory": "/home/alex/tblite/bulk/scc/bn_hex",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -255.1055
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -255.0991
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -255.0985
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -255.0985
+            }
+        ]
+    },
+    "bn_cubic": {
+        "directory": "/home/alex/tblite/bulk/scc/bn_cubic",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -128.168
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -128.168
+            }
+        ]
+    },
+    "mgo": {
+        "directory": "/home/alex/tblite/bulk/scc/mgo",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -148.323
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -148.3194
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -148.3188
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -148.3187
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -148.3187
+            }
+        ]
+    },
+    "copper": {
+        "directory": "/home/alex/tblite/bulk/scc/copper",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -124.3112
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -124.3379
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -124.3399
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -124.3426
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -124.3396
+            },
+            {
+                "k_sampling": [
+                    14,
+                    14,
+                    14
+                ],
+                "total_energy": -124.3398
+            },
+            {
+                "k_sampling": [
+                    16,
+                    16,
+                    16
+                ],
+                "total_energy": -124.3384
+            },
+            {
+                "k_sampling": [
+                    18,
+                    18,
+                    18
+                ],
+                "total_energy": -124.3386
+            },
+            {
+                "k_sampling": [
+                    20,
+                    20,
+                    20
+                ],
+                "total_energy": -124.3388
+            }
+        ]
+    },
+    "nacl": {
+        "directory": "/home/alex/tblite/bulk/scc/nacl",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -127.629
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -127.6291
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -127.6291
+            }
+        ]
+    },
+    "zro2": {
+        "directory": "/home/alex/tblite/bulk/scc/zro2",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -298.7633
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -298.763
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -298.763
+            }
+        ]
+    },
+    "pbs": {
+        "directory": "/home/alex/tblite/bulk/scc/pbs",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -148.8564
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -148.8368
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -148.8358
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -148.8357
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -148.8357
+            }
+        ]
+    },
+    "tio2_rutile": {
+        "directory": "/home/alex/tblite/bulk/scc/tio2_rutile",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -589.4528
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -589.362
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -589.3366
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -589.3298
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -589.3277
+            },
+            {
+                "k_sampling": [
+                    14,
+                    14,
+                    14
+                ],
+                "total_energy": -589.327
+            },
+            {
+                "k_sampling": [
+                    16,
+                    16,
+                    16
+                ],
+                "total_energy": -589.3268
+            },
+            {
+                "k_sampling": [
+                    18,
+                    18,
+                    18
+                ],
+                "total_energy": -589.3267
+            },
+            {
+                "k_sampling": [
+                    20,
+                    20,
+                    20
+                ],
+                "total_energy": -589.3266
+            }
+        ]
+    },
+    "tio2_ana": {
+        "directory": "/home/alex/tblite/bulk/scc/tio2_ana",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -522.8981
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -522.9121
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -522.9102
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -522.9101
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -522.9101
+            }
+        ]
+    },
+    "cdse": {
+        "directory": "/home/alex/tblite/bulk/scc/cdse",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -233.6042
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -233.5973
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -233.5969
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -233.5968
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -233.5968
+            }
+        ]
+    },
+    "gan": {
+        "directory": "/home/alex/tblite/bulk/scc/gan",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -123.16
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -123.1601
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -123.16
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -123.16
+            }
+        ]
+    },
+    "graphite": {
+        "directory": "/home/alex/tblite/bulk/scc/graphite",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -231.4624
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -231.5005
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -231.4849
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -231.4819
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -231.4858
+            },
+            {
+                "k_sampling": [
+                    14,
+                    14,
+                    14
+                ],
+                "total_energy": -231.4837
+            },
+            {
+                "k_sampling": [
+                    16,
+                    16,
+                    16
+                ],
+                "total_energy": -231.4833
+            },
+            {
+                "k_sampling": [
+                    18,
+                    18,
+                    18
+                ],
+                "total_energy": -231.4843
+            },
+            {
+                "k_sampling": [
+                    20,
+                    20,
+                    20
+                ],
+                "total_energy": -231.4836
+            }
+        ]
+    },
+    "gaas": {
+        "directory": "/home/alex/tblite/bulk/scc/gaas",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -102.4811
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -102.4836
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -102.4837
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -102.4837
+            }
+        ]
+    },
+    "wo3_monoclinic": {
+        "directory": "/home/alex/tblite/bulk/scc/wo3_monoclinic",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -1810.1875
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -1810.1858
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -1810.1858
+            }
+        ]
+    },
+    "pbte": {
+        "directory": "/home/alex/tblite/bulk/scc/pbte",
+        "energy_vs_k": [
+            {
+                "k_sampling": [
+                    4,
+                    4,
+                    4
+                ],
+                "total_energy": -151.034
+            },
+            {
+                "k_sampling": [
+                    6,
+                    6,
+                    6
+                ],
+                "total_energy": -151.0186
+            },
+            {
+                "k_sampling": [
+                    8,
+                    8,
+                    8
+                ],
+                "total_energy": -151.0185
+            },
+            {
+                "k_sampling": [
+                    10,
+                    10,
+                    10
+                ],
+                "total_energy": -151.0184
+            },
+            {
+                "k_sampling": [
+                    12,
+                    12,
+                    12
+                ],
+                "total_energy": -151.0184
+            }
+        ]
+    }
+}

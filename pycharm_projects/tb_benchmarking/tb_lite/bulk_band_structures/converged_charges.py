@@ -1,4 +1,4 @@
-"""Module for converging the SCC of Bulk Systems of Interest
+"""Module for converging the SCC of Bulk Systems of Interest with DFTB+ TBLite
 """
 import os.path
 from typing import List, Union
@@ -143,7 +143,7 @@ if __name__ == "__main__":
                  'graphite':   cif_to_ase_atoms(hexagonal.hexagonal_cifs.get('graphite').file),
                  'gaas':       cif_to_ase_atoms(cubic.fcc_cifs.get('gallium_arsenide').file),
                  'wo3_monoclinic': cif_to_ase_atoms(monoclinic.simple_monoclinic_cifs.get("tungsten_oxide").file),
-      #           'inp':        cif_to_ase_atoms(cubic.fcc_cifs.get("indium_phosphide").file),
+      #           'inp':        cif_to_ase_atoms(cubic.fcc_cifs.get("indium_phosphide").file), Caused a crash
                  'pbte':       cif_to_ase_atoms(cubic.fcc_cifs.get("lead_telluride").file)
                  }
 
