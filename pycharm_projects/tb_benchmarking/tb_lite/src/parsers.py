@@ -219,6 +219,19 @@ def parse_dftb_output(input: str) -> dict:
     return results
 
 
+def parse_number_of_occupied_bands(detailed_out_str: str) -> float:
+    """Parse the number of electrons from DFTB+'s output.
+
+    TODO Extend to parse spin polarisation.
+    :return: Number of occupied bands at zero kelvin.
+    """
+    spin_polarised = False
+    electrons_per_band = 1 if spin_polarised else 2
+    n_electrons = parse_dftb_output(detailed_out_str)['n_electrons_up']
+    n_occupied_bands = float(n_electrons) / float(electrons_per_band)
+    return n_occupied_bands
+
+
 def parse_dftb_bands(directory) -> np.ndarray:
     """
     Return band energies from a DFTB+ TB Lite Output
@@ -260,13 +273,6 @@ def parse_dftb_bands(directory) -> np.ndarray:
         bands[ik, :] = band_energies
 
     return bands
-
-
-def shift_bands(bands: np.ndarray, zero_point: float) -> np.ndarray:
-    shifted_bands = bands.copy()
-    for ik in range(bands.shape[0]):
-        shifted_bands[ik, :] -= zero_point
-    return shifted_bands
 
 
 def cif_to_ase_atoms(file: str) -> ase.atoms.Atoms:
