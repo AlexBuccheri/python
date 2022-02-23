@@ -6,10 +6,63 @@ import os
 import subprocess
 import numpy as np
 import glob
+import io
+from pathlib import PurePath, Path
+from typing import Callable
 
 import ase
 from pymatgen.io.cif import CifParser
-from pymatgen.core import Structure
+
+
+# def io_robustness(mode: str, func: Callable):
+#     """Decorate func so it accepts either str or file.
+#
+#     (Won't work on functions that return a generator.)
+#     """
+#     def modified_func(file, *args, **kwargs):
+#         file_is_str_or_path = isinstance(file, (str, PurePath))
+#         fd = None
+#         try:
+#             if file_is_str_or_path:
+#                 fd = open(str(file), mode)
+#             else:
+#                 fd = file
+#             obj = func(fd, *args, **kwargs)
+#             return obj
+#         finally:
+#             if file_is_str_or_path and fd is not None:
+#                 # fd may be None if open() failed
+#                 fd.close()
+#
+#     return modified_func
+#
+#
+# def writer(func):
+#     return io_robustness('w', func)
+#
+#
+# def reader(func):
+#     return io_robustness('r', func)
+
+def reader(func):
+    """Decorate func so it can receive a file name, a file ID, or string from file.
+    """
+    def modified_func(input, *args, **kwargs):
+        if isinstance(input, io.TextIOWrapper):
+            file_string = input.read()
+            input.close()
+        elif isinstance(input, (str, PurePath)):
+            if Path(input).is_file():
+                with open(input, "r") as fid:
+                    file_string = fid.read()
+            # Assume the string is the file string, and not an erroneous file name (could be a big source of error here)
+            else:
+                file_string = input
+        else:
+            raise ValueError(f"Input is neither an IO handle, nor a string: {type(input)}")
+        return func(file_string, *args, **kwargs)
+
+    return modified_func
 
 
 def parse_qcore_structure(file_name: str) -> dict:
@@ -147,13 +200,16 @@ def parse_dftb_output(input: str) -> dict:
     :param input: File string contents
     :return: results dictionary
     """
+    n_electrons_up = re.findall(r'^Nr\. of electrons \(up\): .*$', input, flags=re.MULTILINE)[0].split(':')[-1]
+    fermi_level = re.findall(r'^Fermi level: .*$', input, flags=re.MULTILINE)[0].split()[-2]
     energy_h0 = re.findall(r'^Energy H0: .*$', input, flags=re.MULTILINE)[0].split()[-2]
     energy_scc = re.findall(r'^Energy SCC: .*$', input, flags=re.MULTILINE)[0].split()[-2]
     total_electronic_energy = re.findall(r'^Total Electronic energy: .*$', input, flags=re.MULTILINE)[0].split()[-2]
     repulsive_energy = re.findall(r'^Repulsive energy: .*$', input, flags=re.MULTILINE)[0].split()[-2]
     total_energy = re.findall(r'^Total energy: .*$', input, flags=re.MULTILINE)[0].split()[-2]
 
-    results = {'energy_h0': energy_h0, 'energy_scc': energy_scc, 'total_electronic_energy': total_electronic_energy,
+    results = {'n_electrons_up': n_electrons_up, 'fermi_level': fermi_level, 'energy_h0': energy_h0,
+               'energy_scc': energy_scc, 'total_electronic_energy': total_electronic_energy,
                'repulsive_energy': repulsive_energy, 'total_energy': total_energy}
 
     # Convert all strings to floats
@@ -174,9 +230,12 @@ def parse_dftb_bands(directory) -> np.ndarray:
     bands.shape = (n_k_points, n_bands),
     where n_k_points is the total number of k-points used across all bands paths
 
-    :param directory: Directory containing band structure file
-    :return: band energies
+    :param directory: Directory containing band structure file.
+    :return: band energies.
     """
+    if not Path(directory).is_dir():
+        raise NotADirectoryError(f'Directory does not exist: {directory}')
+
     processed_file = os.path.join(directory, 'band_tot.dat')
 
     if not os.path.isfile(processed_file):
@@ -201,6 +260,13 @@ def parse_dftb_bands(directory) -> np.ndarray:
         bands[ik, :] = band_energies
 
     return bands
+
+
+def shift_bands(bands: np.ndarray, zero_point: float) -> np.ndarray:
+    shifted_bands = bands.copy()
+    for ik in range(bands.shape[0]):
+        shifted_bands[ik, :] -= zero_point
+    return shifted_bands
 
 
 def cif_to_ase_atoms(file: str) -> ase.atoms.Atoms:
