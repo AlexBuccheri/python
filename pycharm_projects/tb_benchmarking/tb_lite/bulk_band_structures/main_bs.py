@@ -20,35 +20,12 @@ import ase
 from ase.io.gen import read_gen
 from ase.atoms import Atoms
 
+from tb_lite.src.runner import BinaryRunner
 from tb_lite.src.dftb_input import generate_band_structure_input
-from tb_lite.src.parsers import parse_dftb_output, parse_dftb_bands, parse_number_of_occupied_bands, parse_geometry_gen
+from tb_lite.src.parsers import parse_dftb_bands, parse_number_of_occupied_bands, parse_geometry_gen
 
 # Path type
 path_type = Union[Path, str]
-
-
-# --------------------------------------------
-# Generate band structure files for TB Lite
-# --------------------------------------------
-
-def generate_band_structure_inputs(scc_to_band_directory: dict):
-    """ Given a list of directories with converged calculations, generate band structure inputs
-    for DFTB+ TB Lite.
-    """
-    for scc_directory, bs_directory in scc_to_band_directory.items():
-        # Make directory if it does not exist
-        Path(bs_directory).mkdir(parents=True, exist_ok=True)
-
-        # Copy the charges and structure
-        for file in ['charges.bin', 'geometry.gen']:
-            shutil.copyfile(os.path.join(scc_directory, file), os.path.join(bs_directory, file))
-
-        # Generate a new input file, for band structure
-        atoms: Atoms = read_gen(os.path.join(bs_directory, 'geometry.gen'))
-        input_xml_str = generate_band_structure_input(atoms.get_cell(), 'GFN1-xTB')
-
-        with open(os.path.join(bs_directory, 'dftb_in.hsd'), 'w') as fid:
-            fid.write(input_xml_str)
 
 
 # --------------------------------------------------------------------------------------
@@ -206,6 +183,57 @@ def plot_band_structure(k_points: np.ndarray, high_sym_points: dict, bands: np.n
     return fig, ax
 
 
+# -------------------------------
+# TB Lite - specific
+# -------------------------------
+
+def generate_band_structure_inputs(scc_to_band_directory: dict):
+    """ Given a list of directories with converged calculations, generate band structure inputs
+    for DFTB+ TB Lite.
+    """
+    for scc_directory, bs_directory in scc_to_band_directory.items():
+        # Make directory if it does not exist
+        Path(bs_directory).mkdir(parents=True, exist_ok=True)
+
+        # Copy the charges and structure
+        for file in ['charges.bin', 'geometry.gen']:
+            shutil.copyfile(os.path.join(scc_directory, file), os.path.join(bs_directory, file))
+
+        # Generate a new input file, for band structure
+        atoms: Atoms = read_gen(os.path.join(bs_directory, 'geometry.gen'))
+        input_xml_str = generate_band_structure_input(atoms.get_cell(), 'GFN1-xTB')
+
+        with open(os.path.join(bs_directory, 'dftb_in.hsd'), 'w') as fid:
+            fid.write(input_xml_str)
+
+
+def setup_band_structure_calculations(run=False):
+    """ Set up and optionally run band structure calculations
+
+    :return:
+    """
+    # Get directories of converged data
+    with open('converged_energies.json', 'r', encoding='utf-8') as fid:
+        scc_data: dict = json.load(fid)
+
+    # Directory pairs relating SCC to band structure
+    bands_root = "/home/alex/tblite/bulk/bands"
+    scc_to_band_directory = {}
+    for scc in scc_data.values():
+        scc_dir = scc['directory']
+        material_name = os.path.basename(scc_dir)
+        scc_to_band_directory[scc_dir] = os.path.join(bands_root, material_name)
+
+    # Generate inputs
+    generate_band_structure_inputs(scc_to_band_directory)
+
+    # Run inputs
+    if run:
+        for bs_directory in scc_to_band_directory.values():
+            runner = BinaryRunner(binary='dftb+', run_cmd=['./'], omp_num_threads=1, directory=bs_directory, time_out=600)
+            job_result = runner.run()
+
+
 def process_band_structure(directory: Union[str, pathlib.Path]):
     """ Take a DFTB+ band structure output and return a band structure plot.
 
@@ -236,23 +264,8 @@ def process_band_structure(directory: Union[str, pathlib.Path]):
     plt.show()
 
 
-# TODO(Alex) Get thi working and clean
-def some_example_of_generating_bands():
-    with open('converged_energies.json', 'r', encoding='utf-8') as fid:
-        scc_data: dict = json.load(fid)
-
-    # Directory pairs relating SCC to band structure
-    bands_root = "/home/alex/tblite/bulk/bands"
-    scc_to_band_directory = {}
-    for scc in scc_data.values():
-        scc_dir = scc['directory']
-        material_name = os.path.basename(scc_dir)
-        scc_to_band_directory[scc_dir] = os.path.join(bands_root, material_name)
-
-    # Generate inputs
-    generate_band_structure_inputs(scc_to_band_directory)
-
-    # Run inputs
 
 
-process_band_structure('/Users/alexanderbuccheri/Python/pycharm_projects/tb_benchmarking/band_structures/diamond_bands/')
+
+setup_band_structure_calculations(run=False)
+#process_band_structure('/Users/alexanderbuccheri/Python/pycharm_projects/tb_benchmarking/band_structures/diamond_bands/')
