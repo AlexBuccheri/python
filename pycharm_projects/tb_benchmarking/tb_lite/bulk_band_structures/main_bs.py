@@ -7,6 +7,8 @@
 * Convert file format and parse result
 """
 import os.path
+import pathlib
+
 import numpy as np
 from typing import List, Union, Optional, Tuple
 from pathlib import Path
@@ -19,7 +21,7 @@ from ase.io.gen import read_gen
 from ase.atoms import Atoms
 
 from tb_lite.src.dftb_input import generate_band_structure_input
-from tb_lite.src.parsers import parse_dftb_output, parse_dftb_bands, parse_number_of_occupied_bands
+from tb_lite.src.parsers import parse_dftb_output, parse_dftb_bands, parse_number_of_occupied_bands, parse_geometry_gen
 
 # Path type
 path_type = Union[Path, str]
@@ -75,15 +77,16 @@ class BandGap:
     """
 
     def __init__(self, n_occupied_bands: Union[int, float], band_energies: np.ndarray):
-        """ Initialise Bandgap class.
+        """ Initialise BandGap class.
 
-        :param n_occupied_bands: Number of occupied bands. Should be an integer
+        :param n_occupied_bands: Number of occupied bands. Should be an integer.
         One could replace with the index of the highest-occupied band (either way, it becomes
         ambiguous at finite temperatures).
         :param band_energies: Numpy array of shape(n_k_points, n_bands).
         """
         int_n_occupied_bands = int(n_occupied_bands)
         self.n_occupied_bands = int_n_occupied_bands
+        # Python indexing at 0
         self.ivm = int_n_occupied_bands - 1
         self.band_energies = band_energies
         if int_n_occupied_bands != n_occupied_bands:
@@ -91,12 +94,17 @@ class BandGap:
                              'Number of electrons is likely not an integer value.')
 
     def band_edge_energies(self) -> tuple:
-        # Python indexing at 0
+        """TODO(Alex) Document
+        :return:
+        """
         E_vb_max = np.max(self.band_energies[:, self.ivm])
         E_cb_min = np.min(self.band_energies[:, self.ivm + 1])
         return E_vb_max, E_cb_min
 
     def band_gap(self) -> float:
+        """ Band gap, defined as E_CBm - E_VBM
+        :return: Band gap
+        """
         E_vb_max, E_cb_min = self.band_edge_energies()
         return E_cb_min - E_vb_max
 
@@ -112,7 +120,7 @@ class BandGap:
         return k_points[ik_vb_max, :], k_points[ik_cb_min, :]
 
 
-def shift_bands(bands: np.ndarray, zero_point: float) -> np.ndarray:
+def set_bands_zeropoint(bands: np.ndarray, zero_point: float) -> np.ndarray:
     """ Shift the bands to a new zero point.
 
     :param bands: Bands with shape(n_k_points, n_bands).
@@ -154,7 +162,7 @@ def xticks_and_xticklabels(k_points: np.ndarray, high_sym_points: dict) -> tuple
     Establish which k-points correspond to high symmetry points.
     For use with plotting.
 
-    TODO(Alex) Tidy this up.
+    TODO(Alex) Tidy this up and rename
 
     :param k_points: k-points grid.
     :param high_sym_points: Dict of form {'G': np.array([0., 0., 0.]), ...}
@@ -195,33 +203,37 @@ def plot_band_structure(k_points: np.ndarray, high_sym_points: dict, bands: np.n
 
     for i in range(0, n_bands):
         plt.plot(k, bands[:, i])
-    plt.show()
+    return fig, ax
 
 
-def some_example_of_post_processing():
-    """An example of post-processing with Diamond
+def process_band_structure(directory: Union[str, pathlib.Path]):
+    """ Take a DFTB+ band structure output and return a band structure plot.
+
+    Parsing is DFTB+ specific, band structure generation is generic.
     """
-    # TODO Convert outputs to a useful format - Must be done no my machine for stupid reasons
+    pj = os.path.join
 
-    root = '/Users/alexanderbuccheri/Python/pycharm_projects/tb_benchmarking/band_structures/diamond_bands/'
-    with open(root + '/detailed.out', "r") as fid:
+    # DFTB+ main output
+    with open(pj(directory, 'detailed.out'), "r") as fid:
         detailed_str = fid.read()
-    n_occ = parse_number_of_occupied_bands(detailed_str)
 
-    band_energies = parse_dftb_bands(root)
+    # Geometry
+    geo_data = parse_geometry_gen(pj(directory, 'geometry.gen'))
+
+    # Band structure
+    band_energies = parse_dftb_bands(directory)
+
+    # Band gap details. eV as DFTB+ band structure parsed in eV
+    n_occ = parse_number_of_occupied_bands(detailed_str)
     band_details = BandGap(n_occ, band_energies)
     vmax, cmin = band_details.band_edge_energies()
     print("VBM, CBm, and band gap (eV):", vmax, cmin, band_details.band_gap())
 
-    shifted_bands = shift_bands(band_energies, vmax)
-
-    lattice_vectors_diamond = np.array([[0.000000000000000, 1.783500000000000, 1.783500000000000],
-                                        [1.783500000000000, 0.000000000000000, 1.783500000000000],
-                                        [1.783500000000000, 1.783500000000000, 0.000000000000000]])
-
-    k_points, high_sym_points = get_standardised_band_path(lattice_vectors_diamond)
-
-    plot_band_structure(k_points, high_sym_points, shifted_bands)
+    # Band structure plot
+    shifted_bands = set_bands_zeropoint(band_energies, vmax)
+    k_points, high_sym_points = get_standardised_band_path(geo_data['lattice'])
+    fig, ax = plot_band_structure(k_points, high_sym_points, shifted_bands)
+    plt.show()
 
 
 # TODO(Alex) Get thi working and clean
@@ -243,4 +255,4 @@ def some_example_of_generating_bands():
     # Run inputs
 
 
-some_example_of_post_processing()
+process_band_structure('/Users/alexanderbuccheri/Python/pycharm_projects/tb_benchmarking/band_structures/diamond_bands/')
