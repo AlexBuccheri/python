@@ -1,6 +1,7 @@
 """
 Parsers
 """
+import pathlib
 import re
 import os
 import subprocess
@@ -8,7 +9,7 @@ import numpy as np
 import glob
 import io
 from pathlib import PurePath, Path
-from typing import Callable
+from typing import Union
 
 import ase
 from pymatgen.io.cif import CifParser
@@ -47,6 +48,7 @@ from pymatgen.io.cif import CifParser
 def reader(func):
     """Decorate func so it can receive a file name, a file ID, or string from file.
     """
+
     def modified_func(input, *args, **kwargs):
         if isinstance(input, io.TextIOWrapper):
             file_string = input.read()
@@ -122,8 +124,8 @@ def parse_qcore_structure(file_name: str) -> dict:
         fractional_positions.append([float(r) for r in [x, y, z]])
 
     # The rest can be extracted with re
-    symbol_index = qcore_input_lines[end+1].find('=')
-    qcore_input_lines[end + 1] = qcore_input_lines[end+1][symbol_index+1:]
+    symbol_index = qcore_input_lines[end + 1].find('=')
+    qcore_input_lines[end + 1] = qcore_input_lines[end + 1][symbol_index + 1:]
 
     def remove_brackets(stuff):
         stuff = [r.replace('[', '') for r in stuff]
@@ -298,3 +300,41 @@ def clear_directory(directory: str):
     files = glob.glob(os.path.join(directory, '*'))
     for file in files:
         os.remove(file)
+
+
+def parse_geometry_gen(file_name: Union[str, pathlib.Path]):
+    """ Parse DFTB+'s geometry gen file.
+
+    Assumes no header
+
+    :return: Dict of data in gen file.
+    Lattice vectors returned row-wise.
+    """
+    with open(file_name, "r") as fid:
+        lines = fid.readlines()
+
+    n_atoms, boundary_conditions = lines[0].split()
+    n_atoms = int(n_atoms)
+    unique_species = lines[1].split()
+
+    positions = np.empty(shape=(n_atoms, 3))
+    species = []
+    for i in range(0, n_atoms):
+        arb_index, species_index, x, y, z = lines[2 + i].split()
+        species_symbol = unique_species[int(species_index) - 1]
+        species.append(species_symbol)
+        positions[i, :] = [float(x), float(y), float(z)]
+
+    origin = np.asarray([float(r) for r in lines[2 + n_atoms].split()])
+
+    lattice = np.empty(shape=(3, 3))
+    for i in range(0, 3):
+        j = 3 + n_atoms + i
+        lattice[i, :] = np.asarray([float(r) for r in lines[j].split()])
+
+    return {"n_atoms": n_atoms,
+            "boundary_conditions": boundary_conditions,
+            'species': species,
+            "origin": origin,
+            "lattice": lattice,
+            "positions": positions}
