@@ -69,6 +69,7 @@ class ConvergenceCriteria(abc.ABC):
         if len(input) <= 1:
             raise ValueError('input must have a length > 1')
 
+    # TODO(Alex) Can't do this
     @staticmethod
     def check_target(func: Callable):
         """ Provide argument checking.
