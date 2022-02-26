@@ -111,6 +111,7 @@ class TBliteConvergence(ConvergenceCriteria):
     def __init__(self, input: list, criteria: dict):
         super().__init__(input, criteria)
 
+    @ConvergenceCriteria.check_target
     def evaluate(self, current, prior) -> Tuple[bool, bool]:
         delta = current['Total energy'] - prior['Total energy']
         converged = abs(delta) <= self.criteria['Total energy']

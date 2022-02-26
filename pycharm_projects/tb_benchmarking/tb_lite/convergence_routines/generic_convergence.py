@@ -69,8 +69,6 @@ class ConvergenceCriteria(abc.ABC):
         if len(input) <= 1:
             raise ValueError('input must have a length > 1')
 
-    # TODO(Alex) Can't do this
-    @staticmethod
     def check_target(func: Callable):
         """ Provide argument checking.
 
@@ -100,12 +98,19 @@ class ConvergenceCriteria(abc.ABC):
         return func_with_target_check
 
     @abc.abstractmethod
-    @check_target
     def evaluate(self, current: dict, prior: dict) -> Tuple[bool, bool]:
         """ Evaluate a convergence criterion for each target.
 
-        TODO(Alex) See if I can a) double decorate and b) apply a decorator to an abstract method
-        Alternative would be to implement the start of the method, then inherit it in sub-classes.
+        Decorators cannot be applied to methods decorated with abstractmethod.
+        As such, sub-class implementations of `evaluate` should be defined as:
+
+        @ConvergenceCriteria.check_target
+        def evaluate(self, current: dict, prior: dict) -> Tuple[bool, bool]:
+            # Implementation here
+
+        to get use the value-checking. Alternative would be to evaluate in ConvergenceCriteria
+        using the definition of the decorator (i.e. the value-checking) then inherit it in
+        sub-classes that overwrite the method.
 
         :param current: Dictionary containing current result/s
         :param prior: Dictionary containing prior result/s
