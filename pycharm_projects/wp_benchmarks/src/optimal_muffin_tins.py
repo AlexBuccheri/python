@@ -4,7 +4,7 @@ from typing import List
 from ase.neighborlist import mic
 # from ase.geometry import complete_cell, find_mic, wrap_positions
 
-from src.materials import MoS2WS2Bilayer
+from src.materials import MoS2WS2Bilayer, ZnOWurzite, ZrO2Primitive, SiliconPrimitive, TiO2Rutile
 
 
 def fixed_precision_rgkmax(atomic_number: int) -> float:
@@ -192,4 +192,5 @@ def main(system, scaling_factor=1.0):
 
 
 if __name__ == "__main__":
-    main(MoS2WS2Bilayer(), scaling_factor=1)
+    #main(MoS2WS2Bilayer(), scaling_factor=1.0)
+    main(ZrO2Primitive(), scaling_factor=1.0)
