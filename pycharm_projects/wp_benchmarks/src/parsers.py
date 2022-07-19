@@ -1,27 +1,12 @@
-import xml.etree.ElementTree as ET
+import os
+import re
 import numpy as np
-from typing import Tuple, Optional, Union, List
-
+from typing import Tuple, Optional, List
 import ase
 
-
-# TODO(Alex0 Move to excitingtools
-def extract_charge_density(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
-    """ Extract charge density from RHO1D.xml file.
-
-    :param file_name: File name
-    :return: distance and charge_density
-    """
-    tree = ET.parse(file_name)
-    root = tree.getroot()
-
-    distance = []
-    charge_density = []
-    for child in root[1][2]:
-        distance.append(child.attrib['distance'])
-        charge_density.append(eval(child.attrib['value']))
-
-    return np.asarray(distance), np.asarray(charge_density)
+from excitingtools.dataclasses.data_structs import BandIndices, PointIndex
+from excitingtools.dataclasses.eigenvalues import EigenValues
+from excitingtools.exciting_obj_parsers.gw_eigenvalues import NitrogenEvalQPColumns, gw_eigenvalue_parser
 
 
 def get_standardised_band_path(lattice_vectors) -> Tuple[np.ndarray, dict]:
@@ -86,57 +71,92 @@ def exciting_band_path_xml(symbolic_path, high_symmetry_points, steps:Optional[i
     return string
 
 
-# TODO(Alex0 Move to excitingtools
-def parse_bandstructure_xml(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
-    """ Parse bandstructure.xml
+def get_gw_bandedge_indices(path: str) -> BandIndices:
+    """ Get GW band indices from GW_INFO.OUT, for exciting Nitrogen.
 
-    TODO(Alex) Write a test
-              Could extend to parse the vertices, if desired
+    Note, the strings may differ in Oxygen.
 
-    :param file_name: bandstructure.xml prepended by path.
-    :return: Tuple of discrete set of points sampling the k-path, and band energies
-    of .shape = (n_kpts, n_bands).
+    :param path: Path to file `GW_INFO.OUT`
+    :return (vbm, cbm): VBM and CBm indices.
     """
-    tree = ET.parse(file_name)
-    root = tree.getroot()
+    file_name = os.path.join(path, "GW_INFO.OUT")
+    try:
+        with open(file=file_name) as fid:
+            file_string = fid.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f'{file_name} cannot be found')
 
-    # Split bands and vertices
-    elements = list(root)
-    # title = elements[0].text
-    bs_xml = {'band': [], 'vertex': []}
-    for item in elements[1:]:
-        bs_xml[item.tag].append(item)
+    # In both cases, take the last match, which corresponds to the GW indice.
+    vb_max_str = re.findall(r'\s*Band index of VBM: .*$', file_string, flags=re.MULTILINE)[-1]
+    cb_min_str = re.findall(r'\s*Band index of CBM: .*$', file_string, flags=re.MULTILINE)[-1]
 
-    n_bands = len(bs_xml['band'])
-    first_band = bs_xml['band'][0]
-    n_kpts = len(list(first_band))
+    vbm = int(vb_max_str.split()[-1])
+    cbm = int(cb_min_str.split()[-1])
 
-    # Same set of flattened k-points, per band - so parse once
-    k_vector = np.empty(shape=n_kpts)
-    for ik, point in enumerate(list(first_band)):
-        k_vector[ik] = point.get('distance')
-
-    # Useful to note - then remove
-    # print(point.tag, point.items(), point.keys(), point.get('distance'))
-
-    # Read E(k), per band
-    band_energies = np.empty(shape=(n_kpts, n_bands))
-    for ib, band in enumerate(bs_xml['band']):
-        points = list(band)
-        for ik, point in enumerate(points):
-            band_energies[ik, ib] = point.get('eval')
-
-    return k_vector, band_energies
+    return BandIndices(VBM=vbm, CBm=cbm)
 
 
-class BandStructure:
-    """ Wrap free functions for processing exciting band structures.
+def get_gw_bandedge_k_indices(path: str) -> List[PointIndex]:
+    """ Parse k-points at band edges.
+
+    Valid for Nitrogen.
+
+    Fundamental BandGap (eV):                 1.4935
+         at k(VBM) =    0.000   0.000   0.000 ik =     1
+            k(CBM) =    0.000   0.500   0.500 ik =     3
+
+    :param path:
+    :return:
     """
-    flat_k_path: Union[list, np.ndarray]
-    band_energies:  np.ndarray
+    file_name = os.path.join(path, "GW_INFO.OUT")
+    try:
+        with open(file=file_name) as fid:
+            file_string = fid.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f'{file_name} cannot be found')
 
-    def __init__(self, file_name: Optional[str]):
-        self.file_name = file_name
+    # Last line match will correspond to GW
+    vbm_line = re.findall(r'^.*k\(VBM\) = .*$', file_string, flags=re.MULTILINE)[-1]
+    cbm_line = re.findall(r'^.*k\(CBM\) = .*$', file_string, flags=re.MULTILINE)[-1]
 
-    def parse(self):
-        self.flat_k_path, band_energies = parse_bandstructure_xml(self.file_name)
+    ik_vbm = int(vbm_line.split()[-1])
+    k_vbm = [float(x) for x in vbm_line.split()[3:6]]
+
+    ik_cbm = int(cbm_line.split()[-1])
+    k_cbm = [float(x) for x in cbm_line.split()[2:5]]
+
+    return [PointIndex(k_vbm, ik_vbm), PointIndex(k_cbm, ik_cbm)]
+
+
+def return_zero_if_no_file(func):
+    """ Decorate `band_gaps` and return zeros if the file cannot be found
+    (as the parser will throw an immediate exception).
+    """
+    def modified_func(path):
+        full_file = os.path.join(path, 'EVALQP.DAT')
+        if not os.path.isfile(full_file):
+            print(f'{full_file} does not exist')
+            return {'fundamental': 0.0, 'gamma': 0.0}
+        return func(path)
+    return modified_func
+
+
+@return_zero_if_no_file
+def band_gaps(path) -> dict:
+    """ Parse eigenvalues, return band gaps in Ha.
+
+    :param path: Path to file.
+    :return: Dict of band gaps.
+    """
+    eigenvalues: EigenValues = gw_eigenvalue_parser(path, NitrogenEvalQPColumns.E_GW)
+
+    # Indirect (or smallest)
+    band_indices = get_gw_bandedge_indices(path)
+    k_valence, k_conduction = get_gw_bandedge_k_indices(path)
+    fundamental_gap = eigenvalues.band_gap(band_indices, k_indices=[k_valence.index, k_conduction.index])
+
+    # Direct at Gamma
+    ik = eigenvalues.get_index([0., 0., 0.])
+    direct_gamma_gap = eigenvalues.band_gap(band_indices, k_indices=[ik, ik])
+
+    return {'fundamental': fundamental_gap, 'gamma': direct_gamma_gap}
