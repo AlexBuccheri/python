@@ -145,6 +145,8 @@ def return_zero_if_no_file(func):
 def band_gaps(path) -> dict:
     """ Parse eigenvalues, return band gaps in Ha.
 
+    Written for exciting Nitrogen.
+
     :param path: Path to file.
     :return: Dict of band gaps.
     """
