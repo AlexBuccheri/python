@@ -14,7 +14,7 @@ from src.parsers import band_gaps
 def band_gaps_vs_q(root: str, q_points: list) -> dict:
     """ Get fundamental and direct Gamma gaps as a function of q.
 
-    :param path: Path to file.
+    :param root: Path to file.
     :param q_points: List of q-points.
     :return: Fundamental gap
     """
@@ -36,7 +36,7 @@ def initialise_gamma_gap_plot() -> Tuple[Figure, Axes]:
     plt.rcParams.update({'font.size': 16})
     ax.set_xlabel('q-points', fontsize=16)
     ax.set_ylabel('Quasiparticle Band Gap (eV)', fontsize=16)
-    # ax.set_ylim(3.6, 4.0)
+    ax.set_ylim(3.2, 3.6)
     return fig, ax
 
 
@@ -47,7 +47,8 @@ if __name__ == "__main__":
 
     q_points = [[2, 2, 3], [4, 4, 6], [6, 6, 10]]
     total_q_points = [np.prod(q_point) for q_point in q_points]
-    n_empties = [10, 25, 50]
+    # Add 10 %
+    n_empties = [25, 50]
 
     fig, ax = initialise_gamma_gap_plot()
     for n_empty in n_empties:
