@@ -115,15 +115,29 @@ def get_gw_bandedge_k_indices(path: str) -> List[PointIndex]:
     except FileNotFoundError:
         raise FileNotFoundError(f'{file_name} cannot be found')
 
-    # Last line match will correspond to GW
-    vbm_line = re.findall(r'^.*k\(VBM\) = .*$', file_string, flags=re.MULTILINE)[-1]
-    cbm_line = re.findall(r'^.*k\(CBM\) = .*$', file_string, flags=re.MULTILINE)[-1]
+    # Check if k-points are defined w.r.t. VBM and CBM
+    # This implies an indirect gap.
+    line = re.findall(r'^.*k\(VBM\) = .*$', file_string, flags=re.MULTILINE)
+    direct_gap = line == []
 
-    ik_vbm = int(vbm_line.split()[-1])
-    k_vbm = [float(x) for x in vbm_line.split()[3:6]]
+    if direct_gap:
+        # Last line match will correspond to GW
+        line = re.findall(r'^.*at k\s*= .*$', file_string, flags=re.MULTILINE)[-1]
+        ik_vbm = int(line.split()[-1])
+        k_vbm = [float(x) for x in line.split()[3:6]]
+        ik_cbm = ik_vbm
+        k_cbm = k_vbm
 
-    ik_cbm = int(cbm_line.split()[-1])
-    k_cbm = [float(x) for x in cbm_line.split()[2:5]]
+    else:
+        # Last line match will correspond to GW
+        vbm_line = re.findall(r'^.*k\(VBM\) = .*$', file_string, flags=re.MULTILINE)[-1]
+        cbm_line = re.findall(r'^.*k\(CBM\) = .*$', file_string, flags=re.MULTILINE)[-1]
+
+        ik_vbm = int(vbm_line.split()[-1])
+        k_vbm = [float(x) for x in vbm_line.split()[3:6]]
+
+        ik_cbm = int(cbm_line.split()[-1])
+        k_cbm = [float(x) for x in cbm_line.split()[2:5]]
 
     return [PointIndex(k_vbm, ik_vbm), PointIndex(k_cbm, ik_cbm)]
 
