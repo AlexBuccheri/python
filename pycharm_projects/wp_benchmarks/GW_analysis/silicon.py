@@ -49,7 +49,7 @@ def initialise_gamma_gap_plot() -> Tuple[Figure, Axes]:
     plt.rcParams.update({'font.size': 16})
     ax.set_xlabel('q-points', fontsize=16)
     ax.set_ylabel('Quasiparticle Band Gap (eV)', fontsize=16)
-    ax.set_ylim(3.6, 4.0)
+    ax.set_ylim(3.0, 3.6)
     return fig, ax
 
 
